@@ -1,0 +1,18 @@
+{
+  "name": "mexplica",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma acadêmica de inclusão digital MExplica",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-session": "^2.1.1",
+    "dotenv": "^18.0.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1"
+  }
+}
