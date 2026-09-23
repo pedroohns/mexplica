@@ -5,14 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (greetingEl) {
         const hour = new Date().getHours();
         let greeting = 'Boa noite! Qual seria sua dúvida de hoje?';
-        if (hour >= 5 && hour < 12)  greeting = 'Bom dia! Qual seria sua dúvida de hoje?';
+        if (hour >= 5 && hour < 12) greeting = 'Bom dia! Qual seria sua dúvida de hoje?';
         else if (hour >= 12 && hour < 18) greeting = 'Boa tarde! Qual seria sua dúvida de hoje?';
         greetingEl.textContent = greeting;
     }
 
     // TOGGLE DA NAV MOBILE
     const navToggle = document.getElementById('navToggle');
-    const navLinks  = document.querySelector('.nav-links');
+    const navLinks = document.querySelector('.nav-links');
     if (navToggle && navLinks) {
         navToggle.addEventListener('click', () => {
             navLinks.classList.toggle('open');
@@ -26,11 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // referencias dos dois menus para fechar um quando o outro abre (coloquei isso apenas para evitar um bug que tava acontecendo quando vc deixava os dois menus abertos e trocava entre modo claro/escuro, DA PRA RESOLVER ESSE PROBLEMA, mas como é uma parada basica, entao optei pela soluçao mais preguiçosa)
     let menuFonteEl = null;
-    let menuAccEl   = null;
+    let menuAccEl = null;
 
     function fecharTodosMenus() {
         if (menuFonteEl) menuFonteEl.style.display = 'none';
-        if (menuAccEl)   menuAccEl.style.display   = 'none';
+        if (menuAccEl) menuAccEl.style.display = 'none';
     }
 
     // ================================================
@@ -39,9 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ================================================
     const mapaImagensPrint = {
         'icons/print-1-novo.png': 'icons/print-1-dark-novo.png',
-        'icons/print-2.png':      'icons/print-2-dark.png',
+        'icons/print-2.png': 'icons/print-2-dark.png',
         'icons/print-3-novo.png': 'icons/print-3-dark-novo.png',
-        'icons/print-4.png':      'icons/print-4-dark.png',
+        'icons/print-4.png': 'icons/print-4-dark.png',
     };
 
     const mapaInverso = {};
@@ -88,14 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // tamanhos de cada nivel
         const niveis = [
-            { label: 'PEQUENO', fontSize: '11px', lineHeight: '1.45', letterSpacing: '-0.1em',  wordSpacing: '-0.1em' },
-            { label: 'MÉDIO',   fontSize: '16px', lineHeight: '1.6',  letterSpacing: '',        wordSpacing: ''       },
-            { label: 'GRANDE',  fontSize: '22px', lineHeight: '1.95', letterSpacing: '0.02em',  wordSpacing: '0.1em'  }
+            { label: 'PEQUENO', fontSize: '11px', lineHeight: '1.45', letterSpacing: '-0.1em', wordSpacing: '-0.1em' },
+            { label: 'MÉDIO', fontSize: '16px', lineHeight: '1.6', letterSpacing: '', wordSpacing: '' },
+            { label: 'GRANDE', fontSize: '22px', lineHeight: '1.95', letterSpacing: '0.02em', wordSpacing: '0.1em' }
         ];
 
         let nivelAtual = 1;
 
-        const iconeAa   = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><text x="1" y="18" font-size="16" fill="#ffffff" font-family="sans-serif" font-weight="900">Aa</text></svg>`;
+        const iconeAa = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><text x="1" y="18" font-size="16" fill="#ffffff" font-family="sans-serif" font-weight="900">Aa</text></svg>`;
         const setaAbaixo = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
         // container do menu
@@ -154,12 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         const slider = document.createElement('input');
-        slider.type  = 'range';
-        slider.min   = '0';
-        slider.max   = '2';
-        slider.step  = '1';
+        slider.type = 'range';
+        slider.min = '0';
+        slider.max = '2';
+        slider.step = '1';
         slider.value = nivelAtual;
-        slider.id    = 'fonte-slider';
+        slider.id = 'fonte-slider';
         slider.style.cssText = `
             -webkit-appearance: none;
             appearance: none;
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         niveis.forEach((nivel, i) => {
             const lbl = document.createElement('span');
             lbl.dataset.label = i;
-            lbl.textContent   = nivel.label;
+            lbl.textContent = nivel.label;
             lbl.style.cssText = `
                 font-family: 'Inter', sans-serif;
                 font-size: 10px;
@@ -250,10 +250,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function atualizarCoresMenu() {
             const isBlack = document.body.classList.contains('dark-black');
-            const isDark  = document.body.classList.contains('dark-blue');
+            const isDark = document.body.classList.contains('dark-blue');
             const inativo = (isBlack || isDark) ? '#555555' : '#bbbbbb';
 
-            menuFonte.style.background  = isBlack ? '#111111' : isDark ? '#1a2535' : '#ffffff';
+            menuFonte.style.background = isBlack ? '#111111' : isDark ? '#1a2535' : '#ffffff';
             menuFonte.style.borderColor = isBlack ? '#333333' : isDark ? '#2a3f52' : '#e8e8e8';
 
             // trilho do slider
@@ -270,40 +270,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function aplicarNivel(n) {
-        nivelAtual = n;
-        slider.value = n;
+            nivelAtual = n;
+            slider.value = n;
 
-         const escalas = [0.85, 1, 1.25];
+            const escalas = [0.85, 1, 1.25];
 
             document.documentElement.style.setProperty(
-             '--font-scale',
-              escalas[n]
-             );
-
-        document.querySelectorAll('*').forEach(el => {
-
-        if (!el.dataset.originalFontSize) {
-            const size = parseFloat(
-                window.getComputedStyle(el).fontSize
+                '--font-scale',
+                escalas[n]
             );
 
-            if (!isNaN(size)) {
-                el.dataset.originalFontSize = size;
-            }
-        }
+            document.querySelectorAll('*').forEach(el => {
 
-        const original = parseFloat(
-            el.dataset.originalFontSize
-        );
+                if (!el.dataset.originalFontSize) {
+                    const size = parseFloat(
+                        window.getComputedStyle(el).fontSize
+                    );
 
-        if (!isNaN(original)) {
-            el.style.fontSize =
-                (original * escalas[n]) + 'px';
-        }
-        });
+                    if (!isNaN(size)) {
+                        el.dataset.originalFontSize = size;
+                    }
+                }
 
-        atualizarGradienteSlider(n);
-        atualizarCoresMenu();
+                const original = parseFloat(
+                    el.dataset.originalFontSize
+                );
+
+                if (!isNaN(original)) {
+                    el.style.fontSize =
+                        (original * escalas[n]) + 'px';
+                }
+            });
+
+            atualizarGradienteSlider(n);
+            atualizarCoresMenu();
         }
 
         function abrirMenuFonte() {
@@ -311,9 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const rect = fontBtn.getBoundingClientRect();
             menuFonte.style.position = 'fixed';
-            menuFonte.style.top      = (rect.bottom + 8) + 'px';
-            menuFonte.style.left     = rect.left + 'px';
-            menuFonte.style.width    = rect.width + 'px';
+            menuFonte.style.top = (rect.bottom + 8) + 'px';
+            menuFonte.style.left = rect.left + 'px';
+            menuFonte.style.width = rect.width + 'px';
 
             document.body.appendChild(menuFonte);
             menuFonte.style.display = 'block';
@@ -350,16 +350,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const temas = [
             {
-                label:  'Modo Claro',
-                sub:    'Telas claras para melhor visibilidade em locais iluminados',
+                label: 'Modo Claro',
+                sub: 'Telas claras para melhor visibilidade em locais iluminados',
                 classe: '',
-                icone:  'icons/solzinho.png'
+                icone: 'icons/solzinho.png'
             },
             {
-                label:  'Modo Escuro',
-                sub:    'Telas escuras para melhor visibilidade em ambientes com pouca luz',
+                label: 'Modo Escuro',
+                sub: 'Telas escuras para melhor visibilidade em ambientes com pouca luz',
                 classe: 'dark-blue',
-                icone:  'icons/luazinha.png'
+                icone: 'icons/luazinha.png'
             }
         ];
 
@@ -368,8 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (temaAtivo > 1) temaAtivo = 0;
 
         const menuAcc = document.createElement('div');
-        menuAcc.id  = 'menu-acc';
-        menuAccEl   = menuAcc;
+        menuAcc.id = 'menu-acc';
+        menuAccEl = menuAcc;
         menuAcc.style.cssText = `
             display: none;
             position: absolute;
@@ -436,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.appendChild(icone);
 
             item.addEventListener('mouseenter', () => {
-                const isDark  = document.body.classList.contains('dark-blue');
+                const isDark = document.body.classList.contains('dark-blue');
                 item.style.background = isDark ? '#223344' : '#f7f7f9';
             });
             item.addEventListener('mouseleave', () => {
@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
             atualizarImagensPrint();
 
             atualizarEstiloMenuAcc();
-            
+
             // atualiza tambem o menu de fonte para refletir o novo tema
             if (menuFonteEl) {
                 atualizarCoresMenu();
@@ -580,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function atualizarEstiloMenuAcc() {
             const isDark = document.body.classList.contains('dark-blue');
 
-            menuAcc.style.background  = isDark ? '#1a2535' : '#ffffff';
+            menuAcc.style.background = isDark ? '#1a2535' : '#ffffff';
             menuAcc.style.borderColor = isDark ? '#2a3f52' : '#e8e8e8';
 
             menuAcc.querySelectorAll('button').forEach((btn, i) => {
@@ -606,9 +606,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // isso evita o problema de z-index no mobile
             const rect = accBtn.getBoundingClientRect();
             menuAcc.style.position = 'fixed';
-            menuAcc.style.top      = (rect.bottom + 8) + 'px';
-            menuAcc.style.left     = rect.left + 'px';
-            menuAcc.style.width    = rect.width + 'px';
+            menuAcc.style.top = (rect.bottom + 8) + 'px';
+            menuAcc.style.left = rect.left + 'px';
+            menuAcc.style.width = rect.width + 'px';
 
             document.body.appendChild(menuAcc);
             menuAcc.style.display = 'block';
@@ -637,133 +637,840 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // STEPS
     const step1 = document.getElementById('step-1');
+    const stepLogin = document.getElementById('step-login');
     const step2 = document.getElementById('step-2');
     const step3 = document.getElementById('step-3');
     const step4 = document.getElementById('step-4');
 
+    let identificadorAtual = '';
+
     function showStep(stepEl) {
-        [step1, step2, step3, step4].forEach(s => {
-            if (s) s.classList.add('hidden');
+
+        [
+            step1,
+            stepLogin,
+            step2,
+            step3,
+            step4
+        ].forEach(step => {
+
+            if (step) {
+                step.classList.add('hidden');
+            }
+
         });
+
         if (stepEl) {
+
             stepEl.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+
         }
+
     }
 
-    // STEP 1 - METODO DE CONTATO
-    const btnEmail  = document.getElementById('btnEmail');
-    const btnPhone  = document.getElementById('btnPhone');
-    const mainInput = document.getElementById('mainInput');
 
-    if (btnEmail && btnPhone && mainInput) {
-        btnEmail.addEventListener('click', () => {
-            btnEmail.classList.add('method-active');
-            btnPhone.classList.remove('method-active');
-            mainInput.placeholder = 'Insira seu email';
-            mainInput.type = 'text';
-        });
-        btnPhone.addEventListener('click', () => {
-            btnPhone.classList.add('method-active');
-            btnEmail.classList.remove('method-active');
-            mainInput.placeholder = 'Insira seu número de telefone';
-            mainInput.type = 'tel';
-        });
+    // FUNÇÃO PARA COMUNICAÇÃO COM A API
+    async function authRequest(
+        url,
+        options = {}
+    ) {
+
+        const resposta =
+            await fetch(
+                url,
+                {
+                    headers: {
+                        'Content-Type':
+                            'application/json',
+                        ...(
+                            options.headers
+                            || {}
+                        )
+                    },
+                    ...options
+                }
+            );
+
+        const dados =
+            await resposta.json();
+        if (!resposta.ok) {
+            throw new Error(
+                dados.erro
+                ||
+                'Não foi possível concluir a operação.'
+            );
+
+        }
+        return dados;
     }
 
-    // STEP 1 - CONTINUAR
-    const continueBtn = document.getElementById('continueBtn');
-    const inputError  = document.getElementById('inputError');
+
+    // STEP 1 - MÉTODO DE CONTATO
+    const btnEmail =
+        document.getElementById(
+            'btnEmail'
+        );
+
+    const btnPhone =
+        document.getElementById(
+            'btnPhone'
+        );
+
+    const mainInput =
+        document.getElementById(
+            'mainInput'
+        );
+
+    if (
+        btnEmail
+        &&
+        btnPhone
+        &&
+        mainInput
+    ) {
+
+        btnEmail.addEventListener(
+            'click',
+            () => {
+                btnEmail
+                    .classList
+                    .add(
+                        'method-active'
+                    );
+
+                btnPhone
+                    .classList
+                    .remove(
+                        'method-active'
+                    );
+
+                mainInput.placeholder =
+                    'Insira seu email';
+                mainInput.type =
+                    'text';
+                mainInput.autocomplete =
+                    'email';
+
+            }
+        );
+
+
+        btnPhone.addEventListener(
+            'click',
+            () => {
+                btnPhone
+                    .classList
+                    .add(
+                        'method-active'
+                    );
+                btnEmail
+                    .classList
+                    .remove(
+                        'method-active'
+                    );
+
+
+                mainInput.placeholder =
+                    'Insira seu número de telefone';
+                mainInput.type =
+                    'tel';
+                mainInput.autocomplete =
+                    'tel';
+            }
+        );
+    }
+
+
+    // STEP 1 - VERIFICAR EMAIL / TELEFONE
+    const continueBtn =
+        document.getElementById(
+            'continueBtn'
+        );
+    const inputError =
+        document.getElementById(
+            'inputError'
+        );
 
     if (continueBtn) {
-        continueBtn.addEventListener('click', () => {
-            const val     = mainInput ? mainInput.value.trim() : '';
-            const isPhone = btnPhone && btnPhone.classList.contains('method-active');
+        continueBtn.addEventListener(
+            'click',
+            async () => {
+                const val =
+                    mainInput
+                        ? mainInput.value.trim()
+                        : '';
 
-            if (!val) {
-                if (inputError) inputError.textContent = isPhone
-                    ? 'Por favor, insira seu número de telefone.'
-                    : 'Por favor, insira seu email.';
-                if (mainInput) mainInput.focus();
-                return;
-            }
+                const isPhone =
+                    btnPhone
+                    &&
+                    btnPhone
+                        .classList
+                        .contains(
+                            'method-active'
+                        );
 
-            if (!isPhone) {
-                const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-                if (!emailOK) {
-                    if (inputError) inputError.textContent = 'Email inválido. Verifique e tente novamente.';
-                    if (mainInput) mainInput.focus();
+                // CAMPO VAZIO
+                if (!val) {
+                    if (inputError) {
+                        inputError.textContent =
+                            isPhone
+                                ? 'Por favor, insira seu número de telefone.'
+                                : 'Por favor, insira seu email.';
+                    }
+
+                    if (mainInput) {
+                        mainInput.focus();
+                    }
+
                     return;
+
                 }
-            } else {
-                const phoneOK = /^[\d\s()+\-]{8,}$/.test(val);
-                if (!phoneOK) {
-                    if (inputError) inputError.textContent = 'Número inválido. Verifique e tente novamente.';
-                    if (mainInput) mainInput.focus();
-                    return;
+
+
+                // VALIDAÇAO DE EMAIL
+                if (!isPhone) {
+                    const emailOK =
+                        /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                            .test(val);
+
+                    if (!emailOK) {
+                        if (inputError) {
+                            inputError.textContent =
+                                'Email inválido. Verifique e tente novamente.';
+
+                        }
+
+                        mainInput.focus();
+                        return;
+
+                    }
+                }
+
+                // VALIDAÇAO DE TELEFONE
+                else {
+                    const phoneOK =
+                        /^[\d\s()+\-]{8,}$/
+                            .test(val);
+
+                    if (!phoneOK) {
+                        if (inputError) {
+                            inputError.textContent =
+                                'Número inválido. Verifique e tente novamente.';
+                        }
+
+                        mainInput.focus();
+                        return;
+                    }
+                }
+
+                if (inputError) {
+                    inputError.textContent =
+                        'Verificando...';
+                }
+
+                continueBtn.disabled =
+                    true;
+
+
+                try {
+                    const dados =
+                        await authRequest(
+                            '/api/auth/verificar',
+                            {
+                                method:
+                                    'POST',
+                                body:
+                                    JSON.stringify({
+                                        identificador:
+                                            val
+                                    })
+                            }
+                        );
+
+                    // GUARDA O EMAIL OU TELEFONE
+                    // PARA LOGIN OU CADASTRO
+                    identificadorAtual =
+                        val;
+
+                    if (inputError) {
+                        inputError.textContent = '';
+                    }
+
+                    // USUARIO JAA EXISTE
+                    if (
+                        dados.cadastrado
+                    ) {
+
+                        const loginTitle =
+                            document
+                                .getElementById(
+                                    'loginTitle'
+                                );
+
+                        const loginPassword =
+                            document
+                                .getElementById(
+                                    'loginPassword'
+                                );
+
+                        if (loginTitle) {
+
+                            loginTitle.textContent =
+                                `Bem-vindo de volta, ${dados.usuario.nome}!`;
+
+                        }
+
+                        if (loginPassword) {
+
+                            loginPassword.value =
+                                '';
+
+                        }
+
+                        showStep(
+                            stepLogin
+                        );
+
+                        if (loginPassword) {
+
+                            loginPassword.focus();
+
+                        }
+                    }
+
+
+                    // USUÁRIO NOVO
+                    else {
+                        showStep(
+                            step2
+                        );
+                    }
+                }
+                catch (erro) {
+                    if (inputError) {
+                        inputError.textContent =
+                            erro.message;
+                    }
+                }
+                finally {
+                    continueBtn.disabled =
+                        false;
                 }
             }
+        );
 
-            if (inputError) inputError.textContent = '';
-            showStep(step2);
-        });
 
+        // ENTER TAMBEM CONTINUA
         if (mainInput) {
-            mainInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') continueBtn.click();
-            });
+            mainInput.addEventListener(
+                'keydown',
+                event => {
+                    if (
+                        event.key === 'Enter'
+                    ) {
+
+                        continueBtn.click();
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+
+
+    // LOGIN - VOLTAR
+    const backLoginToStep1 =
+        document.getElementById(
+            'backLoginToStep1'
+        );
+
+    if (backLoginToStep1) {
+
+        backLoginToStep1.addEventListener(
+            'click',
+            () => {
+
+                showStep(
+                    step1
+                );
+
+            }
+        );
+
+    }
+
+
+    // LOGIN
+    const loginBtn =
+        document.getElementById(
+            'loginBtn'
+        );
+    const loginPassword =
+        document.getElementById(
+            'loginPassword'
+        );
+    const loginError =
+        document.getElementById(
+            'loginError'
+        );
+
+    async function realizarLogin() {
+        const senha =
+            loginPassword
+                ? loginPassword.value
+                : '';
+
+        if (!senha) {
+            if (loginError) {
+                loginError.textContent =
+                    'Digite sua senha.';
+            }
+
+            if (loginPassword) {
+
+                loginPassword.focus();
+            }
+            return;
+
+        }
+
+        if (loginError) {
+            loginError.textContent =
+                'Entrando...';
+        }
+
+        if (loginBtn) {
+            loginBtn.disabled =
+                true;
+        }
+
+        try {
+            await authRequest(
+                '/api/auth/login',
+                {
+                    method:
+                        'POST',
+                    body:
+                        JSON.stringify({
+                            identificador:
+                                identificadorAtual,
+                            senha:
+                                senha
+                        })
+                }
+            );
+
+            // LOGIN REALIZADO
+            window.location.href =
+                '/comunidade';
+        }
+
+        catch (erro) {
+            if (loginError) {
+                loginError.textContent =
+                    erro.message;
+            }
+        }
+
+        finally {
+            if (loginBtn) {
+                loginBtn.disabled =
+                    false;
+            }
         }
     }
 
-    // STEP 2 - VOLTAR
-    const backToStep1 = document.getElementById('backToStep1');
-    if (backToStep1) {
-        backToStep1.addEventListener('click', () => showStep(step1));
+
+    if (loginBtn) {
+        loginBtn.addEventListener(
+            'click',
+            realizarLogin
+        );
     }
 
-    // STEP 2 - CONTINUAR
-    const registerBtn   = document.getElementById('registerBtn');
-    const registerError = document.getElementById('registerError');
+
+    if (loginPassword) {
+
+        loginPassword.addEventListener(
+            'keydown',
+            event => {
+                if (
+                    event.key === 'Enter'
+                ) {
+                    realizarLogin();
+
+                }
+            }
+        );
+    }
+
+
+    // STEP 2 - VOLTAR
+    const backToStep1 =
+        document.getElementById(
+            'backToStep1'
+        );
+
+
+    if (backToStep1) {
+        backToStep1.addEventListener(
+            'click',
+            () => {
+                showStep(
+                    step1
+                );
+            }
+        );
+    }
+
+
+    // STEP 2 - VALIDAR DADOS DO CADASTRO
+    const registerBtn =
+        document.getElementById(
+            'registerBtn'
+        );
+    const registerError =
+        document.getElementById(
+            'registerError'
+        );
+
 
     if (registerBtn) {
-        registerBtn.addEventListener('click', () => {
-            const firstName = document.getElementById('firstName');
-            const lastName  = document.getElementById('lastName');
-            const age       = document.getElementById('age');
-            const gender    = document.getElementById('gender');
-            const password  = document.getElementById('password');
+        registerBtn.addEventListener(
+            'click',
+            () => {
 
-            const fields = [firstName, lastName, age, gender, password];
-            const empty  = fields.some(f => !f || !f.value.trim());
+                const firstName =
+                    document.getElementById(
+                        'firstName'
+                    );
 
-            if (empty) {
-                if (registerError) registerError.textContent = 'Por favor, preencha todos os campos.';
-                return;
+                const lastName =
+                    document.getElementById(
+                        'lastName'
+                    );
+
+                const age =
+                    document.getElementById(
+                        'age'
+                    );
+
+                const gender =
+                    document.getElementById(
+                        'gender'
+                    );
+
+                const password =
+                    document.getElementById(
+                        'password'
+                    );
+
+
+                const fields = [
+
+                    firstName,
+                    lastName,
+                    age,
+                    gender,
+                    password
+
+                ];
+
+
+                const empty =
+                    fields.some(
+                        field =>
+
+                            !field
+                            ||
+                            !String(
+                                field.value
+                            ).trim()
+
+                    );
+
+
+                if (empty) {
+
+                    if (registerError) {
+
+                        registerError.textContent =
+                            'Por favor, preencha todos os campos.';
+
+                    }
+
+
+                    return;
+
+                }
+
+
+                const ageVal =
+                    parseInt(
+                        age.value,
+                        10
+                    );
+
+
+                if (
+                    isNaN(ageVal)
+                    ||
+                    ageVal < 10
+                    ||
+                    ageVal > 120
+                ) {
+
+                    if (registerError) {
+
+                        registerError.textContent =
+                            'Insira uma idade válida.';
+
+                    }
+
+
+                    age.focus();
+
+                    return;
+
+                }
+
+
+                if (
+                    password.value.length < 6
+                ) {
+
+                    if (registerError) {
+
+                        registerError.textContent =
+                            'A senha deve ter pelo menos 6 caracteres.';
+
+                    }
+
+
+                    password.focus();
+
+                    return;
+
+                }
+
+
+                if (registerError) {
+
+                    registerError.textContent =
+                        '';
+
+                }
+
+
+                // AGORA ESCOLHE SE QUER SER
+                // COLABORADOR
+                showStep(
+                    step3
+                );
+
             }
+        );
 
-            const ageVal = parseInt(age.value);
-            if (isNaN(ageVal) || ageVal < 10 || ageVal > 120) {
-                if (registerError) registerError.textContent = 'Insira uma idade válida.';
-                if (age) age.focus();
-                return;
-            }
-
-            if (password.value.length < 6) {
-                if (registerError) registerError.textContent = 'A senha deve ter pelo menos 6 caracteres.';
-                if (password) password.focus();
-                return;
-            }
-
-            if (registerError) registerError.textContent = '';
-            showStep(step3);
-        });
     }
 
-    // STEP 3 - ESCOLHA DE COLABORADOR
-    const yesCollab = document.getElementById('yesCollab');
-    const noCollab  = document.getElementById('noCollab');
-    if (yesCollab) yesCollab.addEventListener('click', () => showStep(step4));
-    if (noCollab)  noCollab.addEventListener('click',  () => showStep(step4));
+
+    // STEP 3 - CADASTRO REAL
+    const yesCollab =
+        document.getElementById(
+            'yesCollab'
+        );
+
+    const noCollab =
+        document.getElementById(
+            'noCollab'
+        );
+
+    const collabError =
+        document.getElementById(
+            'collabError'
+        );
+
+
+    async function concluirCadastro(
+        colaborador
+    ) {
+
+        const firstName =
+            document.getElementById(
+                'firstName'
+            );
+
+        const lastName =
+            document.getElementById(
+                'lastName'
+            );
+
+        const age =
+            document.getElementById(
+                'age'
+            );
+
+        const gender =
+            document.getElementById(
+                'gender'
+            );
+
+        const password =
+            document.getElementById(
+                'password'
+            );
+
+
+        if (collabError) {
+
+            collabError.textContent =
+                'Criando sua conta...';
+
+        }
+
+
+        if (yesCollab) {
+
+            yesCollab.disabled =
+                true;
+
+        }
+
+
+        if (noCollab) {
+
+            noCollab.disabled =
+                true;
+
+        }
+
+
+        try {
+
+            await authRequest(
+                '/api/auth/cadastro',
+                {
+
+                    method:
+                        'POST',
+
+                    body:
+                        JSON.stringify({
+
+                            identificador:
+                                identificadorAtual,
+
+                            nome:
+                                firstName.value.trim(),
+
+                            sobrenome:
+                                lastName.value.trim(),
+
+                            idade:
+                                age.value,
+
+                            genero:
+                                gender.value,
+
+                            senha:
+                                password.value,
+
+                            colaborador:
+                                colaborador
+
+                        })
+
+                }
+            );
+
+
+            if (collabError) {
+
+                collabError.textContent =
+                    '';
+
+            }
+
+
+            // CADASTRO CONCLUÍDO
+            // E USUÁRIO JÁ ESTÁ LOGADO
+            showStep(
+                step4
+            );
+
+        }
+
+        catch (erro) {
+
+            if (collabError) {
+
+                collabError.textContent =
+                    erro.message;
+
+            }
+
+        }
+
+        finally {
+
+            if (yesCollab) {
+
+                yesCollab.disabled =
+                    false;
+
+            }
+
+
+            if (noCollab) {
+
+                noCollab.disabled =
+                    false;
+
+            }
+
+        }
+
+    }
+
+
+    if (yesCollab) {
+
+        yesCollab.addEventListener(
+            'click',
+            () => {
+
+                concluirCadastro(
+                    true
+                );
+
+            }
+        );
+
+    }
+
+
+    if (noCollab) {
+
+        noCollab.addEventListener(
+            'click',
+            () => {
+
+                concluirCadastro(
+                    false
+                );
+
+            }
+        );
+
+    }
 
     // STEP 3 - INFO COLABORADOR
     const collabInfoLink = document.querySelector('.collab-info-link');
@@ -776,9 +1483,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function abrirModalColaborador() {
         const overlay = document.createElement('div');
-        const modal   = document.createElement('div');
+        const modal = document.createElement('div');
         const isBlack = document.body.classList.contains('dark-black');
-        const isDark  = document.body.classList.contains('dark-blue');
+        const isDark = document.body.classList.contains('dark-blue');
 
         overlay.style.cssText = `
             position: fixed;
@@ -854,16 +1561,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btnFechar.addEventListener('mouseenter', () => {
             btnFechar.style.background = '#5A50C8';
-            btnFechar.style.transform  = 'translateY(-1px)';
+            btnFechar.style.transform = 'translateY(-1px)';
         });
         btnFechar.addEventListener('mouseleave', () => {
             btnFechar.style.background = '#7B6EF6';
-            btnFechar.style.transform  = 'translateY(0)';
+            btnFechar.style.transform = 'translateY(0)';
         });
 
         function fecharModal() {
             overlay.style.opacity = '0';
-            modal.style.opacity   = '0';
+            modal.style.opacity = '0';
             modal.style.transform = 'translateY(18px) scale(0.97)';
             setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 280);
         }
@@ -886,7 +1593,7 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 overlay.style.opacity = '1';
-                modal.style.opacity   = '1';
+                modal.style.opacity = '1';
                 modal.style.transform = 'translateY(0) scale(1)';
             });
         });

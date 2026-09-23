@@ -1,36 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEXPLICA - Bem-vindo</title>
     <script>
-    (function() {
-        var classes = ['', 'dark-blue'];
-        var salvo = localStorage.getItem('mexplica-tema');
-        if (salvo !== null) {
-            var idx = parseInt(salvo);
-            if (idx > 1) idx = 0;
-            var classe = classes[idx];
-            if (classe) document.documentElement.setAttribute('data-tema', classe);
-        }
-    })();
+        (function () {
+            var classes = ['', 'dark-blue'];
+            var salvo = localStorage.getItem('mexplica-tema');
+            if (salvo !== null) {
+                var idx = parseInt(salvo);
+                if (idx > 1) idx = 0;
+                var classe = classes[idx];
+                if (classe) document.documentElement.setAttribute('data-tema', classe);
+            }
+        })();
     </script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="auth-page" id="authBody">
-<script>
-    (function() {
-        var classes = ['', 'dark-blue'];
-        var salvo = localStorage.getItem('mexplica-tema');
-        if (salvo !== null) {
-            var idx = parseInt(salvo);
-            if (idx > 1) idx = 0; 
-            var classe = classes[idx];
-            if (classe) document.body.classList.add(classe);
-        }
-    })();
-</script>
+    <script>
+        (function () {
+            var classes = ['', 'dark-blue'];
+            var salvo = localStorage.getItem('mexplica-tema');
+            if (salvo !== null) {
+                var idx = parseInt(salvo);
+                if (idx > 1) idx = 0;
+                var classe = classes[idx];
+                if (classe) document.body.classList.add(classe);
+            }
+        })();
+    </script>
 
     <header class="header">
         <nav class="nav container">
@@ -55,7 +57,9 @@
         <!-- STEP 1 - EMAIL OU TELEFONE -->
         <div class="auth-card" id="step-1">
             <a href="index.html" class="back-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M19 12H5M12 5l-7 7 7 7" />
+                </svg>
                 VOLTAR
             </a>
 
@@ -72,24 +76,65 @@
             </div>
 
             <div class="auth-form">
-                <input 
-                    type="text" 
-                    class="auth-input" 
-                    id="mainInput" 
-                    placeholder="Insira seu email"
-                    autocomplete="email"
-                    aria-label="Email ou telefone"
-                >
+                <input type="text" class="auth-input" id="mainInput" placeholder="Insira seu email" autocomplete="email"
+                    aria-label="Email ou telefone">
                 <span class="input-error" id="inputError"></span>
                 <button class="auth-continue-btn" id="continueBtn">Continuar</button>
                 <a href="#" class="auth-help-link">Estou com problemas para continuar</a>
             </div>
         </div>
 
+        <!-- STEP LOGIN - USUÁRIO JÁ CADASTRADO -->
+        <!-- esse STEP está aqui porque o sistema detectara a partir de agora,
+        se o usuario possui ou nao conta no site, se sim, ele vai ser redirecionado-
+        para uma pagina e concluir seu login, se nao, segue os STEPS a frente.-->
+        <div class="auth-card hidden" id="step-login">
+
+            <button class="back-btn" id="backLoginToStep1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M19 12H5M12 5l-7 7 7 7" />
+                </svg>
+
+                VOLTAR
+            </button>
+
+            <div class="auth-logo">
+                <img src="icons/logo-mexplica.png" alt="MEXPLICA">
+            </div>
+
+            <h1 class="auth-title" id="loginTitle">
+                Bem-vindo de volta!
+            </h1>
+
+            <p class="auth-subtitle">
+                Digite sua senha para continuar.
+            </p>
+
+            <div class="auth-form">
+
+                <input type="password" class="auth-input" id="loginPassword" placeholder="Insira sua senha"
+                    autocomplete="current-password">
+
+                <span class="input-error" id="loginError"></span>
+
+                <button class="auth-continue-btn" id="loginBtn">
+                    Entrar
+                </button>
+
+                <a href="#" class="auth-help-link">
+                    Estou com problemas para continuar
+                </a>
+
+            </div>
+
+        </div>
+
         <!-- STEP 2 - CRIAR CONTA FORMUALRIO -->
         <div class="auth-card hidden" id="step-2">
             <button class="back-btn" id="backToStep1">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M19 12H5M12 5l-7 7 7 7" />
+                </svg>
                 VOLTAR
             </button>
 
@@ -102,8 +147,10 @@
 
             <div class="auth-form">
                 <div class="form-row">
-                    <input type="text" class="auth-input" placeholder="Insira seu nome" id="firstName" autocomplete="given-name">
-                    <input type="text" class="auth-input" placeholder="Insira seu sobrenome" id="lastName" autocomplete="family-name">
+                    <input type="text" class="auth-input" placeholder="Insira seu nome" id="firstName"
+                        autocomplete="given-name">
+                    <input type="text" class="auth-input" placeholder="Insira seu sobrenome" id="lastName"
+                        autocomplete="family-name">
                 </div>
                 <div class="form-row">
                     <input type="number" class="auth-input" placeholder="Insira sua idade" id="age" min="1" max="120">
@@ -115,7 +162,8 @@
                         <option value="prefiro-nao-dizer">Prefiro não dizer</option>
                     </select>
                 </div>
-                <input type="password" class="auth-input" placeholder="Crie uma senha forte" id="password" autocomplete="new-password">
+                <input type="password" class="auth-input" placeholder="Crie uma senha forte" id="password"
+                    autocomplete="new-password">
                 <span class="input-error" id="registerError"></span>
                 <button class="auth-continue-btn" id="registerBtn">Continuar</button>
                 <a href="#" class="auth-help-link">Estou com problemas para continuar</a>
@@ -133,14 +181,23 @@
 
             <div class="collab-choice">
                 <button class="collab-btn collab-yes" id="yesCollab">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
                     Quero ser um colaborador!
                 </button>
                 <button class="collab-btn collab-no" id="noCollab">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                     Não quero ser um colaborador!
                 </button>
             </div>
+
+            <span class="input-error" id="collabError"></span>
 
             <a href="#" class="auth-help-link collab-info-link">O que é ser um colaborador?</a>
             <a href="#" class="auth-help-link">Estou com problemas para continuar</a>
@@ -153,26 +210,28 @@
             </div>
             <h1 class="auth-title">Cadastro concluído!</h1>
             <p class="auth-subtitle">Sua conta foi criada com sucesso. Bem-vindo à comunidade MEXPLICA!</p>
-            <a href="index.html" class="auth-continue-btn" style="display:block; text-align:center; text-decoration:none; margin-top: 1.5rem;">Ir para a página inicial</a>
+            <a href="/comunidade" class="auth-continue-btn"
+                style="display:block; text-align:center; text-decoration:none; margin-top: 1.5rem;">Ir para a Comunidade</a>
         </div>
 
         <div vw class="enabled">
-                <div vw-access-button class="active"></div>
-                <div vw-plugin-wrapper>
+            <div vw-access-button class="active"></div>
+            <div vw-plugin-wrapper>
                 <div class="vw-plugin-top-wrapper"></div>
-             </div>
+            </div>
         </div>
         <style>
             [vw-access-button] {
-            bottom: 105px !important;
-         }
+                bottom: 105px !important;
+            }
         </style>
         <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
         <script>
-        new window.VLibras.Widget('https://vlibras.gov.br/app');
+            new window.VLibras.Widget('https://vlibras.gov.br/app');
         </script>
     </main>
 
     <script src="script.js"></script>
 </body>
+
 </html>
