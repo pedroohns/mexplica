@@ -9,7 +9,11 @@ const usuarioController =
 
 
 const {
-    exigirAutenticacao
+
+    exigirAutenticacao,
+
+    exigirPlatina
+
 } =
     require(
         '../middlewares/authMiddleware'
@@ -20,10 +24,37 @@ const router =
     express.Router();
 
 
-// READ
+// IMPORTANTE: rotas especificas precisam vir antes de /:id.
 router.get(
     '/',
     usuarioController.listar
+);
+
+
+router.get(
+    '/ranking',
+    usuarioController.ranking
+);
+
+
+router.get(
+    '/platina-disponiveis',
+    usuarioController
+        .platinaDisponiveis
+);
+
+
+router.put(
+
+    '/me/disponibilidade',
+
+    exigirAutenticacao,
+
+    exigirPlatina,
+
+    usuarioController
+        .atualizarDisponibilidade
+
 );
 
 
@@ -33,23 +64,25 @@ router.get(
 );
 
 
-// UPDATE
 router.put(
+
     '/:id',
 
     exigirAutenticacao,
 
     usuarioController.atualizar
+
 );
 
 
-// DELETE
 router.delete(
+
     '/:id',
 
     exigirAutenticacao,
 
     usuarioController.excluir
+
 );
 
 

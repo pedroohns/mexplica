@@ -3,108 +3,171 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
-const PostModel =
+const DuvidaModel =
     require(
-        '../models/postModel'
+        '../models/duvidaModel'
     );
 
-const ComentarioModel =
+const RespostaModel =
     require(
-        '../models/comentarioModel'
+        '../models/respostaModel'
+    );
+
+const AvaliacaoModel =
+    require(
+        '../models/avaliacaoModel'
     );
 
 
-function enriquecerComentario(
-    comentario
+function enriquecerResposta(
+    resposta,
+    usuarioAtualId = null
 ) {
 
-    return {
+    const minhaAvaliacao =
+        usuarioAtualId
 
-        ...comentario,
-
-        autor:
-            UsuarioModel
-                .toPublic(
-
-                    UsuarioModel.findById(
-                        comentario.usuarioId
-                    )
-
+            ? AvaliacaoModel
+                .findByRespostaEAvaliador(
+                    resposta.id,
+                    usuarioAtualId
                 )
 
-    };
+            : null;
 
-}
-
-
-function enriquecerPost(
-    post
-) {
 
     return {
 
-        ...post,
+        ...resposta,
 
         autor:
             UsuarioModel
                 .toPublic(
 
-                    UsuarioModel.findById(
-                        post.usuarioId
-                    )
+                    UsuarioModel
+                        .findById(
+                            resposta.usuarioId
+                        )
 
                 ),
 
-        comentarios:
-            ComentarioModel
+        duvida:
+            DuvidaModel.findById(
+                resposta.duvidaId
+            ),
 
-                .findByPostId(
-                    post.id
-                )
+        avaliacao:
+            AvaliacaoModel
+                .resumoDaResposta(
+                    resposta.id
+                ),
 
-                .map(
-                    enriquecerComentario
-                )
+        minhaAvaliacao:
+            minhaAvaliacao
+
+                ? {
+
+                    id:
+                        minhaAvaliacao.id,
+
+                    nota:
+                        minhaAvaliacao.nota
+
+                }
+
+                : null
 
     };
 
 }
 
 
+function enriquecerDuvida(
+    duvida
+) {
+
+    return {
+
+        ...duvida,
+
+        autor:
+            UsuarioModel
+                .toPublic(
+
+                    UsuarioModel
+                        .findById(
+                            duvida.usuarioId
+                        )
+
+                ),
+
+        quantidadeRespostas:
+            RespostaModel
+                .findByDuvidaId(
+                    duvida.id
+                )
+                .length
+
+    };
+
+}
+
+
+// =============================
+// COMUNIDADE
+// =============================
 function comunidade(
     req,
     res
 ) {
 
-    const posts =
-        PostModel
+    const ranking =
+        UsuarioModel
 
-            .findAll()
+            .getRanking(10)
 
             .map(
-                enriquecerPost
+                UsuarioModel.toPublic
+            );
+
+
+    const maioresDuvidas =
+        DuvidaModel
+
+            .maioresDaSemana(6)
+
+            .map(
+                enriquecerDuvida
             );
 
 
     return res.render(
         'comunidade',
         {
-            posts
+
+            ranking,
+
+            maioresDuvidas
+
         }
     );
 
 }
 
 
+// =============================
+// PERFIL
+// =============================
 function perfil(
     req,
     res
 ) {
 
     const usuario =
-        UsuarioModel.findBySlug(
-            req.params.slug
-        );
+        UsuarioModel
+            .findBySlug(
+                req.params.slug
+            );
 
 
     if (!usuario) {
@@ -118,16 +181,70 @@ function perfil(
     }
 
 
-    const posts =
-        PostModel
+    const duvidas =
+        DuvidaModel
 
             .findByUserId(
                 usuario.id
             )
 
             .map(
-                enriquecerPost
+                enriquecerDuvida
             );
+
+
+    const respostas =
+        RespostaModel
+
+            .findByUserId(
+                usuario.id
+            )
+
+            .map(
+                resposta =>
+                    enriquecerResposta(
+                        resposta,
+                        req.usuario?.id
+                        || null
+                    )
+            );
+
+
+    const avaliacoesRecebidas =
+        respostas.flatMap(
+            resposta =>
+                AvaliacaoModel
+                    .findByRespostaId(
+                        resposta.id
+                    )
+        );
+
+
+    const mediaGeral =
+        avaliacoesRecebidas.length
+
+            ? Number(
+                (
+                    avaliacoesRecebidas
+                        .reduce(
+                            (
+                                soma,
+                                item
+                            ) =>
+                                soma
+                                +
+                                item.nota,
+                            0
+                        )
+
+                    /
+
+                    avaliacoesRecebidas
+                        .length
+                ).toFixed(1)
+            )
+
+            : 0;
 
 
     return res.render(
@@ -140,7 +257,25 @@ function perfil(
                         usuario
                     ),
 
-            posts
+            duvidas,
+
+            respostas,
+
+            estatisticas: {
+
+                totalDuvidas:
+                    duvidas.length,
+
+                totalRespostas:
+                    respostas.length,
+
+                totalAvaliacoes:
+                    avaliacoesRecebidas
+                        .length,
+
+                mediaGeral
+
+            }
 
         }
     );
@@ -148,16 +283,78 @@ function perfil(
 }
 
 
-// pagina provisoria para testar
-// autenticaçao enquanto o layout
-// definitivo nao esta pronto.
-function entrar(
+// =============================
+// PAGINA DA DUVIDA
+// =============================
+function duvida(
     req,
     res
 ) {
 
+    const encontrada =
+        DuvidaModel
+            .findBySlug(
+                req.params.slug
+            );
+
+
+    if (!encontrada) {
+
+        return res
+            .status(404)
+            .send(
+                'Dúvida não encontrada.'
+            );
+
+    }
+
+
+    DuvidaModel
+        .incrementarVisualizacao(
+            encontrada.id
+        );
+
+
+    const duvidaAtualizada =
+        DuvidaModel
+            .findById(
+                encontrada.id
+            );
+
+
+    const usuarioAtualId =
+        req.usuario?.id
+        || null;
+
+
+    const respostas =
+        RespostaModel
+
+            .findByDuvidaId(
+                duvidaAtualizada.id
+            )
+
+            .map(
+                resposta =>
+                    enriquecerResposta(
+                        resposta,
+                        usuarioAtualId
+                    )
+            );
+
+
     return res.render(
-        'entrar-temp'
+        'duvida',
+        {
+
+            duvida:
+                enriquecerDuvida(
+                    duvidaAtualizada
+                ),
+
+            respostas
+
+        }
     );
 
 }
@@ -169,6 +366,6 @@ module.exports = {
 
     perfil,
 
-    entrar
+    duvida
 
 };

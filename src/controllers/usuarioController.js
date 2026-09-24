@@ -3,14 +3,11 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
-const PostModel =
+const {
+    removerDadosDoUsuario
+} =
     require(
-        '../models/postModel'
-    );
-
-const ComentarioModel =
-    require(
-        '../models/comentarioModel'
+        '../utils/relacionamentos'
     );
 
 
@@ -37,6 +34,82 @@ function listar(
 }
 
 
+// =============================
+// RANKING
+// =============================
+function ranking(
+    req,
+    res
+) {
+
+    const limiteSolicitado =
+        Number(
+            req.query.limite
+            || 10
+        );
+
+
+    const limite =
+        Number.isInteger(
+            limiteSolicitado
+        )
+
+            ? Math.min(
+                Math.max(
+                    limiteSolicitado,
+                    1
+                ),
+                50
+            )
+
+            : 10;
+
+
+    const colaboradores =
+        UsuarioModel
+
+            .getRanking(
+                limite
+            )
+
+            .map(
+                UsuarioModel.toPublic
+            );
+
+
+    return res.json(
+        colaboradores
+    );
+
+}
+
+
+// =============================
+// PLATINA DISPONIVEL
+// =============================
+function platinaDisponiveis(
+    req,
+    res
+) {
+
+    const colaboradores =
+        UsuarioModel
+
+            .getPlatinaDisponiveis()
+
+            .map(
+                UsuarioModel.toPublic
+            );
+
+
+    return res.json(
+        colaboradores
+    );
+
+}
+
+
+// READ BY ID
 function buscarPorId(
     req,
     res
@@ -85,7 +158,8 @@ function atualizar(
 
 
     if (
-        req.usuario.id !== id
+        req.usuario.id
+        !== id
     ) {
 
         return res
@@ -100,7 +174,8 @@ function atualizar(
     }
 
 
-    const alteracoes = {};
+    const alteracoes =
+        {};
 
 
     if (
@@ -111,7 +186,12 @@ function atualizar(
     ) {
 
         alteracoes.nome =
-            req.body.nome.trim();
+            req.body.nome
+                .trim()
+                .slice(
+                    0,
+                    60
+                );
 
     }
 
@@ -120,13 +200,19 @@ function atualizar(
         typeof req.body.sobrenome
         === 'string'
         &&
-        req.body.sobrenome.trim()
+        req.body
+            .sobrenome
+            .trim()
     ) {
 
         alteracoes.sobrenome =
             req.body
                 .sobrenome
-                .trim();
+                .trim()
+                .slice(
+                    0,
+                    80
+                );
 
     }
 
@@ -194,9 +280,37 @@ function atualizar(
     ) {
 
         alteracoes.genero =
-            req.body
-                .genero
+            req.body.genero
                 .trim();
+
+    }
+
+
+    if (
+        req.usuario.colaborador
+        &&
+        Array.isArray(
+            req.body.especialidades
+        )
+    ) {
+
+        alteracoes.especialidades =
+            req.body.especialidades
+
+                .map(
+                    item =>
+                        String(item)
+                            .trim()
+                )
+
+                .filter(
+                    Boolean
+                )
+
+                .slice(
+                    0,
+                    5
+                );
 
     }
 
@@ -224,6 +338,52 @@ function atualizar(
 }
 
 
+// =============================
+// DISPONIBILIDADE PLATINA
+// =============================
+function atualizarDisponibilidade(
+    req,
+    res
+) {
+
+    const disponivel =
+        req.body.disponivel
+        === true
+
+        ||
+
+        req.body.disponivel
+        === 'true';
+
+
+    const usuario =
+        UsuarioModel
+            .definirDisponibilidade(
+                req.usuario.id,
+                disponivel
+            );
+
+
+    return res.json({
+
+        mensagem:
+            disponivel
+
+                ? 'Você está disponível para atendimentos diretos.'
+
+                : 'Você ficou indisponível para atendimentos diretos.',
+
+        usuario:
+            UsuarioModel
+                .toPrivate(
+                    usuario
+                )
+
+    });
+
+}
+
+
 // DELETE
 function excluir(
     req,
@@ -237,7 +397,8 @@ function excluir(
 
 
     if (
-        req.usuario.id !== id
+        req.usuario.id
+        !== id
     ) {
 
         return res
@@ -252,40 +413,11 @@ function excluir(
     }
 
 
-    const postsDoUsuario =
-        PostModel
-            .findByUserId(id);
-
-
-    // remove comentarios existentes
-    // nas publicaçoes do usuario.
-    postsDoUsuario.forEach(
-        post =>
-
-            ComentarioModel
-                .removeByPostId(
-                    post.id
-                )
-
+    removerDadosDoUsuario(
+        id
     );
 
 
-    // remove posts.
-    PostModel
-        .removeByUserId(id);
-
-
-    // remove comentarios que ele
-    // fez em posts de outras pessoas.
-    ComentarioModel
-        .removeByUserId(id);
-
-
-    // remove usuario.
-    UsuarioModel.remove(id);
-
-
-    // finaliza sessao.
     req.session =
         null;
 
@@ -304,9 +436,15 @@ module.exports = {
 
     listar,
 
+    ranking,
+
+    platinaDisponiveis,
+
     buscarPorId,
 
     atualizar,
+
+    atualizarDisponibilidade,
 
     excluir
 

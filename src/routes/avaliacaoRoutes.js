@@ -2,9 +2,9 @@ const express =
     require('express');
 
 
-const comentarioController =
+const avaliacaoController =
     require(
-        '../controllers/comentarioController'
+        '../controllers/avaliacaoController'
     );
 
 
@@ -20,23 +20,25 @@ const router =
     express.Router();
 
 
-// UPDATE
 router.put(
+
     '/:id',
 
     exigirAutenticacao,
 
-    comentarioController.atualizar
+    avaliacaoController.atualizar
+
 );
 
 
-// DELETE
 router.delete(
+
     '/:id',
 
     exigirAutenticacao,
 
-    comentarioController.excluir
+    avaliacaoController.excluir
+
 );
 
 

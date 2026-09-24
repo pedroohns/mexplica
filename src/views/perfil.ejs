@@ -12,7 +12,7 @@
     >
 
     <title>
-        MExplica - <%= perfil.nomeCompleto %>
+        MEXPLICA - <%= perfil.nomeCompleto %>
     </title>
 
     <link
@@ -20,216 +20,551 @@
         href="/style.css"
     >
 
-
-    <style>
-
-        .temp-page {
-            max-width: 760px;
-            margin: 40px auto;
-            padding: 24px;
-            font-family: Arial, sans-serif;
-        }
-
-        .temp-card {
-            border: 1px solid #ddd;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 18px 0;
-            background: #fff;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 100px;
-            box-sizing: border-box;
-            padding: 10px;
-        }
-
-        button {
-            padding: 9px 14px;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-
-    </style>
+    <link
+        rel="shortcut icon"
+        href="/icons/favicon.ico"
+        type="image/x-icon"
+    >
 
 </head>
 
 
 <body>
+    <script>
+    (function() {
+        var salvo = localStorage.getItem('mexplica-tema');
 
-<main class="temp-page">
+        if (salvo === '1') {
+            document.body.classList.add('dark-blue');
+        }
+    })();
+</script>
 
 
-    <p>
+<header class="header">
 
-        <a href="/comunidade">
-            ← Comunidade
+    <nav class="nav container">
+
+        <a
+            href="/"
+            class="nav-logo"
+        >
+
+            <img
+                src="/icons/logo-mexplica.png"
+                alt="MEXPLICA"
+                class="logo-icon"
+            >
+
         </a>
 
-    </p>
+
+        <ul class="nav-links">
+
+            <li>
+                <a href="/cadastro.html">
+                    Colabore
+                </a>
+            </li>
+
+            <li>
+                <a href="/comunidade">
+                    Comunidade
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    Ajuda
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    Sobre
+                </a>
+            </li>
+
+        </ul>
 
 
-    <section class="temp-card">
+        <div class="nav-actions">
+
+            <% if (usuarioAtual) { %>
+
+                <a
+                    href="/perfil/<%= usuarioAtual.slug %>"
+                    class="btn-acessar"
+                >
+                    <%= usuarioAtual.nome %>
+                </a>
+
+            <% } else { %>
+
+                <a
+                    href="/cadastro.html"
+                    class="btn-acessar"
+                >
+                    acessar conta
+                </a>
+
+            <% } %>
+
+        </div>
 
 
-        <h1>
-            <%= perfil.nomeCompleto %>
-        </h1>
+        <button
+            class="nav-toggle"
+            aria-label="Abrir menu"
+            id="navToggle"
+        >
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </button>
+
+    </nav>
+
+</header>
 
 
-        <p>
-
-            <strong>
-                Tipo:
-            </strong>
-
-            <%= perfil.colaborador
-                ? `Colaborador ${perfil.nivel}`
-                : 'Usuário'
-            %>
-
-        </p>
+<main class="mexp-page">
 
 
-        <p>
+    <section
+        class="container mexp-profile-card"
+    >
 
-            <strong>
-                Pontos:
-            </strong>
+        <div class="mexp-profile-avatar">
 
-            <%= perfil.pontos %>
+            <%= perfil.nome.charAt(0) %>
 
-        </p>
+        </div>
 
 
-        <p>
+        <div class="mexp-profile-main">
 
-            <strong>
-                Bio:
-            </strong>
-
-            <span id="bio-atual">
-
-                <%= perfil.bio
-                    || 'Sem biografia.'
-                %>
-
+            <span class="mexp-eyebrow">
+                PERFIL
             </span>
 
-        </p>
+            <h1>
+                <%= perfil.nomeCompleto %>
+            </h1>
+
+            <p>
+
+                <%= perfil.bio
+                    || 'Este usuário ainda não adicionou uma biografia.'
+                %>
+
+            </p>
 
 
-        <% if (
+            <div class="mexp-tag-row">
+
+
+                <% if (perfil.colaborador) { %>
+
+                    <span
+                        class="mexp-badge <%= perfil.nivel === 'Platina'
+                            ? 'mexp-badge-platinum'
+                            : ''
+                        %>"
+                    >
+
+                        COLABORADOR
+                        <%= perfil.nivel.toUpperCase() %>
+
+                    </span>
+
+
+                    <%
+                        perfil.especialidades.forEach(
+                            especialidade => {
+                    %>
+
+                        <span class="mexp-tag">
+
+                            <%= especialidade %>
+
+                        </span>
+
+                    <% }) %>
+
+
+                <% } else { %>
+
+
+                    <span class="mexp-tag">
+
+                        USUÁRIO DA COMUNIDADE
+
+                    </span>
+
+
+                <% } %>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section
+        class="container mexp-stats-grid"
+    >
+
+        <div class="mexp-stat">
+
+            <strong>
+                <%= perfil.pontos %>
+            </strong>
+
+            <span>
+                pontos
+            </span>
+
+        </div>
+
+
+        <div class="mexp-stat">
+
+            <strong>
+                <%= estatisticas.totalRespostas %>
+            </strong>
+
+            <span>
+                respostas
+            </span>
+
+        </div>
+
+
+        <div class="mexp-stat">
+
+            <strong>
+                <%= estatisticas.mediaGeral || '—' %>
+            </strong>
+
+            <span>
+                avaliação média
+            </span>
+
+        </div>
+
+
+        <div class="mexp-stat">
+
+            <strong>
+                <%= estatisticas.totalDuvidas %>
+            </strong>
+
+            <span>
+                dúvidas enviadas
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <% if (perfil.nivel === 'Platina') { %>
+
+        <section class="container mexp-callout">
+
+            <div>
+
+                <strong>
+                    Atendimento direto disponível
+                    para colaboradores Platina
+                </strong>
+
+                <p>
+
+                    Status atual:
+
+                    <%= perfil.disponivelAtendimento
+                        ? 'disponível para chamadas e chat'
+                        : 'indisponível no momento'
+                    %>.
+
+                </p>
+
+            </div>
+
+
+            <%
+                if (
+                    usuarioAtual
+                    &&
+                    usuarioAtual.id === perfil.id
+                ) {
+            %>
+
+
+                <button
+                    id="toggleDisponibilidade"
+                    class="mexp-secondary-button"
+                    data-disponivel="<%= perfil.disponivelAtendimento ? 'true' : 'false' %>"
+                >
+
+                    <%= perfil.disponivelAtendimento
+                        ? 'Ficar indisponível'
+                        : 'Ficar disponível'
+                    %>
+
+                </button>
+
+
+            <% } %>
+
+        </section>
+
+    <% } %>
+
+
+    <%
+        if (
             usuarioAtual
             &&
-            usuarioAtual.id
-            === perfil.id
-        ) { %>
+            usuarioAtual.id === perfil.id
+        ) {
+    %>
 
+        <section class="container mexp-section">
 
-            <hr>
+            <div class="mexp-section-heading">
 
+                <div>
 
-            <h2>
-                Editar meu perfil
-            </h2>
+                    <span class="mexp-eyebrow">
+                        MINHA CONTA
+                    </span>
+
+                    <h2>
+                        Editar perfil
+                    </h2>
+
+                </div>
+
+            </div>
 
 
             <form
-                id="form-editar-perfil"
+                id="formEditarPerfil"
+                class="mexp-form"
                 data-id="<%= perfil.id %>"
             >
 
-
-                <label for="bio">
+                <label for="perfilBio">
                     Biografia
                 </label>
 
-
                 <textarea
-                    id="bio"
+                    id="perfilBio"
                     name="bio"
                     maxlength="500"
                 ><%= perfil.bio %></textarea>
 
-
-                <button type="submit">
+                <button
+                    type="submit"
+                    class="mexp-primary-button"
+                >
                     Salvar alterações
                 </button>
-
 
             </form>
 
 
-            <button
-                id="excluir-conta"
-                type="button"
-                data-id="<%= perfil.id %>"
-            >
-                Excluir minha conta
-            </button>
+            <div class="mexp-inline-actions">
+
+                <button
+                    id="logoutButton"
+                    class="mexp-secondary-button"
+                    type="button"
+                >
+                    Sair da conta
+                </button>
 
 
-        <% } %>
+                <button
+                    id="excluirConta"
+                    class="mexp-danger-button"
+                    data-id="<%= perfil.id %>"
+                    type="button"
+                >
+                    Excluir minha conta
+                </button>
+
+            </div>
+
+        </section>
+
+    <% } %>
 
 
-    </section>
+    <section class="container mexp-section">
+
+        <div class="mexp-section-heading">
+
+            <div>
+
+                <span class="mexp-eyebrow">
+                    ATIVIDADE
+                </span>
+
+                <h2>
+                    Dúvidas recentes
+                </h2>
+
+            </div>
+
+        </div>
 
 
-    <section class="temp-card">
+        <div class="mexp-question-grid">
 
+            <% if (!duvidas.length) { %>
 
-        <h2>
-            Publicações
-        </h2>
+                <p class="mexp-empty">
 
+                    Nenhuma dúvida publicada
+                    por este usuário.
 
-        <% if (
-            posts.length === 0
-        ) { %>
-
-
-            <p>
-                Este usuário ainda
-                não publicou nada.
-            </p>
-
-
-        <% } %>
-
-
-        <% posts.forEach(
-            post => {
-        %>
-
-
-            <article>
-
-                <h3>
-                    <%= post.titulo %>
-                </h3>
-
-                <p>
-                    <%= post.conteudo %>
                 </p>
 
-                <hr>
-
-            </article>
+            <% } %>
 
 
-        <% }) %>
+            <%
+                duvidas.forEach(
+                    duvida => {
+            %>
 
+                <a
+                    href="/duvidas/<%= duvida.slug %>"
+                    class="mexp-question-card"
+                >
+
+                    <span class="mexp-category">
+                        <%= duvida.categoria %>
+                    </span>
+
+                    <h3>
+                        <%= duvida.titulo %>
+                    </h3>
+
+                    <div class="mexp-question-meta">
+
+                        <span>
+                            <%= duvida.visualizacoes %>
+                            visualizações
+                        </span>
+
+                        <span>
+                            <%= duvida.quantidadeRespostas %>
+                            respostas
+                        </span>
+
+                    </div>
+
+                </a>
+
+            <% }) %>
+
+        </div>
 
     </section>
+
+
+    <% if (perfil.colaborador) { %>
+
+        <section class="container mexp-section">
+
+            <div class="mexp-section-heading">
+
+                <div>
+
+                    <span class="mexp-eyebrow">
+                        CONTRIBUIÇÕES
+                    </span>
+
+                    <h2>
+                        Respostas recentes
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="mexp-answer-list">
+
+
+                <% if (!respostas.length) { %>
+
+                    <p class="mexp-empty">
+
+                        Este colaborador ainda
+                        não respondeu nenhuma dúvida.
+
+                    </p>
+
+                <% } %>
+
+
+                <%
+                    respostas.forEach(
+                        resposta => {
+                %>
+
+
+                    <a
+                        href="/duvidas/<%= resposta.duvida ? resposta.duvida.slug : '' %>"
+                        class="mexp-answer-preview"
+                    >
+
+                        <p>
+                            <%= resposta.texto %>
+                        </p>
+
+
+                        <span>
+
+                            <%= resposta.avaliacao.quantidade
+
+                                ? `${resposta.avaliacao.media} ★ · ${resposta.avaliacao.quantidade} avaliações`
+
+                                : 'Ainda sem avaliações'
+
+                            %>
+
+                        </span>
+
+                    </a>
+
+
+                <% }) %>
+
+
+            </div>
+
+        </section>
+
+    <% } %>
 
 
 </main>
 
 
-<script src="/perfil-temp.js"></script>
+<script src="/script.js"></script>
 
+<script src="/perfil.js"></script>
 
 </body>
 

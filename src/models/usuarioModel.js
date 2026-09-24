@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 
+const NIVEL_DIAMANTE = 1000;
+const NIVEL_PLATINA = 2500;
 
 const usuarios = [
-
     {
         id: 1,
         slug: 'maria-oliveira',
@@ -18,12 +19,13 @@ const usuarios = [
         pontos: 0,
         bio:
             'Estou aprendendo a usar melhor o celular e os aplicativos do dia a dia.',
+        especialidades: [],
+        disponivelAtendimento: false,
         senhaHash:
             bcrypt.hashSync('123456', 10),
         criadoEm:
             '2026-09-15T14:00:00.000Z'
     },
-
 
     {
         id: 2,
@@ -40,12 +42,16 @@ const usuarios = [
         pontos: 1250,
         bio:
             'Gosto de ajudar pessoas com segurança digital, smartphones e aplicativos.',
+        especialidades: [
+            'Segurança',
+            'Smartphones'
+        ],
+        disponivelAtendimento: false,
         senhaHash:
             bcrypt.hashSync('123456', 10),
         criadoEm:
             '2026-09-10T17:30:00.000Z'
     },
-
 
     {
         id: 3,
@@ -62,22 +68,56 @@ const usuarios = [
         pontos: 2840,
         bio:
             'Ajudo principalmente com serviços digitais, acessibilidade e aplicativos de comunicação.',
+        especialidades: [
+            'Acessibilidade',
+            'Comunicação',
+            'Serviços digitais'
+        ],
+        disponivelAtendimento: true,
         senhaHash:
             bcrypt.hashSync('123456', 10),
         criadoEm:
             '2026-09-08T12:00:00.000Z'
-    }
+    },
 
+    {
+        id: 4,
+        slug: 'carlos-lima',
+        nome: 'Carlos',
+        sobrenome: 'Lima',
+        email: 'carlos@mexplica.com',
+        telefone: '24999990004',
+        idade: 27,
+        genero: 'masculino',
+        tipo: 'colaborador',
+        colaborador: true,
+        nivel: 'Comum',
+        pontos: 980,
+        bio:
+            'Gosto de ensinar configurações básicas de celulares e aplicativos de comunicação.',
+        especialidades: [
+            'Smartphones',
+            'Comunicação'
+        ],
+        disponivelAtendimento: false,
+        senhaHash:
+            bcrypt.hashSync('123456', 10),
+        criadoEm:
+            '2026-09-18T11:00:00.000Z'
+    }
 ];
 
 
-// FUNÇÕES AUXILIARES
+// =============================
+// FUNÇOES AUXILIARES
+// =============================
 function normalizarTelefone(valor = '') {
 
     return String(valor)
         .replace(/\D/g, '');
 
 }
+
 
 function criarSlugBase(valor = '') {
 
@@ -114,7 +154,6 @@ function criarSlugUnico(nomeCompleto) {
         || 'usuario';
 
     let slug = base;
-
     let sufixo = 2;
 
 
@@ -125,7 +164,8 @@ function criarSlugUnico(nomeCompleto) {
         )
     ) {
 
-        slug = `${base}-${sufixo}`;
+        slug =
+            `${base}-${sufixo}`;
 
         sufixo += 1;
 
@@ -139,21 +179,107 @@ function criarSlugUnico(nomeCompleto) {
 
 function proximoId() {
 
-    if (usuarios.length === 0) {
+    if (
+        usuarios.length === 0
+    ) {
+
         return 1;
+
     }
+
 
     return (
         Math.max(
             ...usuarios.map(
-                usuario => usuario.id
+                usuario =>
+                    usuario.id
             )
         ) + 1
     );
 
 }
 
+
+// =============================
+// NÍVEIS DE COLABORADOR
+// =============================
+function calcularNivel(
+    pontos,
+    colaborador
+) {
+
+    if (!colaborador) {
+        return null;
+    }
+
+
+    if (
+        pontos >= NIVEL_PLATINA
+    ) {
+
+        return 'Platina';
+
+    }
+
+
+    if (
+        pontos >= NIVEL_DIAMANTE
+    ) {
+
+        return 'Diamante';
+
+    }
+
+
+    return 'Comum';
+
+}
+
+
+function sincronizarNivel(
+    usuario
+) {
+
+    if (!usuario) {
+        return null;
+    }
+
+
+    usuario.nivel =
+        calcularNivel(
+            usuario.pontos,
+            usuario.colaborador
+        );
+
+
+    usuario.tipo =
+        usuario.colaborador
+            ? 'colaborador'
+            : 'usuario';
+
+
+    // somente PLATINA pode
+    // ficar disponivel para
+    // atendimento direto.
+    if (
+        usuario.nivel
+        !== 'Platina'
+    ) {
+
+        usuario.disponivelAtendimento =
+            false;
+
+    }
+
+
+    return usuario;
+
+}
+
+
+// =============================
 // OBJETO PÚBLICO
+// =============================
 function toPublic(usuario) {
 
     if (!usuario) {
@@ -165,29 +291,53 @@ function toPublic(usuario) {
 
         id:
             usuario.id,
+
         slug:
             usuario.slug,
+
         nome:
             usuario.nome,
+
         sobrenome:
             usuario.sobrenome,
+
         nomeCompleto:
             `${usuario.nome} ${usuario.sobrenome}`
                 .trim(),
-        idade:
-            usuario.idade,
-        genero:
-            usuario.genero,
+
         tipo:
             usuario.tipo,
+
         colaborador:
             usuario.colaborador,
+
         nivel:
             usuario.nivel,
+
         pontos:
             usuario.pontos,
+
         bio:
             usuario.bio,
+
+        especialidades:
+            [
+                ...(
+                    usuario.especialidades
+                    || []
+                )
+            ],
+
+        disponivelAtendimento:
+            Boolean(
+                usuario
+                    .disponivelAtendimento
+            ),
+
+        podeAtendimentoDireto:
+            usuario.nivel
+            === 'Platina',
+
         criadoEm:
             usuario.criadoEm
 
@@ -196,7 +346,9 @@ function toPublic(usuario) {
 }
 
 
+// =============================
 // OBJETO PRIVADO
+// =============================
 function toPrivate(usuario) {
 
     if (!usuario) {
@@ -212,14 +364,22 @@ function toPrivate(usuario) {
             usuario.email,
 
         telefone:
-            usuario.telefone
+            usuario.telefone,
+
+        idade:
+            usuario.idade,
+
+        genero:
+            usuario.genero
 
     };
 
 }
 
 
+// =============================
 // READ
+// =============================
 function findAll() {
 
     return usuarios;
@@ -229,23 +389,30 @@ function findAll() {
 
 function findById(id) {
 
-    const numero = Number(id);
+    const numero =
+        Number(id);
+
+
     return (
         usuarios.find(
             usuario =>
                 usuario.id === numero
-        ) || null
+        )
+        || null
     );
 
 }
 
 
 function findBySlug(slug) {
+
     return (
         usuarios.find(
             usuario =>
-                usuario.slug === String(slug)
-        ) || null
+                usuario.slug
+                === String(slug)
+        )
+        || null
     );
 
 }
@@ -267,8 +434,9 @@ function findByIdentifier(
 
 
     // EMAIL
-
-    if (valor.includes('@')) {
+    if (
+        valor.includes('@')
+    ) {
 
         const email =
             valor.toLowerCase();
@@ -277,18 +445,21 @@ function findByIdentifier(
         return (
             usuarios.find(
                 usuario =>
-                    usuario.email.toLowerCase()
+                    usuario.email
+                        .toLowerCase()
                     === email
-            ) || null
+            )
+            || null
         );
 
     }
 
 
     // TELEFONE
-
     const telefone =
-        normalizarTelefone(valor);
+        normalizarTelefone(
+            valor
+        );
 
 
     return (
@@ -296,15 +467,76 @@ function findByIdentifier(
             usuario =>
                 normalizarTelefone(
                     usuario.telefone
-                ) === telefone
-        ) || null
+                )
+                === telefone
+        )
+        || null
     );
 
 }
 
 
+// =============================
+// RANKING
+// =============================
+function getRanking(
+    limite = 10
+) {
+
+    return usuarios
+
+        .filter(
+            usuario =>
+                usuario.colaborador
+                &&
+                (
+                    usuario.nivel
+                    === 'Diamante'
+                    ||
+                    usuario.nivel
+                    === 'Platina'
+                )
+        )
+
+        .sort(
+            (a, b) =>
+                b.pontos - a.pontos
+        )
+
+        .slice(
+            0,
+            limite
+        );
+
+}
+
+
+function getPlatinaDisponiveis() {
+
+    return usuarios.filter(
+        usuario =>
+            usuario.colaborador
+            &&
+            usuario.nivel
+            === 'Platina'
+            &&
+            usuario
+                .disponivelAtendimento
+    );
+
+}
+
+
+// =============================
 // CREATE
+// =============================
 function create(dados) {
+
+    const colaborador =
+        Boolean(
+            dados.colaborador
+        );
+
 
     const novoUsuario = {
 
@@ -329,23 +561,22 @@ function create(dados) {
             dados.telefone || '',
 
         idade:
-            Number(dados.idade),
+            Number(
+                dados.idade
+            ),
 
         genero:
             dados.genero,
 
         tipo:
-            dados.colaborador
+            colaborador
                 ? 'colaborador'
                 : 'usuario',
 
-        colaborador:
-            Boolean(
-                dados.colaborador
-            ),
+        colaborador,
 
         nivel:
-            dados.colaborador
+            colaborador
                 ? 'Comum'
                 : null,
 
@@ -354,6 +585,16 @@ function create(dados) {
 
         bio:
             dados.bio || '',
+
+        especialidades:
+            Array.isArray(
+                dados.especialidades
+            )
+                ? dados.especialidades
+                : [],
+
+        disponivelAtendimento:
+            false,
 
         senhaHash:
             dados.senhaHash,
@@ -371,11 +612,12 @@ function create(dados) {
 
 
     return novoUsuario;
-
 }
 
 
+// =============================
 // UPDATE
+// =============================
 function update(
     id,
     alteracoes
@@ -396,11 +638,103 @@ function update(
     );
 
 
+    sincronizarNivel(
+        usuario
+    );
+
+
     return usuario;
 
 }
 
+
+// =============================
+// PONTUAÇÃO
+// =============================
+function adicionarPontos(
+    id,
+    quantidade
+) {
+
+    const usuario =
+        findById(id);
+
+
+    if (
+        !usuario
+        ||
+        !usuario.colaborador
+    ) {
+
+        return null;
+
+    }
+
+    const valor =
+        Number(
+            quantidade
+        );
+
+
+    if (
+        !Number.isFinite(valor)
+    ) {
+
+        return usuario;
+
+    }
+
+
+    usuario.pontos =
+        Math.max(
+            0,
+            usuario.pontos + valor
+        );
+
+
+    sincronizarNivel(
+        usuario
+    );
+
+    return usuario;
+}
+
+// =============================
+// DISPONIBILIDADE PLATINA
+// =============================
+function definirDisponibilidade(
+    id,
+    disponivel
+) {
+
+    const usuario =
+        findById(id);
+
+
+    if (
+        !usuario
+        ||
+        usuario.nivel
+        !== 'Platina'
+    ) {
+
+        return null;
+
+    }
+
+
+    usuario.disponivelAtendimento =
+        Boolean(
+            disponivel
+        );
+
+
+    return usuario;
+}
+
+// =============================
 // DELETE
+// =============================
 function remove(id) {
 
     const numero =
@@ -413,9 +747,12 @@ function remove(id) {
                 usuario.id === numero
         );
 
+    if (
+        indice === -1
+    ) {
 
-    if (indice === -1) {
         return null;
+
     }
 
 
@@ -425,15 +762,22 @@ function remove(id) {
             1
         );
 
-
     return removido;
-
 }
-
 
 module.exports = {
 
+    NIVEL_DIAMANTE,
+
+    NIVEL_PLATINA,
+
     normalizarTelefone,
+
+    criarSlugBase,
+
+    calcularNivel,
+
+    sincronizarNivel,
 
     toPublic,
 
@@ -447,10 +791,17 @@ module.exports = {
 
     findByIdentifier,
 
+    getRanking,
+
+    getPlatinaDisponiveis,
+
     create,
 
     update,
 
-    remove
+    adicionarPontos,
 
+    definirDisponibilidade,
+
+    remove
 };

@@ -644,6 +644,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let identificadorAtual = '';
 
+    function obterRedirectSeguro() {
+    const destino =
+        new URLSearchParams(
+            window.location.search
+        )
+        .get(
+            'redirect'
+        );
+
+
+    if (!destino) {
+        return '/';
+
+    }
+
+    // Somente URLs internas do proprio MExplica
+    if (
+        !destino.startsWith('/')
+        ||
+        destino.startsWith('//')
+    ) {
+        return '/';
+    }
+    return destino;
+
+}
+
     function showStep(stepEl) {
 
         [
@@ -1070,7 +1097,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // LOGIN REALIZADO
             window.location.href =
-                '/comunidade';
+                obterRedirectSeguro();
         }
 
         catch (erro) {
@@ -1402,6 +1429,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // CADASTRO CONCLUÍDO
             // E USUÁRIO JÁ ESTÁ LOGADO
+            const sucessContinueLink = document.getElementById('sucessContinueLink');
+
+            if (sucessContinueLink) {
+                sucessContinueLink.href = obterRedirectSeguro();
+            }
+
             showStep(
                 step4
             );

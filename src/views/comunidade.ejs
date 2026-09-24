@@ -12,7 +12,7 @@
     >
 
     <title>
-        MExplica - Comunidade
+        MEXPLICA - Comunidade
     </title>
 
     <link
@@ -20,442 +20,367 @@
         href="/style.css"
     >
 
-
-    <style>
-
-        .temp-page {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 24px;
-            font-family: Arial, sans-serif;
-        }
-
-        .temp-topo {
-            display: flex;
-            justify-content: space-between;
-            gap: 16px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .temp-card {
-            border: 1px solid #ddd;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 18px 0;
-            background: #fff;
-        }
-
-        .temp-card textarea,
-        .temp-card input,
-        .temp-card select {
-            width: 100%;
-            padding: 10px;
-            margin: 6px 0 10px;
-            box-sizing: border-box;
-        }
-
-        .temp-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .temp-actions button,
-        .temp-card button {
-            padding: 9px 14px;
-            cursor: pointer;
-        }
-
-        .temp-comment {
-            margin: 12px 0 0 24px;
-            padding: 12px;
-            border-left: 3px solid #ddd;
-        }
-
-    </style>
+    <link
+        rel="shortcut icon"
+        href="/icons/favicon.ico"
+        type="image/x-icon"
+    >
 
 </head>
 
 
 <body>
 
-<main class="temp-page">
+<script>
+
+    (function() {
+
+        var salvo =
+            localStorage.getItem(
+                'mexplica-tema'
+            );
+
+        if (
+            salvo === '1'
+        ) {
+
+            document.body
+                .classList
+                .add(
+                    'dark-blue'
+                );
+
+        }
+
+    })();
+
+</script>
 
 
-    <div class="temp-topo">
+<header class="header">
+
+    <nav class="nav container">
+
+        <a
+            href="/"
+            class="nav-logo"
+        >
+
+            <img
+                src="/icons/logo-mexplica.png"
+                alt="MEXPLICA"
+                class="logo-icon"
+            >
+
+        </a>
 
 
-        <div>
+        <ul class="nav-links">
 
-            <p>
-                <a href="/">
-                    ← Home
+            <li>
+                <a href="/cadastro.html">
+                    Colabore
                 </a>
-            </p>
+            </li>
 
-            <h1>
-                Comunidade — versão temporária
-            </h1>
+            <li>
+                <a href="/comunidade">
+                    Comunidade
+                </a>
+            </li>
 
-        </div>
+            <li>
+                <a href="#">
+                    Ajuda
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    Sobre
+                </a>
+            </li>
+
+        </ul>
 
 
-        <div>
+        <div class="nav-actions">
 
             <% if (usuarioAtual) { %>
 
-                <span>
-                    Olá,
-                    <strong>
-                        <%= usuarioAtual.nome %>
-                    </strong>
-                </span>
-
-
                 <a
                     href="/perfil/<%= usuarioAtual.slug %>"
+                    class="btn-acessar"
                 >
-                    Meu perfil
+
+                    <%= usuarioAtual.nome %>
+
                 </a>
-
-
-                <button
-                    id="logout"
-                    type="button"
-                >
-                    Sair
-                </button>
-
 
             <% } else { %>
 
-
-                <a href="/entrar">
-                    Entrar
+                <a
+                    href="/cadastro.html"
+                    class="btn-acessar"
+                >
+                    acessar conta
                 </a>
-
 
             <% } %>
 
         </div>
 
+
+        <button
+            class="nav-toggle"
+            aria-label="Abrir menu"
+            id="navToggle"
+        >
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </button>
+
+    </nav>
+
+</header>
+
+
+<main class="mexp-page">
+
+<section
+    class="mexp-page-hero container"
+>
+
+    <div class="mexp-hero-logo">
+        <img
+            src="icons/logo-mexplica.png"
+            alt=""
+            aria-hidden="true"
+            class="hero-logo-img"
+        >
     </div>
 
-
-    <% if (usuarioAtual) { %>
-
-
-        <section class="temp-card">
-
-            <h2>
-                Criar publicação
-            </h2>
-
-
-            <form id="form-novo-post">
-
-
-                <label for="titulo">
-                    Título
-                </label>
-
-                <input
-                    id="titulo"
-                    name="titulo"
-                    maxlength="160"
-                    required
-                >
-
-
-                <label for="conteudo">
-                    Conteúdo
-                </label>
-
-                <textarea
-                    id="conteudo"
-                    name="conteudo"
-                    maxlength="2000"
-                    required
-                ></textarea>
-
-
-                <label for="categoria">
-                    Categoria
-                </label>
-
-                <select
-                    id="categoria"
-                    name="categoria"
-                >
-
-                    <option>
-                        Geral
-                    </option>
-
-                    <option>
-                        Segurança
-                    </option>
-
-                    <option>
-                        Comunicação
-                    </option>
-
-                    <option>
-                        Acessibilidade
-                    </option>
-
-                    <option>
-                        Sistemas
-                    </option>
-
-                </select>
-
-
-                <button type="submit">
-                    Publicar
-                </button>
-
-
-            </form>
-
-        </section>
-
-
-    <% } else { %>
-
-
-        <section class="temp-card">
-
-            <p>
-                Entre na sua conta
-                para publicar ou comentar.
-            </p>
-
-            <a href="/entrar">
-                Acessar conta
-            </a>
-
-        </section>
-
-
-    <% } %>
-
-
-    <section>
-
-
-        <% posts.forEach((post) => { %>
-
-
-            <article
-                class="temp-card"
-                data-post-id="<%= post.id %>"
-            >
-
-
-                <p>
-
-                    <a
-                        href="/perfil/<%= post.autor.slug %>"
-                    >
-
-                        <strong>
-                            <%= post.autor.nomeCompleto %>
-                        </strong>
-
-                    </a>
-
-
-                    <% if (post.autor.colaborador) { %>
-
-                        —
-                        Colaborador
-                        <%= post.autor.nivel %>
-
-                    <% } %>
-
-                </p>
-
-
-                <p>
-
-                    <small>
-                        <%= post.categoria %>
-                    </small>
-
-                </p>
-
-
-                <h2 class="post-titulo">
-                    <%= post.titulo %>
-                </h2>
-
-
-                <p class="post-conteudo">
-                    <%= post.conteudo %>
-                </p>
-
-
-                <% if (
-                    usuarioAtual
-                    &&
-                    usuarioAtual.id
-                    === post.usuarioId
-                ) { %>
-
-
-                    <div class="temp-actions">
-
-
-                        <button
-                            type="button"
-                            class="editar-post"
-                            data-id="<%= post.id %>"
-                            data-titulo="<%= post.titulo %>"
-                            data-conteudo="<%= post.conteudo %>"
-                        >
-                            Editar
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="excluir-post"
-                            data-id="<%= post.id %>"
-                        >
-                            Excluir
-                        </button>
-
-
-                    </div>
-
-
-                <% } %>
-
-
-                <h3>
-                    Comentários
-                    (<%= post.comentarios.length %>)
-                </h3>
-
-
-                <% post.comentarios.forEach(
-                    (comentario) => {
-                %>
-
-
-                    <div class="temp-comment">
-
-
-                        <p>
-
-                            <a
-                                href="/perfil/<%= comentario.autor.slug %>"
-                            >
-
-                                <strong>
-                                    <%= comentario.autor.nomeCompleto %>
-                                </strong>
-
-                            </a>
-
-                        </p>
-
-
-                        <p class="comentario-texto">
-                            <%= comentario.texto %>
-                        </p>
-
-
-                        <% if (
-                            usuarioAtual
-                            &&
-                            usuarioAtual.id
-                            === comentario.usuarioId
-                        ) { %>
-
-
-                            <div class="temp-actions">
-
-
-                                <button
-                                    type="button"
-                                    class="editar-comentario"
-                                    data-id="<%= comentario.id %>"
-                                    data-texto="<%= comentario.texto %>"
-                                >
-                                    Editar comentário
-                                </button>
-
-
-                                <button
-                                    type="button"
-                                    class="excluir-comentario"
-                                    data-id="<%= comentario.id %>"
-                                >
-                                    Excluir comentário
-                                </button>
-
-
-                            </div>
-
-
-                        <% } %>
-
-
-                    </div>
-
-
-                <% }) %>
-
-
-                <% if (usuarioAtual) { %>
-
-
-                    <form
-                        class="form-comentario"
-                        data-post-id="<%= post.id %>"
-                    >
-
-
-                        <label>
-                            Comentar
-                        </label>
-
-
-                        <textarea
-                            name="texto"
-                            maxlength="1000"
-                            required
-                        ></textarea>
-
-
-                        <button type="submit">
-                            Enviar comentário
-                        </button>
-
-
-                    </form>
-
-
-                <% } %>
-
-
-            </article>
-
-
-        <% }) %>
-
+    <h1>
+        Quem ajuda a comunidade
+        a aprender tecnologia
+    </h1>
+
+        <p>
+            Conheça os colaboradores em destaque
+            e veja quais dúvidas chamaram mais
+            atenção nesta semana.
+            Para encontrar a resposta para o seu
+            problema, use a pesquisa da página inicial.
+        </p>
+
+        <a
+            href="/"
+            class="mexp-primary-link"
+        >
+            Pesquisar uma dúvida
+        </a>
 
     </section>
 
 
+    <section class="container mexp-section">
+
+        <div class="mexp-section-heading">
+
+            <div>
+
+                <span class="mexp-eyebrow">
+                    RANKING
+                </span>
+
+                <h2>
+                    Colaboradores em destaque
+                </h2>
+
+            </div>
+
+            <p>
+                O ranking reúne colaboradores
+                Diamante e Platina, ordenados
+                pela pontuação acumulada.
+            </p>
+
+        </div>
+
+
+        <div class="mexp-ranking-list">
+
+            <%
+                ranking.forEach(
+                    (colaborador, index) => {
+            %>
+
+
+                <a
+                    href="/perfil/<%= colaborador.slug %>"
+                    class="mexp-ranking-card"
+                >
+
+                    <span class="mexp-ranking-position">
+
+                        <%= index + 1 %>º
+
+                    </span>
+
+
+                    <div class="mexp-avatar">
+
+                        <%= colaborador.nome.charAt(0) %>
+
+                    </div>
+
+
+                    <div class="mexp-ranking-info">
+
+                        <strong>
+                            <%= colaborador.nomeCompleto %>
+                        </strong>
+
+                        <span>
+
+                            <%= colaborador.nivel %>
+                            ·
+                            <%= colaborador.pontos %>
+                            pontos
+
+                        </span>
+
+
+                        <%
+                            if (
+                                colaborador.especialidades.length
+                            ) {
+                        %>
+
+                            <small>
+
+                                <%= colaborador.especialidades.join(' · ') %>
+
+                            </small>
+
+                        <% } %>
+
+                    </div>
+
+
+                    <%
+                        if (
+                            colaborador.nivel
+                            === 'Platina'
+                        ) {
+                    %>
+
+                        <span
+                            class="mexp-badge mexp-badge-platinum"
+                        >
+                            PLATINA
+                        </span>
+
+                    <% } else { %>
+
+                        <span class="mexp-badge">
+                            DIAMANTE
+                        </span>
+
+                    <% } %>
+
+                </a>
+
+
+            <% }) %>
+
+        </div>
+
+    </section>
+
+
+    <section class="container mexp-section">
+
+        <div class="mexp-section-heading">
+
+            <div>
+
+                <span class="mexp-eyebrow">
+                    EM ALTA
+                </span>
+
+                <h2>
+                    Maiores dúvidas da semana
+                </h2>
+
+            </div>
+
+            <p>
+                Assuntos que mais receberam
+                visualizações recentemente
+                na plataforma.
+            </p>
+
+        </div>
+
+
+        <div class="mexp-question-grid">
+
+            <%
+                maioresDuvidas.forEach(
+                    duvida => {
+            %>
+
+
+                <a
+                    href="/duvidas/<%= duvida.slug %>"
+                    class="mexp-question-card"
+                >
+
+                    <span class="mexp-category">
+
+                        <%= duvida.categoria %>
+
+                    </span>
+
+                    <h3>
+                        <%= duvida.titulo %>
+                    </h3>
+
+                    <p>
+                        <%= duvida.conteudo %>
+                    </p>
+
+                    <div class="mexp-question-meta">
+
+                        <span>
+                            <%= duvida.visualizacoes %>
+                            visualizações
+                        </span>
+
+                        <span>
+                            <%= duvida.quantidadeRespostas %>
+                            respostas
+                        </span>
+
+                    </div>
+
+                </a>
+
+
+            <% }) %>
+
+        </div>
+
+    </section>
+
 </main>
 
 
-<script src="/comunidade-temp.js"></script>
-
+<script src="/script.js"></script>
 
 </body>
 

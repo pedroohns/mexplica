@@ -1,175 +1,368 @@
 require('dotenv').config();
 
-const express = require('express');
-const path = require('path');
-const cookieSession = require('cookie-session');
+const express =
+    require('express');
 
-const authRoutes = require('./routes/authRoutes');
-const usuarioRoutes = require('./routes/usuarioRoutes');
-const postRoutes = require('./routes/postRoutes');
-const comentarioRoutes = require('./routes/comentarioRoutes');
-const paginaRoutes = require('./routes/paginaRoutes');
+const path =
+    require('path');
+
+
+const cookieSession =
+    require(
+        'cookie-session'
+    );
+
+const authRoutes =
+    require(
+        './routes/authRoutes'
+    );
+
+const usuarioRoutes =
+    require(
+        './routes/usuarioRoutes'
+    );
+
+const duvidaRoutes =
+    require(
+        './routes/duvidaRoutes'
+    );
+
+const respostaRoutes =
+    require(
+        './routes/respostaRoutes'
+    );
+
+const avaliacaoRoutes =
+    require(
+        './routes/avaliacaoRoutes'
+    );
+
+const paginaRoutes =
+    require(
+        './routes/paginaRoutes'
+    );
 
 const {
     carregarUsuario
-} = require('./middlewares/authMiddleware');
+} =
+    require(
+        './middlewares/authMiddleware'
+    );
 
-const app = express();
+const app =
+    express();
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+    process.env.PORT
+    || 3000;
 
 
-// CONFIGURAÇÕES DO EXPRESS
-app.set('trust proxy', 1);
-
-app.set('view engine', 'ejs');
-
+// =============================
+// EXPRESS
+// =============================
 app.set(
-    'views',
-    path.join(__dirname, 'views')
+    'trust proxy',
+    1
 );
 
 
-// LEITURA DE JSON E FORMULÁRIOS
+app.set(
+    'view engine',
+    'ejs'
+);
+
+
+app.set(
+
+    'views',
+
+    path.join(
+        __dirname,
+        'views'
+    )
+
+);
+
+
+// =============================
+// BODY
+// =============================
 app.use(
+
     express.json({
         limit: '1mb'
     })
+
 );
 
+
 app.use(
+
     express.urlencoded({
         extended: true
     })
+
 );
 
 
-// SESSÃO DO USUÁRIO
+// =============================
+// SESSAO
+// =============================
 app.use(
+
     cookieSession({
-        name: 'mexplica_session',
+
+        name:
+            'mexplica_session',
 
         keys: [
-            process.env.SESSION_SECRET ||
+
+            process.env
+                .SESSION_SECRET
+
+            ||
+
             'mexplica-chave-dev-troque-em-producao'
+
         ],
 
-        httpOnly: true,
+        httpOnly:
+            true,
 
-        sameSite: 'lax',
+        sameSite:
+            'lax',
 
         secure:
-            process.env.NODE_ENV === 'production',
+            process.env.NODE_ENV
+            === 'production',
 
         maxAge:
-            1000 * 60 * 60 * 8
+            1000
+            *
+            60
+            *
+            60
+            *
+            8
+
     })
+
 );
 
 
-// IDENTIFICA USUÁRIO LOGADO
-app.use(carregarUsuario);
-
-
-// ARQUIVOS ESTÁTICOS
-
-// Necessário para rodar localmente.
-// Na Vercel, public/** é servido pela
-// própria plataforma.
-
+// =============================
+// USUARIO DA SESSAO
+// =============================
 app.use(
+    carregarUsuario
+);
+
+
+// =============================
+// PUBLIC
+// =============================
+app.use(
+
     express.static(
-        path.join(__dirname, '..', 'public')
+
+        path.join(
+            __dirname,
+            '..',
+            'public'
+        )
+
     )
+
 );
 
 
-// ROTA DE TESTE
-app.get('/api/health', (req, res) => {
+// =============================
+// HEALTH CHECK
+// =============================
+app.get(
+    '/api/health',
+    (
+        req,
+        res
+    ) => {
 
-    res.json({
-        status: 'ok',
-        projeto: 'MExplica',
-        arquitetura: 'MVC com arrays de objetos'
-    });
+        res.json({
 
-});
+            status:
+                'ok',
+
+            projeto:
+                'MExplica',
+
+            arquitetura:
+                'MVC com arrays de objetos',
+
+            dominio:
+                'dúvidas, respostas e avaliações'
+
+        });
+
+    }
+);
 
 
-// ROTAS DA API
-app.use('/api/auth', authRoutes);
+// =============================
+// API
+// =============================
+app.use(
+    '/api/auth',
+    authRoutes
+);
 
-app.use('/api/usuarios', usuarioRoutes);
-
-app.use('/api/posts', postRoutes);
 
 app.use(
-    '/api/comentarios',
-    comentarioRoutes
+    '/api/usuarios',
+    usuarioRoutes
 );
 
 
-// ROTAS DAS PÁGINAS
-app.use('/', paginaRoutes);
+app.use(
+    '/api/duvidas',
+    duvidaRoutes
+);
 
 
-// ROTA NÃO ENCONTRADA
-app.use((req, res) => {
+app.use(
+    '/api/respostas',
+    respostaRoutes
+);
 
-    if (req.path.startsWith('/api/')) {
 
-        return res.status(404).json({
-            erro: 'Rota não encontrada.'
-        });
+app.use(
+    '/api/avaliacoes',
+    avaliacaoRoutes
+);
+
+
+// =============================
+// PAGINAS
+// =============================
+app.use(
+    '/',
+    paginaRoutes
+);
+
+
+// =============================
+// 404
+// =============================
+app.use(
+    (
+        req,
+        res
+    ) => {
+
+        if (
+            req.path
+                .startsWith(
+                    '/api/'
+                )
+        ) {
+
+            return res
+                .status(404)
+                .json({
+
+                    erro:
+                        'Rota não encontrada.'
+
+                });
+
+        }
+
+
+        return res
+            .status(404)
+            .send(
+                'Página não encontrada.'
+            );
 
     }
-
-    return res
-        .status(404)
-        .send('Página não encontrada.');
-
-});
+);
 
 
-// TRATAMENTO DE ERROS
-app.use((err, req, res, next) => {
+// =============================
+// ERROS
+// =============================
+app.use(
+    (
+        err,
+        req,
+        res,
+        next
+    ) => {
 
-    console.error(err);
-
-    if (res.headersSent) {
-        return next(err);
-    }
-
-    if (req.path.startsWith('/api/')) {
-
-        return res.status(500).json({
-            erro: 'Erro interno do servidor.'
-        });
-
-    }
-
-    return res
-        .status(500)
-        .send('Erro interno do servidor.');
-
-});
-
-
-// SERVIDOR LOCAL
-if (require.main === module) {
-
-    app.listen(PORT, () => {
-
-        console.log(
-            `MExplica rodando em http://localhost:${PORT}`
+        console.error(
+            err
         );
 
-    });
+
+        if (
+            res.headersSent
+        ) {
+
+            return next(
+                err
+            );
+
+        }
+
+
+        if (
+            req.path
+                .startsWith(
+                    '/api/'
+                )
+        ) {
+
+            return res
+                .status(500)
+                .json({
+
+                    erro:
+                        'Erro interno do servidor.'
+
+                });
+
+        }
+
+
+        return res
+            .status(500)
+            .send(
+                'Erro interno do servidor.'
+            );
+
+    }
+);
+
+
+// =============================
+// SERVIDOR LOCAL
+// =============================
+if (
+    require.main
+    === module
+) {
+
+    app.listen(
+        PORT,
+        () => {
+
+            console.log(
+                `MExplica rodando em http://localhost:${PORT}`
+            );
+
+        }
+    );
 
 }
 
 
-// Também permite que a Vercel
-// utilize a aplicação Express.
-
-module.exports = app;
+module.exports =
+    app;
