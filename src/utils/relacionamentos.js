@@ -3,15 +3,18 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
-const DuvidaModel =
+
+const TutorialModel =
     require(
-        '../models/duvidaModel'
+        '../models/tutorialModel'
     );
 
-const RespostaModel =
+
+const ComentarioModel =
     require(
-        '../models/respostaModel'
+        '../models/comentarioModel'
     );
+
 
 const AvaliacaoModel =
     require(
@@ -24,28 +27,32 @@ function removerAvaliacaoComAjuste(
 ) {
 
     const avaliacao =
-        AvaliacaoModel.findById(
-            avaliacaoId
-        );
+        AvaliacaoModel
+            .findById(
+                avaliacaoId
+            );
 
 
     if (!avaliacao) {
+
         return null;
+
     }
 
 
-    const resposta =
-        RespostaModel.findById(
-            avaliacao.respostaId
-        );
+    const tutorial =
+        TutorialModel
+            .findById(
+                avaliacao.tutorialId
+            );
 
 
-    if (resposta) {
+    if (tutorial) {
 
         UsuarioModel
             .adicionarPontos(
 
-                resposta.usuarioId,
+                tutorial.autorId,
 
                 -AvaliacaoModel
                     .pontosPorNota(
@@ -65,26 +72,29 @@ function removerAvaliacaoComAjuste(
 }
 
 
-function removerRespostaCompleta(
-    respostaId
+function removerTutorialCompleto(
+    tutorialId
 ) {
 
-    const resposta =
-        RespostaModel.findById(
-            respostaId
-        );
+    const tutorial =
+        TutorialModel
+            .findById(
+                tutorialId
+            );
 
 
-    if (!resposta) {
+    if (!tutorial) {
+
         return null;
+
     }
 
 
     const avaliacoes =
         [
             ...AvaliacaoModel
-                .findByRespostaId(
-                    resposta.id
+                .findByTutorialId(
+                    tutorial.id
                 )
         ];
 
@@ -95,55 +105,31 @@ function removerRespostaCompleta(
             removerAvaliacaoComAjuste(
                 avaliacao.id
             )
-
     );
 
 
-    return RespostaModel
-        .remove(
-            resposta.id
-        );
-
-}
-
-
-function removerDuvidaCompleta(
-    duvidaId
-) {
-
-    const duvida =
-        DuvidaModel.findById(
-            duvidaId
-        );
-
-
-    if (!duvida) {
-        return null;
-    }
-
-
-    const respostas =
+    const comentarios =
         [
-            ...RespostaModel
-                .findByDuvidaId(
-                    duvida.id
+            ...ComentarioModel
+                .findByTutorialId(
+                    tutorial.id
                 )
         ];
 
 
-    respostas.forEach(
-        resposta =>
+    comentarios.forEach(
+        comentario =>
 
-            removerRespostaCompleta(
-                resposta.id
-            )
-
+            ComentarioModel
+                .remove(
+                    comentario.id
+                )
     );
 
 
-    return DuvidaModel
+    return TutorialModel
         .remove(
-            duvida.id
+            tutorial.id
         );
 
 }
@@ -159,43 +145,55 @@ function removerDadosDoUsuario(
         );
 
 
-    // 1. remove duvidas e tudo que depende delas
-    const duvidas =
+    /*
+        1 - remove tutoriais publicados
+        e tudo que depende deles
+    */
+
+    const tutoriais =
         [
-            ...DuvidaModel
+            ...TutorialModel
+                .findByAutorId(id)
+        ];
+
+
+    tutoriais.forEach(
+        tutorial =>
+
+            removerTutorialCompleto(
+                tutorial.id
+            )
+    );
+
+
+    /*
+        2 - remove comentarios que
+        o usuario fez em outros tutoriais
+    */
+
+    const comentarios =
+        [
+            ...ComentarioModel
                 .findByUserId(id)
         ];
 
 
-    duvidas.forEach(
-        duvida =>
+    comentarios.forEach(
+        comentario =>
 
-            removerDuvidaCompleta(
-                duvida.id
-            )
-
+            ComentarioModel
+                .remove(
+                    comentario.id
+                )
     );
 
 
-    // 2. remove respostas do usuario em outras duvidas
-    const respostas =
-        [
-            ...RespostaModel
-                .findByUserId(id)
-        ];
+    /*
+        3 - remove avaliaçoes feitas
+        pelo usuario e desfaz os pontos
+        correspondentes.
+    */
 
-
-    respostas.forEach(
-        resposta =>
-
-            removerRespostaCompleta(
-                resposta.id
-            )
-
-    );
-
-
-    // 3. remove avaliações que o usuario fez em respostas de outras pessoas
     const avaliacoes =
         [
             ...AvaliacaoModel
@@ -209,11 +207,13 @@ function removerDadosDoUsuario(
             removerAvaliacaoComAjuste(
                 avaliacao.id
             )
-
     );
 
 
-    // 4. só depois remove a conta
+    /*
+        4 - so depois remove a conta
+    */
+
     return UsuarioModel
         .remove(id);
 
@@ -224,9 +224,7 @@ module.exports = {
 
     removerAvaliacaoComAjuste,
 
-    removerRespostaCompleta,
-
-    removerDuvidaCompleta,
+    removerTutorialCompleto,
 
     removerDadosDoUsuario
 

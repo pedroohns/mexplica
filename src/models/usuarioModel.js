@@ -1,129 +1,704 @@
-const bcrypt = require('bcryptjs');
+const bcrypt =
+    require(
+        'bcryptjs'
+    );
 
-const NIVEL_DIAMANTE = 1000;
-const NIVEL_PLATINA = 2500;
+
+const NIVEL_DIAMANTE =
+    1000;
+
+
+const NIVEL_PLATINA =
+    2500;
+
+
+// todos os usuarios de demonstraçao
+// utilizam a senha: 123456
+const senhaTeste =
+    bcrypt.hashSync(
+        '123456',
+        10
+    );
+
 
 const usuarios = [
+
     {
         id: 1,
-        slug: 'maria-oliveira',
-        nome: 'Maria',
-        sobrenome: 'Oliveira',
-        email: 'maria@mexplica.com',
-        telefone: '24999990001',
-        idade: 67,
-        genero: 'feminino',
-        tipo: 'usuario',
-        colaborador: false,
-        nivel: null,
-        pontos: 0,
+
+        slug:
+            'maria-oliveira',
+
+        nome:
+            'Maria',
+
+        sobrenome:
+            'Oliveira',
+
+        email:
+            'maria@mexplica.com',
+
+        telefone:
+            '24999990001',
+
+        idade:
+            67,
+
+        genero:
+            'feminino',
+
+        tipo:
+            'usuario',
+
+        colaborador:
+            false,
+
+        nivel:
+            null,
+
+        pontos:
+            0,
+
         bio:
-            'Estou aprendendo a usar melhor o celular e os aplicativos do dia a dia.',
-        especialidades: [],
-        disponivelAtendimento: false,
+            'Uso o MExplica para aprender com calma sobre celular, internet e aplicativos.',
+
+        especialidades:
+            [],
+
+        disponivelAtendimento:
+            false,
+
         senhaHash:
-            bcrypt.hashSync('123456', 10),
+            senhaTeste,
+
         criadoEm:
-            '2026-09-15T14:00:00.000Z'
+            '2026-09-05T14:00:00.000Z'
     },
+
 
     {
         id: 2,
-        slug: 'lucas-mendes',
-        nome: 'Lucas',
-        sobrenome: 'Mendes',
-        email: 'lucas@mexplica.com',
-        telefone: '24999990002',
-        idade: 24,
-        genero: 'masculino',
-        tipo: 'colaborador',
-        colaborador: true,
-        nivel: 'Diamante',
-        pontos: 1250,
+
+        slug:
+            'lucas-mendes',
+
+        nome:
+            'Lucas',
+
+        sobrenome:
+            'Mendes',
+
+        email:
+            'lucas@mexplica.com',
+
+        telefone:
+            '24999990002',
+
+        idade:
+            24,
+
+        genero:
+            'masculino',
+
+        tipo:
+            'colaborador',
+
+        colaborador:
+            true,
+
+        nivel:
+            'Diamante',
+
+        pontos:
+            1250,
+
         bio:
-            'Gosto de ajudar pessoas com segurança digital, smartphones e aplicativos.',
+            'Publico tutoriais sobre segurança digital, smartphones e configurações do dia a dia.',
+
         especialidades: [
             'Segurança',
             'Smartphones'
         ],
-        disponivelAtendimento: false,
+
+        disponivelAtendimento:
+            false,
+
         senhaHash:
-            bcrypt.hashSync('123456', 10),
+            senhaTeste,
+
         criadoEm:
-            '2026-09-10T17:30:00.000Z'
+            '2026-08-26T17:30:00.000Z'
     },
+
 
     {
         id: 3,
-        slug: 'ana-souza',
-        nome: 'Ana',
-        sobrenome: 'Souza',
-        email: 'ana@mexplica.com',
-        telefone: '24999990003',
-        idade: 31,
-        genero: 'feminino',
-        tipo: 'colaborador',
-        colaborador: true,
-        nivel: 'Platina',
-        pontos: 2840,
+
+        slug:
+            'ana-souza',
+
+        nome:
+            'Ana',
+
+        sobrenome:
+            'Souza',
+
+        email:
+            'ana@mexplica.com',
+
+        telefone:
+            '24999990003',
+
+        idade:
+            31,
+
+        genero:
+            'feminino',
+
+        tipo:
+            'colaborador',
+
+        colaborador:
+            true,
+
+        nivel:
+            'Platina',
+
+        pontos:
+            2840,
+
         bio:
-            'Ajudo principalmente com serviços digitais, acessibilidade e aplicativos de comunicação.',
+            'Crio guias simples sobre acessibilidade, serviços digitais e comunicação.',
+
         especialidades: [
             'Acessibilidade',
             'Comunicação',
             'Serviços digitais'
         ],
-        disponivelAtendimento: true,
+
+        disponivelAtendimento:
+            true,
+
         senhaHash:
-            bcrypt.hashSync('123456', 10),
+            senhaTeste,
+
         criadoEm:
-            '2026-09-08T12:00:00.000Z'
+            '2026-08-20T12:00:00.000Z'
     },
+
 
     {
         id: 4,
-        slug: 'carlos-lima',
-        nome: 'Carlos',
-        sobrenome: 'Lima',
-        email: 'carlos@mexplica.com',
-        telefone: '24999990004',
-        idade: 27,
-        genero: 'masculino',
-        tipo: 'colaborador',
-        colaborador: true,
-        nivel: 'Comum',
-        pontos: 980,
+
+        slug:
+            'carlos-lima',
+
+        nome:
+            'Carlos',
+
+        sobrenome:
+            'Lima',
+
+        email:
+            'carlos@mexplica.com',
+
+        telefone:
+            '24999990004',
+
+        idade:
+            27,
+
+        genero:
+            'masculino',
+
+        tipo:
+            'colaborador',
+
+        colaborador:
+            true,
+
+        nivel:
+            'Comum',
+
+        pontos:
+            980,
+
         bio:
-            'Gosto de ensinar configurações básicas de celulares e aplicativos de comunicação.',
+            'Gosto de transformar configurações complicadas em passos simples.',
+
         especialidades: [
             'Smartphones',
             'Comunicação'
         ],
-        disponivelAtendimento: false,
+
+        disponivelAtendimento:
+            false,
+
         senhaHash:
-            bcrypt.hashSync('123456', 10),
+            senhaTeste,
+
         criadoEm:
-            '2026-09-18T11:00:00.000Z'
+            '2026-09-02T11:00:00.000Z'
+    },
+
+
+    {
+        id: 5,
+
+        slug:
+            'helena-ribeiro',
+
+        nome:
+            'Helena',
+
+        sobrenome:
+            'Ribeiro',
+
+        email:
+            'helena@mexplica.com',
+
+        telefone:
+            '24999990005',
+
+        idade:
+            58,
+
+        genero:
+            'feminino',
+
+        tipo:
+            'usuario',
+
+        colaborador:
+            false,
+
+        nivel:
+            null,
+
+        pontos:
+            0,
+
+        bio:
+            'Aprendendo a usar aplicativos e serviços online com mais segurança.',
+
+        especialidades:
+            [],
+
+        disponivelAtendimento:
+            false,
+
+        senhaHash:
+            senhaTeste,
+
+        criadoEm:
+            '2026-09-09T09:15:00.000Z'
+    },
+
+
+    {
+        id: 6,
+
+        slug:
+            'roberto-alves',
+
+        nome:
+            'Roberto',
+
+        sobrenome:
+            'Alves',
+
+        email:
+            'roberto@mexplica.com',
+
+        telefone:
+            '24999990006',
+
+        idade:
+            63,
+
+        genero:
+            'masculino',
+
+        tipo:
+            'usuario',
+
+        colaborador:
+            false,
+
+        nivel:
+            null,
+
+        pontos:
+            0,
+
+        bio:
+            'Uso os tutoriais para resolver dúvidas do computador e do telefone.',
+
+        especialidades:
+            [],
+
+        disponivelAtendimento:
+            false,
+
+        senhaHash:
+            senhaTeste,
+
+        criadoEm:
+            '2026-09-11T10:40:00.000Z'
+    },
+
+
+    {
+        id: 7,
+
+        slug:
+            'beatriz-costa',
+
+        nome:
+            'Beatriz',
+
+        sobrenome:
+            'Costa',
+
+        email:
+            'beatriz@mexplica.com',
+
+        telefone:
+            '24999990007',
+
+        idade:
+            29,
+
+        genero:
+            'feminino',
+
+        tipo:
+            'colaborador',
+
+        colaborador:
+            true,
+
+        nivel:
+            'Diamante',
+
+        pontos:
+            1680,
+
+        bio:
+            'Ajudo com redes sociais, mensagens, videochamadas e recursos de interação.',
+
+        especialidades: [
+            'WhatsApp',
+            'Redes sociais',
+            'Comunicação'
+        ],
+
+        disponivelAtendimento:
+            false,
+
+        senhaHash:
+            senhaTeste,
+
+        criadoEm:
+            '2026-08-30T16:20:00.000Z'
+    },
+
+
+    {
+        id: 8,
+
+        slug:
+            'rafael-nunes',
+
+        nome:
+            'Rafael',
+
+        sobrenome:
+            'Nunes',
+
+        email:
+            'rafael@mexplica.com',
+
+        telefone:
+            '24999990008',
+
+        idade:
+            22,
+
+        genero:
+            'masculino',
+
+        tipo:
+            'colaborador',
+
+        colaborador:
+            true,
+
+        nivel:
+            'Comum',
+
+        pontos:
+            620,
+
+        bio:
+            'Publico tutoriais sobre Android, aplicativos e manutenção básica.',
+
+        especialidades: [
+            'Android',
+            'Aplicativos'
+        ],
+
+        disponivelAtendimento:
+            false,
+
+        senhaHash:
+            senhaTeste,
+
+        criadoEm:
+            '2026-09-04T08:00:00.000Z'
+    },
+
+
+    {
+        id: 9,
+
+        slug:
+            'juliana-martins',
+
+        nome:
+            'Juliana',
+
+        sobrenome:
+            'Martins',
+
+        email:
+            'juliana@mexplica.com',
+
+        telefone:
+            '24999990009',
+
+        idade:
+            35,
+
+        genero:
+            'feminino',
+
+        tipo:
+            'colaborador',
+
+        colaborador:
+            true,
+
+        nivel:
+            'Platina',
+
+        pontos:
+            3120,
+
+        bio:
+            'Escrevo sobre privacidade, golpes digitais e uso seguro de serviços online.',
+
+        especialidades: [
+            'Privacidade',
+            'Segurança digital'
+        ],
+
+        disponivelAtendimento:
+            true,
+
+        senhaHash:
+            senhaTeste,
+
+        criadoEm:
+            '2026-08-18T13:30:00.000Z'
+    },
+
+
+    {
+        id: 10,
+
+        slug:
+            'marcos-pereira',
+
+        nome:
+            'Marcos',
+
+        sobrenome:
+            'Pereira',
+
+        email:
+            'marcos@mexplica.com',
+
+        telefone:
+            '24999990010',
+
+        idade:
+            61,
+
+        genero:
+            'masculino',
+
+        tipo:
+            'usuario',
+
+        colaborador:
+            false,
+
+        nivel:
+            null,
+
+        pontos:
+            0,
+
+        bio:
+            'Quero usar a tecnologia com mais autonomia no dia a dia.',
+
+        especialidades:
+            [],
+
+        disponivelAtendimento:
+            false,
+
+        senhaHash:
+            senhaTeste,
+
+        criadoEm:
+            '2026-09-13T15:00:00.000Z'
+    },
+
+
+    {
+        id: 11,
+
+        slug:
+            'fernanda-moraes',
+
+        nome:
+            'Fernanda',
+
+        sobrenome:
+            'Moraes',
+
+        email:
+            'fernanda@mexplica.com',
+
+        telefone:
+            '24999990011',
+
+        idade:
+            26,
+
+        genero:
+            'feminino',
+
+        tipo:
+            'colaborador',
+
+        colaborador:
+            true,
+
+        nivel:
+            'Diamante',
+
+        pontos:
+            1430,
+
+        bio:
+            'Crio guias sobre acessibilidade, Windows e recursos de leitura.',
+
+        especialidades: [
+            'Windows',
+            'Acessibilidade'
+        ],
+
+        disponivelAtendimento:
+            false,
+
+        senhaHash:
+            senhaTeste,
+
+        criadoEm:
+            '2026-08-28T18:10:00.000Z'
+    },
+
+
+    {
+        id: 12,
+
+        slug:
+            'paulo-barbosa',
+
+        nome:
+            'Paulo',
+
+        sobrenome:
+            'Barbosa',
+
+        email:
+            'paulo@mexplica.com',
+
+        telefone:
+            '24999990012',
+
+        idade:
+            69,
+
+        genero:
+            'masculino',
+
+        tipo:
+            'usuario',
+
+        colaborador:
+            false,
+
+        nivel:
+            null,
+
+        pontos:
+            0,
+
+        bio:
+            'Gosto de aprender por exemplos simples e imagens.',
+
+        especialidades:
+            [],
+
+        disponivelAtendimento:
+            false,
+
+        senhaHash:
+            senhaTeste,
+
+        criadoEm:
+            '2026-09-14T11:25:00.000Z'
     }
+
 ];
 
 
-// =============================
-// FUNÇOES AUXILIARES
-// =============================
-function normalizarTelefone(valor = '') {
+function normalizarTelefone(
+    valor = ''
+) {
 
     return String(valor)
-        .replace(/\D/g, '');
+        .replace(
+            /\D/g,
+            ''
+        );
 
 }
 
 
-function criarSlugBase(valor = '') {
+function criarSlugBase(
+    valor = ''
+) {
 
     return String(valor)
 
-        .normalize('NFD')
+        .normalize(
+            'NFD'
+        )
 
         .replace(
             /[\u0300-\u036f]/g,
@@ -147,27 +722,38 @@ function criarSlugBase(valor = '') {
 }
 
 
-function criarSlugUnico(nomeCompleto) {
+function criarSlugUnico(
+    nomeCompleto
+) {
 
     const base =
-        criarSlugBase(nomeCompleto)
+        criarSlugBase(
+            nomeCompleto
+        )
         || 'usuario';
 
-    let slug = base;
-    let sufixo = 2;
+
+    let slug =
+        base;
+
+
+    let sufixo =
+        2;
 
 
     while (
         usuarios.some(
             usuario =>
-                usuario.slug === slug
+                usuario.slug
+                === slug
         )
     ) {
 
         slug =
             `${base}-${sufixo}`;
 
-        sufixo += 1;
+        sufixo +=
+            1;
 
     }
 
@@ -194,22 +780,23 @@ function proximoId() {
                 usuario =>
                     usuario.id
             )
-        ) + 1
+        )
+        +
+        1
     );
 
 }
 
 
-// =============================
-// NÍVEIS DE COLABORADOR
-// =============================
 function calcularNivel(
     pontos,
     colaborador
 ) {
 
     if (!colaborador) {
+
         return null;
+
     }
 
 
@@ -241,26 +828,30 @@ function sincronizarNivel(
 ) {
 
     if (!usuario) {
+
         return null;
+
     }
 
 
     usuario.nivel =
         calcularNivel(
+
             usuario.pontos,
+
             usuario.colaborador
+
         );
 
 
     usuario.tipo =
         usuario.colaborador
+
             ? 'colaborador'
+
             : 'usuario';
 
 
-    // somente PLATINA pode
-    // ficar disponivel para
-    // atendimento direto.
     if (
         usuario.nivel
         !== 'Platina'
@@ -277,13 +868,14 @@ function sincronizarNivel(
 }
 
 
-// =============================
-// OBJETO PÚBLICO
-// =============================
-function toPublic(usuario) {
+function toPublic(
+    usuario
+) {
 
     if (!usuario) {
+
         return null;
+
     }
 
 
@@ -346,19 +938,22 @@ function toPublic(usuario) {
 }
 
 
-// =============================
-// OBJETO PRIVADO
-// =============================
-function toPrivate(usuario) {
+function toPrivate(
+    usuario
+) {
 
     if (!usuario) {
+
         return null;
+
     }
 
 
     return {
 
-        ...toPublic(usuario),
+        ...toPublic(
+            usuario
+        ),
 
         email:
             usuario.email,
@@ -377,9 +972,6 @@ function toPrivate(usuario) {
 }
 
 
-// =============================
-// READ
-// =============================
 function findAll() {
 
     return usuarios;
@@ -396,15 +988,19 @@ function findById(id) {
     return (
         usuarios.find(
             usuario =>
-                usuario.id === numero
+                usuario.id
+                === numero
         )
-        || null
+        ||
+        null
     );
 
 }
 
 
-function findBySlug(slug) {
+function findBySlug(
+    slug
+) {
 
     return (
         usuarios.find(
@@ -412,7 +1008,8 @@ function findBySlug(slug) {
                 usuario.slug
                 === String(slug)
         )
-        || null
+        ||
+        null
     );
 
 }
@@ -424,16 +1021,19 @@ function findByIdentifier(
 
     const valor =
         String(
-            identificador || ''
-        ).trim();
+            identificador
+            || ''
+        )
+        .trim();
 
 
     if (!valor) {
+
         return null;
+
     }
 
 
-    // EMAIL
     if (
         valor.includes('@')
     ) {
@@ -449,13 +1049,13 @@ function findByIdentifier(
                         .toLowerCase()
                     === email
             )
-            || null
+            ||
+            null
         );
 
     }
 
 
-    // TELEFONE
     const telefone =
         normalizarTelefone(
             valor
@@ -470,15 +1070,13 @@ function findByIdentifier(
                 )
                 === telefone
         )
-        || null
+        ||
+        null
     );
 
 }
 
 
-// =============================
-// RANKING
-// =============================
 function getRanking(
     limite = 10
 ) {
@@ -487,20 +1085,25 @@ function getRanking(
 
         .filter(
             usuario =>
+
                 usuario.colaborador
+
                 &&
-                (
+
+                [
+                    'Diamante',
+                    'Platina'
+                ]
+                .includes(
                     usuario.nivel
-                    === 'Diamante'
-                    ||
-                    usuario.nivel
-                    === 'Platina'
                 )
         )
 
         .sort(
             (a, b) =>
-                b.pontos - a.pontos
+                b.pontos
+                -
+                a.pontos
         )
 
         .slice(
@@ -515,11 +1118,16 @@ function getPlatinaDisponiveis() {
 
     return usuarios.filter(
         usuario =>
+
             usuario.colaborador
+
             &&
+
             usuario.nivel
             === 'Platina'
+
             &&
+
             usuario
                 .disponivelAtendimento
     );
@@ -527,10 +1135,9 @@ function getPlatinaDisponiveis() {
 }
 
 
-// =============================
-// CREATE
-// =============================
-function create(dados) {
+function create(
+    dados
+) {
 
     const colaborador =
         Boolean(
@@ -555,10 +1162,12 @@ function create(dados) {
             dados.sobrenome,
 
         email:
-            dados.email || '',
+            dados.email
+            || '',
 
         telefone:
-            dados.telefone || '',
+            dados.telefone
+            || '',
 
         idade:
             Number(
@@ -584,13 +1193,16 @@ function create(dados) {
             0,
 
         bio:
-            dados.bio || '',
+            dados.bio
+            || '',
 
         especialidades:
             Array.isArray(
                 dados.especialidades
             )
+
                 ? dados.especialidades
+
                 : [],
 
         disponivelAtendimento:
@@ -612,12 +1224,10 @@ function create(dados) {
 
 
     return novoUsuario;
+
 }
 
 
-// =============================
-// UPDATE
-// =============================
 function update(
     id,
     alteracoes
@@ -628,7 +1238,9 @@ function update(
 
 
     if (!usuario) {
+
         return null;
+
     }
 
 
@@ -648,9 +1260,6 @@ function update(
 }
 
 
-// =============================
-// PONTUAÇÃO
-// =============================
 function adicionarPontos(
     id,
     quantidade
@@ -670,6 +1279,7 @@ function adicionarPontos(
 
     }
 
+
     const valor =
         Number(
             quantidade
@@ -677,7 +1287,9 @@ function adicionarPontos(
 
 
     if (
-        !Number.isFinite(valor)
+        !Number.isFinite(
+            valor
+        )
     ) {
 
         return usuario;
@@ -687,8 +1299,13 @@ function adicionarPontos(
 
     usuario.pontos =
         Math.max(
+
             0,
-            usuario.pontos + valor
+
+            usuario.pontos
+            +
+            valor
+
         );
 
 
@@ -696,12 +1313,12 @@ function adicionarPontos(
         usuario
     );
 
+
     return usuario;
+
 }
 
-// =============================
-// DISPONIBILIDADE PLATINA
-// =============================
+
 function definirDisponibilidade(
     id,
     disponivel
@@ -730,11 +1347,10 @@ function definirDisponibilidade(
 
 
     return usuario;
+
 }
 
-// =============================
-// DELETE
-// =============================
+
 function remove(id) {
 
     const numero =
@@ -744,8 +1360,10 @@ function remove(id) {
     const indice =
         usuarios.findIndex(
             usuario =>
-                usuario.id === numero
+                usuario.id
+                === numero
         );
+
 
     if (
         indice === -1
@@ -756,14 +1374,19 @@ function remove(id) {
     }
 
 
-    const [removido] =
+    const [
+        removido
+    ] =
         usuarios.splice(
             indice,
             1
         );
 
+
     return removido;
+
 }
+
 
 module.exports = {
 
@@ -804,4 +1427,5 @@ module.exports = {
     definirDisponibilidade,
 
     remove
+
 };

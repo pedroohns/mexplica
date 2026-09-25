@@ -1,5 +1,7 @@
 const express =
-    require('express');
+    require(
+        'express'
+    );
 
 
 const paginaController =
@@ -25,8 +27,20 @@ router.get(
 
 
 router.get(
-    '/duvidas/:slug',
-    paginaController.duvida
+    '/tutoriais/novo',
+    paginaController.novoTutorial
+);
+
+
+router.get(
+    '/tutoriais/:slug/editar',
+    paginaController.editarTutorial
+);
+
+
+router.get(
+    '/tutoriais/:slug',
+    paginaController.tutorial
 );
 
 

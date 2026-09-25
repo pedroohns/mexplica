@@ -1,10 +1,19 @@
-require('dotenv').config();
+require(
+    'dotenv'
+)
+.config();
+
 
 const express =
-    require('express');
+    require(
+        'express'
+    );
+
 
 const path =
-    require('path');
+    require(
+        'path'
+    );
 
 
 const cookieSession =
@@ -12,35 +21,42 @@ const cookieSession =
         'cookie-session'
     );
 
+
 const authRoutes =
     require(
         './routes/authRoutes'
     );
+
 
 const usuarioRoutes =
     require(
         './routes/usuarioRoutes'
     );
 
-const duvidaRoutes =
+
+const tutorialRoutes =
     require(
-        './routes/duvidaRoutes'
+        './routes/tutorialRoutes'
     );
 
-const respostaRoutes =
+
+const comentarioRoutes =
     require(
-        './routes/respostaRoutes'
+        './routes/comentarioRoutes'
     );
+
 
 const avaliacaoRoutes =
     require(
         './routes/avaliacaoRoutes'
     );
 
+
 const paginaRoutes =
     require(
         './routes/paginaRoutes'
     );
+
 
 const {
     carregarUsuario
@@ -49,8 +65,10 @@ const {
         './middlewares/authMiddleware'
     );
 
+
 const app =
     express();
+
 
 const PORT =
     process.env.PORT
@@ -58,7 +76,7 @@ const PORT =
 
 
 // =============================
-// EXPRESS
+// EXPRESS / VIEWS
 // =============================
 app.set(
     'trust proxy',
@@ -149,7 +167,6 @@ app.use(
 
 );
 
-
 // =============================
 // USUARIO DA SESSAO
 // =============================
@@ -157,9 +174,8 @@ app.use(
     carregarUsuario
 );
 
-
 // =============================
-// PUBLIC
+// ARQUIVOS PUBLICOS
 // =============================
 app.use(
 
@@ -198,7 +214,7 @@ app.get(
                 'MVC com arrays de objetos',
 
             dominio:
-                'dúvidas, respostas e avaliações'
+                'tutoriais, comentários, avaliações e ranking'
 
         });
 
@@ -222,14 +238,14 @@ app.use(
 
 
 app.use(
-    '/api/duvidas',
-    duvidaRoutes
+    '/api/tutoriais',
+    tutorialRoutes
 );
 
 
 app.use(
-    '/api/respostas',
-    respostaRoutes
+    '/api/comentarios',
+    comentarioRoutes
 );
 
 

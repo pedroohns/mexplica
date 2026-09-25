@@ -250,7 +250,7 @@
                 const confirmou =
                     confirm(
 
-                        'Tem certeza de que deseja excluir sua conta? Suas dúvidas, respostas e avaliações relacionadas também poderão ser removidas.'
+                        'Tem certeza de que deseja excluir sua conta? Seus tutoriais, comentários e avaliações relacionadas também poderão ser removidos.'
 
                     );
 

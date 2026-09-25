@@ -1,14 +1,22 @@
 (() => {
 
+    const heroSection =
+        document.querySelector(
+            '.hero-section'
+        );
+
+
     const searchInput =
         document.getElementById(
             'searchInput'
         );
 
 
-    const searchButton =
+
+
+    const searchBox =
         document.getElementById(
-            'searchSubmitBtn'
+            'searchBox'
         );
 
 
@@ -18,45 +26,27 @@
         );
 
 
-    const questionBox =
+    const searchToolsRow =
         document.getElementById(
-            'questionFormBox'
+            'searchToolsRow'
         );
 
 
-    const questionForm =
+    const accessibilityBar =
         document.getElementById(
-            'questionForm'
+            'accessibilityBar'
         );
 
 
-    const questionTitle =
+    const searchOptions =
         document.getElementById(
-            'questionTitle'
+            'searchOptions'
         );
 
 
-    const questionCategory =
+    const contactCards =
         document.getElementById(
-            'questionCategory'
-        );
-
-
-    const questionContent =
-        document.getElementById(
-            'questionContent'
-        );
-
-
-    const questionMessage =
-        document.getElementById(
-            'questionMessage'
-        );
-
-
-    const closeQuestionForm =
-        document.getElementById(
-            'closeQuestionForm'
+            'contactCards'
         );
 
 
@@ -83,6 +73,47 @@
 
     let timerBusca =
         null;
+
+
+    let modoBuscaAtivo =
+        false;
+
+
+    /*
+        guardamos a posiçao original
+        dos elementos que serao
+        temporariamente movidos para
+        dentro da search bar.
+    */
+
+    const accessibilityAnchor =
+        document.createComment(
+            'mexplica-accessibility-anchor'
+        );
+
+
+    const contactAnchor =
+        document.createComment(
+            'mexplica-contact-anchor'
+        );
+
+
+    if (accessibilityBar) {
+
+        accessibilityBar.before(
+            accessibilityAnchor
+        );
+
+    }
+
+
+    if (contactCards) {
+
+        contactCards.before(
+            contactAnchor
+        );
+
+    }
 
 
     async function requisicao(
@@ -122,7 +153,9 @@
             throw new Error(
 
                 dados.erro
+
                 ||
+
                 'Não foi possível concluir a operação.'
 
             );
@@ -168,13 +201,15 @@
         }
 
 
-        // Troca "acessar conta"
-        // pelo nome do usuário.
         if (
             accountButton
+
             &&
+
             sessao.autenticado
+
             &&
+
             sessao.usuario
         ) {
 
@@ -198,6 +233,121 @@
 
 
         return sessao;
+
+    }
+
+
+    // =============================
+    // ANIMAÇAO DO FIGMA
+    // =============================
+    function ativarModoBusca() {
+
+        if (
+            modoBuscaAtivo
+        ) {
+
+            return;
+
+        }
+
+
+        modoBuscaAtivo =
+            true;
+
+
+        heroSection
+            ?.classList
+            .add(
+                'search-mode'
+            );
+
+
+        if (searchToolsRow) {
+
+
+            if (accessibilityBar) {
+
+                searchToolsRow
+                    .appendChild(
+                        accessibilityBar
+                    );
+
+            }
+
+
+            if (searchOptions) {
+
+                searchToolsRow
+                    .appendChild(
+                        searchOptions
+                    );
+
+            }
+
+
+            if (contactCards) {
+
+                searchToolsRow
+                    .appendChild(
+                        contactCards
+                    );
+
+            }
+
+
+        }
+
+    }
+
+
+    function desativarModoBusca() {
+
+        if (
+            !modoBuscaAtivo
+        ) {
+
+            return;
+
+        }
+
+
+        modoBuscaAtivo =
+            false;
+
+
+        heroSection
+            ?.classList
+            .remove(
+                'search-mode'
+            );
+
+
+        if (
+            accessibilityBar
+            &&
+            accessibilityAnchor
+                .parentNode
+        ) {
+
+            accessibilityAnchor.after(
+                accessibilityBar
+            );
+
+        }
+
+
+        if (
+            contactCards
+            &&
+            contactAnchor
+                .parentNode
+        ) {
+
+            contactAnchor.after(
+                contactCards
+            );
+
+        }
 
     }
 
@@ -246,85 +396,63 @@
     }
 
 
-    function criarBotaoPerguntar() {
+    function criarCategoria(
+        tutorial
+    ) {
 
-        const bloco =
+        const categoria =
             document.createElement(
                 'div'
             );
 
 
-        bloco.className =
-            'mexp-search-ask';
+        categoria.className =
+            'mexp-search-category';
 
 
-        const textos =
+        const icone =
             document.createElement(
-                'div'
+                'img'
             );
 
 
-        textos.appendChild(
+        icone.src =
+            tutorial
+                .categoria
+                .icone;
 
-            criarTexto(
 
-                'strong',
+        icone.alt =
+            '';
 
-                '',
 
-                'Não encontrou a resposta que precisava?'
-
-            )
-
+        icone.setAttribute(
+            'aria-hidden',
+            'true'
         );
 
 
-        textos.appendChild(
-
+        const nome =
             criarTexto(
 
-                'p',
+                'span',
 
-                '',
+                'mexp-category',
 
-                'Envie sua dúvida para que um colaborador da plataforma possa responder.'
+                tutorial
+                    .categoria
+                    .nome
 
-            )
-
-        );
-
-
-        const botao =
-            document.createElement(
-                'button'
             );
 
 
-        botao.type =
-            'button';
-
-
-        botao.className =
-            'mexp-primary-button';
-
-
-        botao.textContent =
-            'Deixar minha dúvida';
-
-
-        botao.addEventListener(
-            'click',
-            abrirFormularioPergunta
+        categoria.append(
+            icone,
+            nome
         );
 
 
-        bloco.append(
-            textos,
-            botao
-        );
-
-
-        return bloco;
+        return categoria;
 
     }
 
@@ -366,7 +494,7 @@
 
                     '',
 
-                    `${dados.quantidade} resultado${dados.quantidade === 1 ? '' : 's'} encontrado${dados.quantidade === 1 ? '' : 's'}`
+                    `${dados.quantidade} ${dados.quantidade === 1 ? 'tutorial' : 'tutoriais'} encontrado${dados.quantidade === 1 ? '' : 's'}`
 
                 )
 
@@ -381,7 +509,7 @@
 
                     '',
 
-                    'Clique em uma dúvida para ver as respostas.'
+                    'Clique em um resultado para abrir o tutorial completo.'
 
                 )
 
@@ -399,7 +527,7 @@
 
                     '',
 
-                    'Ainda não encontramos uma resposta para essa pesquisa.'
+                    'Ainda não encontramos um tutorial para essa pesquisa.'
 
                 )
 
@@ -414,7 +542,7 @@
 
                     '',
 
-                    'Você pode enviar sua dúvida para os colaboradores.'
+                    'Tente usar palavras diferentes ou mais curtas. Novos tutoriais são publicados voluntariamente pelos colaboradores.'
 
                 )
 
@@ -429,7 +557,8 @@
 
 
         dados.resultados.forEach(
-            duvida => {
+            tutorial => {
+
 
                 const link =
                     document.createElement(
@@ -438,11 +567,11 @@
 
 
                 link.href =
-                    `/duvidas/${duvida.slug}`;
+                    `/tutoriais/${tutorial.slug}`;
 
 
                 link.className =
-                    'mexp-search-result';
+                    `mexp-search-result mexp-theme-${tutorial.categoria.classe}`;
 
 
                 const topo =
@@ -456,18 +585,20 @@
 
 
                 topo.appendChild(
-
-                    criarTexto(
-
-                        'span',
-
-                        'mexp-category',
-
-                        duvida.categoria
-
+                    criarCategoria(
+                        tutorial
                     )
-
                 );
+
+
+                const avaliacao =
+                    tutorial
+                        .avaliacao
+                        .quantidade
+
+                        ? `${tutorial.avaliacao.media} ★`
+
+                        : 'sem avaliações';
 
 
                 topo.appendChild(
@@ -478,7 +609,7 @@
 
                         'mexp-search-result-count',
 
-                        `${duvida.quantidadeRespostas} resposta${duvida.quantidadeRespostas === 1 ? '' : 's'}`
+                        `${avaliacao} · ${tutorial.quantidadeComentarios} comentário${tutorial.quantidadeComentarios === 1 ? '' : 's'}`
 
                     )
 
@@ -493,9 +624,13 @@
                 link.appendChild(
 
                     criarTexto(
+
                         'h3',
+
                         '',
-                        duvida.titulo
+
+                        tutorial.titulo
+
                     )
 
                 );
@@ -509,11 +644,7 @@
 
                         '',
 
-                        duvida.conteudo.length > 170
-
-                            ? `${duvida.conteudo.slice(0, 167)}...`
-
-                            : duvida.conteudo
+                        tutorial.resumo
 
                     )
 
@@ -527,19 +658,18 @@
             }
         );
 
-
-        resultsBox.appendChild(
-            criarBotaoPerguntar()
-        );
-
     }
 
 
     async function buscar() {
 
         const termo =
-            searchInput.value
+            searchInput
+                .value
                 .trim();
+
+
+        ativarModoBusca();
 
 
         if (
@@ -569,7 +699,7 @@
 
                     'mexp-search-loading',
 
-                    'Buscando respostas...'
+                    'Buscando tutoriais...'
 
                 )
 
@@ -581,7 +711,7 @@
             const dados =
                 await requisicao(
 
-                    `/api/duvidas/buscar?q=${encodeURIComponent(termo)}`
+                    `/api/tutoriais/buscar?q=${encodeURIComponent(termo)}`
 
                 );
 
@@ -614,86 +744,21 @@
     }
 
 
-    async function abrirFormularioPergunta() {
-
-        const estado =
-            await carregarSessao();
-
-
-        // DESLOGADO
-        if (
-            !estado.autenticado
-        ) {
-
-            const retorno =
-                encodeURIComponent(
-                    '/?perguntar=1'
-                );
+    searchInput.addEventListener(
+        'focus',
+        ativarModoBusca
+    );
 
 
-            window.location.href =
-                `/cadastro.html?redirect=${retorno}`;
+    searchInput.addEventListener(
+        'click',
+        ativarModoBusca
+    );
 
-
-            return;
-
-        }
-
-
-        if (
-            questionTitle
-            &&
-            !questionTitle.value
-                .trim()
-        ) {
-
-            questionTitle.value =
-                searchInput.value
-                    .trim();
-
-        }
-
-
-        questionBox
-            .classList
-            .remove(
-                'hidden'
-            );
-
-
-        questionBox
-            .scrollIntoView({
-
-                behavior:
-                    'smooth',
-
-                block:
-                    'center'
-
-            });
-
-
-        questionTitle
-            ?.focus();
-
-    }
-
-
-    // BOTÃO BUSCAR
-    if (searchButton) {
-
-        searchButton.addEventListener(
-            'click',
-            buscar
-        );
-
-    }
-
-
-    // ENTER
     searchInput.addEventListener(
         'keydown',
         event => {
+
 
             if (
                 event.key
@@ -706,14 +771,38 @@
 
             }
 
+
+            if (
+                event.key
+                === 'Escape'
+            ) {
+
+                searchInput.value =
+                    '';
+
+
+                limparResultados();
+
+
+                desativarModoBusca();
+
+
+                searchInput.blur();
+
+            }
+
+
         }
     );
 
 
-    // BUSCA AUTOMÁTICA
     searchInput.addEventListener(
         'input',
         () => {
+
+
+            ativarModoBusca();
+
 
             clearTimeout(
                 timerBusca
@@ -721,7 +810,8 @@
 
 
             if (
-                searchInput.value
+                searchInput
+                    .value
                     .trim()
                     .length < 3
             ) {
@@ -736,148 +826,68 @@
             timerBusca =
                 setTimeout(
                     buscar,
-                    450
+                    400
                 );
+
 
         }
     );
 
 
-    // FECHAR FORM
-    if (closeQuestionForm) {
-
-        closeQuestionForm
-            .addEventListener(
-                'click',
-                () => {
-
-                    questionBox
-                        .classList
-                        .add(
-                            'hidden'
-                        );
-
-                }
-            );
-
-    }
+    document.addEventListener(
+        'click',
+        event => {
 
 
-    // ENVIAR DÚVIDA
-    if (questionForm) {
+            if (!heroSection) {
 
-        questionForm
-            .addEventListener(
-                'submit',
-                async event => {
-
-                    event.preventDefault();
-
-
-                    try {
-
-                        questionMessage
-                            .textContent =
-                            'Enviando sua dúvida...';
-
-
-                        const dados =
-                            await requisicao(
-
-                                '/api/duvidas',
-
-                                {
-
-                                    method:
-                                        'POST',
-
-                                    body:
-                                        JSON.stringify({
-
-                                            titulo:
-                                                questionTitle.value,
-
-                                            categoria:
-                                                questionCategory.value,
-
-                                            conteudo:
-                                                questionContent.value
-
-                                        })
-
-                                }
-
-                            );
-
-
-                        window.location.href =
-                            `/duvidas/${dados.duvida.slug}`;
-
-                    }
-
-                    catch (erro) {
-
-                        questionMessage
-                            .textContent =
-                            erro.message;
-
-                    }
-
-                }
-            );
-
-    }
-
-
-    // =============================
-    // INICIALIZAÇÃO
-    // =============================
-
-    carregarSessao()
-        .then(
-            () => {
-
-                const parametros =
-                    new URLSearchParams(
-                        window.location.search
-                    );
-
-
-                // Veio do login depois
-                // de tentar fazer pergunta.
-                if (
-                    parametros.get(
-                        'perguntar'
-                    )
-                    === '1'
-                ) {
-
-                    abrirFormularioPergunta();
-
-
-                    parametros.delete(
-                        'perguntar'
-                    );
-
-
-                    const novaQuery =
-                        parametros.toString();
-
-
-                    const novaUrl =
-                        `${window.location.pathname}${novaQuery ? `?${novaQuery}` : ''}`;
-
-
-                    window.history
-                        .replaceState(
-                            {},
-                            '',
-                            novaUrl
-                        );
-
-                }
+                return;
 
             }
-        );
+
+
+            /*
+                os menus de acessibilidade
+                sao anexados temporariamente
+                ao body pelo script.js.
+            */
+
+            if (
+                event.target
+                    .closest?.(
+                        '#menu-acc, #menu-fonte'
+                    )
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                !heroSection
+                    .contains(
+                        event.target
+                    )
+
+                &&
+
+                !searchInput
+                    .value
+                    .trim()
+            ) {
+
+                limparResultados();
+
+                desativarModoBusca();
+
+            }
+
+
+        }
+    );
+
+
+    carregarSessao();
 
 })();

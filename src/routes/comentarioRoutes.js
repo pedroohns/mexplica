@@ -4,9 +4,9 @@ const express =
     );
 
 
-const avaliacaoController =
+const comentarioController =
     require(
-        '../controllers/avaliacaoController'
+        '../controllers/comentarioController'
     );
 
 
@@ -28,7 +28,7 @@ router.put(
 
     exigirAutenticacao,
 
-    avaliacaoController.atualizar
+    comentarioController.atualizar
 
 );
 
@@ -39,7 +39,7 @@ router.delete(
 
     exigirAutenticacao,
 
-    avaliacaoController.excluir
+    comentarioController.excluir
 
 );
 

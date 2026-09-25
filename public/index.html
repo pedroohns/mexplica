@@ -46,16 +46,84 @@
         <section class="hero-section">
             <div class="container hero-inner">
 
-                <div class="accessibility-bar">
-                    <button class="acc-btn acc-blue" id="toggleAccessibility">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4" r="2.5"></circle><path d="M4 10h16"></path><path d="M12 10v8"></path><path d="M8 22l4-4 4 4"></path></svg>
-                        ACESSIBILIDADE
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                    <button class="acc-btn acc-purple" id="toggleFontSize">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><text x="1" y="18" font-size="16" fill="#ffffff" font-family="sans-serif" font-weight="900">Aa</text></svg>
-                        AUMENTAR TEXTO
-                    </button>
+                <div class="accessibility-bar" id="accessibilityBar">
+                    <button
+    class="acc-btn acc-blue"
+    id="toggleAccessibility"
+    type="button"
+    aria-label="Acessibilidade"
+>
+
+    <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+    >
+        <circle cx="12" cy="4" r="2.5"></circle>
+        <path d="M4 10h16"></path>
+        <path d="M12 10v8"></path>
+        <path d="M8 22l4-4 4 4"></path>
+    </svg>
+
+    <span class="acc-label">
+        ACESSIBILIDADE
+    </span>
+
+    <svg
+        class="acc-caret"
+        width="12"
+        height="12"
+        viewBox="0 0 12 12"
+        fill="none"
+        aria-hidden="true"
+    >
+        <path
+            d="M2 4l4 4 4-4"
+            stroke="#ffffff"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        />
+    </svg>
+
+</button>
+                    <button
+    class="acc-btn acc-purple"
+    id="toggleFontSize"
+    type="button"
+    aria-label="Aumentar texto"
+>
+
+    <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+    >
+        <text
+            x="1"
+            y="18"
+            font-size="16"
+            fill="#ffffff"
+            font-family="sans-serif"
+            font-weight="900"
+        >
+            Aa
+        </text>
+    </svg>
+
+    <span class="acc-label">
+        AUMENTAR TEXTO
+    </span>
+
+</button>
                 </div>
 
                 <div class="hero-logo">
@@ -64,82 +132,133 @@
 
                 <h1 class="hero-title" id="greeting">Bom dia! Qual seria sua dúvida de hoje?</h1>
 
-                <div class="search-box">
-                    <div class="search-input-wrap">
-                        <img src="icons/lupa.png" alt="buscar" class="search-icon-img">
-                        <input 
-                            type="text" 
-                            class="search-input" 
-                            placeholder="Pesquise por qualquer dúvida que tiver"
-                            aria-label="Campo de pesquisa"
-                            id="searchInput"
-                        >
-                        <button
-                            class="search-submit-btn"
-                            id="searchSubmitBtn"
-                            type="button"
-                            > Buscar </button>
-                        <button class="search-voice-btn" aria-label="Pesquisa por voz" type="button">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                        </button>
-                    </div>
-                    <div class="search-options">
-                        <button class="search-opt-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                            Pesquisa por imagem
-                        </button>
-                        <button class="search-opt-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                            Filtrar busca
-                        </button>
-                    </div>
-                </div>
+                <div
+    class="search-box"
+    id="searchBox"
+>
+
+    <div class="search-input-wrap">
+
+        <img
+            src="icons/lupa.png"
+            alt="buscar"
+            class="search-icon-img"
+        >
+
+        <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Pesquise por qualquer dúvida que tiver"
+            aria-label="Campo de pesquisa"
+            id="searchInput"
+        >
+
+
+
+        <button
+            class="search-voice-btn"
+            aria-label="Pesquisa por voz"
+            type="button"
+        >
+
+            <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+
+        </button>
+
+    </div>
+
+
+    <div
+        class="search-tools-row"
+        id="searchToolsRow"
+    >
+
+        <div
+            class="search-options"
+            id="searchOptions"
+        >
+
+            <button
+                class="search-opt-btn"
+                type="button"
+                aria-label="Pesquisa por imagem"
+            >
+
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                >
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+
+                <span class="search-opt-label">
+                    Pesquisa por imagem
+                </span>
+
+            </button>
+
+
+            <button
+                class="search-opt-btn"
+                type="button"
+                aria-label="Filtrar busca"
+            >
+
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                >
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+
+                <span class="search-opt-label">
+                    Filtrar busca
+                </span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
                 <div id="searchResults" class="mexp-search-results hidden" aria-live="polite"></div>
-                <div id="questionFormBox" class="mexp-question-form-box hidden">
+                
 
-                <div class="mexp-question-form-head">
-                    
-                    <div>
-                        <strong>
-                            Não encontrou sua resposta?
-                        </strong>
-                        <p>
-                            Envie sua dúvida para os colaboradores do MExplica.
-                        </p>
-                    </div>
-                    <button type="button" id="closeQuestionForm" class="mexp-text-button">Fechar</button>
-                </div>
-
-                <form id="questionForm" class="mexp-form">
-                    <label for="questionTitle">Título</label>
-                    <input id="questionTitle" type="text" maxlength="160" required placeholder="Resuma sua dúvida em uma frase.">
-                    <label for="questionCategory">Categoria</label>
-                    <select id="questionCategory" required>
-                        <option value="Geral">Geral</option>
-                        <option value="Segurança">Segurança</option>
-                        <option value="Comunicação">Comunicação</option>
-                        <option value="Acessibilidade">Acessibilidade</option>
-                        <option value="Sistemas">Sistemas</option>
-                        <option value="Serviços Digitais"></option>
-                    </select>
-
-                    <label for="questionContent">Conteúdo</label>
-                    <textarea id="questionContent" maxlength="3000" required placeholder="Explique o problema com um pouco mais de detalhes."></textarea>
-                    <p id="questionMessage" class="mexp-form-message" aria-live="polite"></p>
-                    <button type="submit" class="mexp-primary-button">Enviar dúvida</button>
-                </form>
-                   </div>
-
-                <div class="contact-cards">
-                    <button class="contact-card card-phone">
+                <div class="contact-cards" id="contactCards">
+                    <button class="contact-card card-phone" type="button" aria-label="Ligar para o Colaborador">
                         <img src="icons/telefone.png" alt="" class="card-icon-img" aria-hidden="true">
                         <div class="card-text">
                             <strong>Ligar para colaborador</strong>
                             <p>Entre em contato por telefone com um de nossos colaboradores.</p>
                         </div>
                     </button>
-                    <button class="contact-card card-chat">
+                    <button class="contact-card card-chat" type="button" aria-label="Chat com Colaborador">
                         <img src="icons/chat.png" alt="" class="card-icon-img" aria-hidden="true">
                         <div class="card-text">
                             <strong>Chat com colaborador</strong>
@@ -190,8 +309,9 @@
     id="topicGrid"
 >
 
+
     <a
-        href="/duvidas/como-identificar-um-golpe-no-whatsapp"
+        href="/tutoriais/como-identificar-um-golpe-no-whatsapp"
         class="topic-card topic-red"
     >
 
@@ -203,67 +323,20 @@
         >
 
         <h3>
-            Como identificar um golpe no WhatsApp?
+            Como identificar um golpe no WhatsApp
         </h3>
 
         <p>
-            Veja orientações de segurança
-            e respostas dos colaboradores.
+            Veja sinais que ajudam a reconhecer
+            mensagens suspeitas antes de clicar
+            ou responder.
         </p>
 
     </a>
 
 
     <a
-        href="/duvidas/como-criar-uma-conta-no-gov-br"
-        class="topic-card topic-blue"
-    >
-
-        <img
-            src="icons/azul.png"
-            alt=""
-            class="topic-icon"
-            aria-hidden="true"
-        >
-
-        <h3>
-            Como criar uma conta no Gov.br?
-        </h3>
-
-        <p>
-            Veja as orientações publicadas
-            pela comunidade MExplica.
-        </p>
-
-    </a>
-
-
-    <a
-        href="/duvidas/como-aumentar-as-letras-do-celular"
-        class="topic-card topic-blue"
-    >
-
-        <img
-            src="icons/azul.png"
-            alt=""
-            class="topic-icon"
-            aria-hidden="true"
-        >
-
-        <h3>
-            Como aumentar as letras do celular?
-        </h3>
-
-        <p>
-            Veja respostas sobre acessibilidade
-            e tamanho de fonte.
-        </p>
-
-    </a>
-
-
-    <a
-        href="/duvidas/como-fazer-uma-chamada-de-video"
+        href="/tutoriais/como-fazer-uma-chamada-de-video-no-whatsapp"
         class="topic-card topic-green"
     >
 
@@ -275,15 +348,65 @@
         >
 
         <h3>
-            Como fazer uma chamada de vídeo?
+            Como fazer uma chamada de vídeo no WhatsApp
         </h3>
 
         <p>
-            Aprenda a usar chamadas de vídeo
-            de forma simples.
+            Aprenda a conversar por vídeo
+            com familiares e amigos usando
+            o WhatsApp.
         </p>
 
     </a>
+
+
+    <a
+        href="/tutoriais/saiba-como-aumentar-a-fonte-do-celular"
+        class="topic-card topic-blue"
+    >
+
+        <img
+            src="icons/azul.png"
+            alt=""
+            class="topic-icon"
+            aria-hidden="true"
+        >
+
+        <h3>
+            Saiba como aumentar a fonte do celular
+        </h3>
+
+        <p>
+            Deixe letras e textos maiores
+            para facilitar a leitura no aparelho.
+        </p>
+
+    </a>
+
+
+    <a
+        href="/tutoriais/como-saber-se-um-site-e-seguro"
+        class="topic-card topic-red"
+    >
+
+        <img
+            src="icons/vermelho.png"
+            alt=""
+            class="topic-icon"
+            aria-hidden="true"
+        >
+
+        <h3>
+            Como saber se um site é seguro
+        </h3>
+
+        <p>
+            Confira endereço, conexão e outros
+            sinais antes de informar seus dados.
+        </p>
+
+    </a>
+
 
 </div>
         </section>
@@ -299,7 +422,7 @@
                 <div class="legend-bar">
                     <div class="legend-item">
                         <span class="dot dot-red"> <img src="icons/comum.png" alt=""> </span>
-                        <span>Colaboradores <strong>COMUNS</strong> respondem perguntas e enviam mídias.</span>
+                        <span>Colaboradores <strong>COMUNS</strong> publicam tutoriais e podem adicionar imagens ou vídeos de apoio.</span>
                     </div>
                     <div class="legend-item">
                         <span class="dot dot-green"> <img src="icons/diamante.png" alt=""> </span>
@@ -322,16 +445,16 @@
                     </div>
                     <div class="step-card step-green">
                         <img src="icons/maos.png" alt="" class="step-topic-icon" aria-hidden="true">
-                        <h3>2 - Responda perguntas e dúvidas</h3>
-                        <p>Ao selecionar que quer ser um colaborador, você terá duas opções de colaboração. Selecione a que preferir.</p>
+                        <h3>2 - Publique tutoriais para ajudar</h3>
+                        <p>Compartilhe voluntariamente o que você sabe por meio de tutoriais simples, objetivos e fáceis de acompanhar.</p>
                         <div class="step-print">
                             
                         </div>
                     </div>
                     <div class="step-card step-green">
                         <img src="icons/chat-roxo.png" alt="" class="step-topic-icon" aria-hidden="true">
-                        <h3>3 - Veja os comentários em tempo real.</h3>
-                        <p>Ao criar sua conta, aparecerá uma opção para se tornar colaborador, você pode ou não aceitar.</p>
+                        <h3>3 - Receba comentários e avaliações.</h3>
+                        <p>Usuários logados podem agradecer, comentar e avaliar seus tutoriais depois de utilizá-los.</p>
                         <div class="step-print">
                             
                         </div>

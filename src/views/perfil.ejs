@@ -30,14 +30,32 @@
 
 
 <body>
-    <script>
-    (function() {
-        var salvo = localStorage.getItem('mexplica-tema');
 
-        if (salvo === '1') {
-            document.body.classList.add('dark-blue');
+
+<script>
+
+    (function() {
+
+        var salvo =
+            localStorage.getItem(
+                'mexplica-tema'
+            );
+
+
+        if (
+            salvo === '1'
+        ) {
+
+            document.body
+                .classList
+                .add(
+                    'dark-blue'
+                );
+
         }
+
     })();
+
 </script>
 
 
@@ -133,9 +151,8 @@
 <main class="mexp-page">
 
 
-    <section
-        class="container mexp-profile-card"
-    >
+    <section class="container mexp-profile-card">
+
 
         <div class="mexp-profile-avatar">
 
@@ -146,18 +163,23 @@
 
         <div class="mexp-profile-main">
 
+
             <span class="mexp-eyebrow">
                 PERFIL
             </span>
+
 
             <h1>
                 <%= perfil.nomeCompleto %>
             </h1>
 
+
             <p>
 
                 <%= perfil.bio
+
                     || 'Este usuário ainda não adicionou uma biografia.'
+
                 %>
 
             </p>
@@ -168,11 +190,9 @@
 
                 <% if (perfil.colaborador) { %>
 
+
                     <span
-                        class="mexp-badge <%= perfil.nivel === 'Platina'
-                            ? 'mexp-badge-platinum'
-                            : ''
-                        %>"
+                        class="mexp-badge <%= perfil.nivel === 'Platina' ? 'mexp-badge-platinum' : '' %>"
                     >
 
                         COLABORADOR
@@ -186,11 +206,13 @@
                             especialidade => {
                     %>
 
+
                         <span class="mexp-tag">
 
                             <%= especialidade %>
 
                         </span>
+
 
                     <% }) %>
 
@@ -199,9 +221,7 @@
 
 
                     <span class="mexp-tag">
-
                         USUÁRIO DA COMUNIDADE
-
                     </span>
 
 
@@ -210,78 +230,116 @@
 
             </div>
 
+
         </div>
+
 
     </section>
 
 
-    <section
-        class="container mexp-stats-grid"
-    >
-
-        <div class="mexp-stat">
-
-            <strong>
-                <%= perfil.pontos %>
-            </strong>
-
-            <span>
-                pontos
-            </span>
-
-        </div>
+    <section class="container mexp-stats-grid">
 
 
-        <div class="mexp-stat">
-
-            <strong>
-                <%= estatisticas.totalRespostas %>
-            </strong>
-
-            <span>
-                respostas
-            </span>
-
-        </div>
+        <% if (perfil.colaborador) { %>
 
 
-        <div class="mexp-stat">
+            <div class="mexp-stat">
 
-            <strong>
-                <%= estatisticas.mediaGeral || '—' %>
-            </strong>
+                <strong>
+                    <%= perfil.pontos %>
+                </strong>
 
-            <span>
-                avaliação média
-            </span>
+                <span>
+                    pontos
+                </span>
 
-        </div>
+            </div>
 
 
-        <div class="mexp-stat">
+            <div class="mexp-stat">
 
-            <strong>
-                <%= estatisticas.totalDuvidas %>
-            </strong>
+                <strong>
+                    <%= estatisticas.totalTutoriais %>
+                </strong>
 
-            <span>
-                dúvidas enviadas
-            </span>
+                <span>
+                    tutoriais publicados
+                </span>
 
-        </div>
+            </div>
+
+
+            <div class="mexp-stat">
+
+                <strong>
+                    <%= estatisticas.mediaGeral || '—' %>
+                </strong>
+
+                <span>
+                    avaliação média
+                </span>
+
+            </div>
+
+
+            <div class="mexp-stat">
+
+                <strong>
+                    <%= estatisticas.totalAvaliacoesRecebidas %>
+                </strong>
+
+                <span>
+                    avaliações recebidas
+                </span>
+
+            </div>
+
+
+        <% } else { %>
+
+
+            <div class="mexp-stat">
+
+                <strong>
+                    <%= estatisticas.totalComentarios %>
+                </strong>
+
+                <span>
+                    comentários
+                </span>
+
+            </div>
+
+
+            <div class="mexp-stat">
+
+                <strong>
+                    <%= estatisticas.totalAvaliacoesFeitas %>
+                </strong>
+
+                <span>
+                    avaliações feitas
+                </span>
+
+            </div>
+
+
+        <% } %>
+
 
     </section>
 
 
     <% if (perfil.nivel === 'Platina') { %>
 
+
         <section class="container mexp-callout">
+
 
             <div>
 
                 <strong>
-                    Atendimento direto disponível
-                    para colaboradores Platina
+                    Atendimento direto para colaboradores Platina
                 </strong>
 
                 <p>
@@ -289,8 +347,11 @@
                     Status atual:
 
                     <%= perfil.disponivelAtendimento
+
                         ? 'disponível para chamadas e chat'
+
                         : 'indisponível no momento'
+
                     %>.
 
                 </p>
@@ -302,7 +363,8 @@
                 if (
                     usuarioAtual
                     &&
-                    usuarioAtual.id === perfil.id
+                    usuarioAtual.id
+                    === perfil.id
                 ) {
             %>
 
@@ -311,11 +373,15 @@
                     id="toggleDisponibilidade"
                     class="mexp-secondary-button"
                     data-disponivel="<%= perfil.disponivelAtendimento ? 'true' : 'false' %>"
+                    type="button"
                 >
 
                     <%= perfil.disponivelAtendimento
+
                         ? 'Ficar indisponível'
+
                         : 'Ficar disponível'
+
                     %>
 
                 </button>
@@ -323,7 +389,9 @@
 
             <% } %>
 
+
         </section>
+
 
     <% } %>
 
@@ -332,13 +400,54 @@
         if (
             usuarioAtual
             &&
-            usuarioAtual.id === perfil.id
+            usuarioAtual.id
+            === perfil.id
         ) {
     %>
 
+
+        <% if (perfil.colaborador) { %>
+
+
+            <section class="container mexp-callout mexp-publish-callout">
+
+
+                <div>
+
+                    <strong>
+                        Compartilhe o que você sabe
+                    </strong>
+
+                    <p>
+
+                        Publique um tutorial voluntário
+                        para ajudar outras pessoas a usar
+                        tecnologia com mais autonomia.
+
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="/tutoriais/novo"
+                    class="mexp-primary-link"
+                >
+                    Publicar novo tutorial
+                </a>
+
+
+            </section>
+
+
+        <% } %>
+
+
         <section class="container mexp-section">
 
+
             <div class="mexp-section-heading">
+
 
                 <div>
 
@@ -352,6 +461,7 @@
 
                 </div>
 
+
             </div>
 
 
@@ -361,15 +471,18 @@
                 data-id="<%= perfil.id %>"
             >
 
+
                 <label for="perfilBio">
                     Biografia
                 </label>
+
 
                 <textarea
                     id="perfilBio"
                     name="bio"
                     maxlength="500"
                 ><%= perfil.bio %></textarea>
+
 
                 <button
                     type="submit"
@@ -378,10 +491,12 @@
                     Salvar alterações
                 </button>
 
+
             </form>
 
 
             <div class="mexp-inline-actions">
+
 
                 <button
                     id="logoutButton"
@@ -401,92 +516,24 @@
                     Excluir minha conta
                 </button>
 
+
             </div>
 
+
         </section>
+
 
     <% } %>
 
 
-    <section class="container mexp-section">
-
-        <div class="mexp-section-heading">
-
-            <div>
-
-                <span class="mexp-eyebrow">
-                    ATIVIDADE
-                </span>
-
-                <h2>
-                    Dúvidas recentes
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        <div class="mexp-question-grid">
-
-            <% if (!duvidas.length) { %>
-
-                <p class="mexp-empty">
-
-                    Nenhuma dúvida publicada
-                    por este usuário.
-
-                </p>
-
-            <% } %>
-
-
-            <%
-                duvidas.forEach(
-                    duvida => {
-            %>
-
-                <a
-                    href="/duvidas/<%= duvida.slug %>"
-                    class="mexp-question-card"
-                >
-
-                    <span class="mexp-category">
-                        <%= duvida.categoria %>
-                    </span>
-
-                    <h3>
-                        <%= duvida.titulo %>
-                    </h3>
-
-                    <div class="mexp-question-meta">
-
-                        <span>
-                            <%= duvida.visualizacoes %>
-                            visualizações
-                        </span>
-
-                        <span>
-                            <%= duvida.quantidadeRespostas %>
-                            respostas
-                        </span>
-
-                    </div>
-
-                </a>
-
-            <% }) %>
-
-        </div>
-
-    </section>
-
-
     <% if (perfil.colaborador) { %>
+
 
         <section class="container mexp-section">
 
+
             <div class="mexp-section-heading">
+
 
                 <div>
 
@@ -495,56 +542,108 @@
                     </span>
 
                     <h2>
-                        Respostas recentes
+                        Tutoriais publicados
                     </h2>
 
                 </div>
 
+
             </div>
 
 
-            <div class="mexp-answer-list">
+            <div class="mexp-question-grid">
 
 
-                <% if (!respostas.length) { %>
+                <% if (!tutoriais.length) { %>
+
 
                     <p class="mexp-empty">
 
                         Este colaborador ainda
-                        não respondeu nenhuma dúvida.
+                        não publicou nenhum tutorial.
 
                     </p>
+
 
                 <% } %>
 
 
                 <%
-                    respostas.forEach(
-                        resposta => {
+                    tutoriais.forEach(
+                        tutorial => {
                 %>
 
 
                     <a
-                        href="/duvidas/<%= resposta.duvida ? resposta.duvida.slug : '' %>"
-                        class="mexp-answer-preview"
+                        href="/tutoriais/<%= tutorial.slug %>"
+                        class="mexp-question-card mexp-theme-<%= tutorial.categoria.classe %>"
                     >
 
+
+                        <div class="mexp-card-category-line">
+
+
+                            <img
+                                src="<%= tutorial.categoria.icone %>"
+                                alt=""
+                                aria-hidden="true"
+                            >
+
+
+                            <span class="mexp-category">
+
+                                <%= tutorial.categoria.nome %>
+
+                            </span>
+
+
+                        </div>
+
+
+                        <h3>
+                            <%= tutorial.titulo %>
+                        </h3>
+
+
                         <p>
-                            <%= resposta.texto %>
+                            <%= tutorial.resumo %>
                         </p>
 
 
-                        <span>
+                        <div class="mexp-question-meta">
 
-                            <%= resposta.avaliacao.quantidade
 
-                                ? `${resposta.avaliacao.media} ★ · ${resposta.avaliacao.quantidade} avaliações`
+                            <span>
 
-                                : 'Ainda sem avaliações'
+                                <%= tutorial.visualizacoes %>
+                                visualizações
 
-                            %>
+                            </span>
 
-                        </span>
+
+                            <span>
+
+                                <%= tutorial.avaliacao.quantidade
+
+                                    ? `${tutorial.avaliacao.media} ★`
+
+                                    : 'sem avaliações'
+
+                                %>
+
+                            </span>
+
+
+                            <span>
+
+                                <%= tutorial.quantidadeComentarios %>
+                                comentários
+
+                            </span>
+
+
+                        </div>
+
 
                     </a>
 
@@ -554,7 +653,9 @@
 
             </div>
 
+
         </section>
+
 
     <% } %>
 
@@ -565,6 +666,7 @@
 <script src="/script.js"></script>
 
 <script src="/perfil.js"></script>
+
 
 </body>
 

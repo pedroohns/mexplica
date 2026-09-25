@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        MEXPLICA -
+        <%= modo === 'criar'
+            ? 'Novo tutorial'
+            : 'Editar tutorial'
+        %>
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/style.css"
+    >
+
+    <link
+        rel="shortcut icon"
+        href="/icons/favicon.ico"
+        type="image/x-icon"
+    >
+
+</head>
+
+
+<body>
+
+
+<script>
+
+    (function() {
+
+        var salvo =
+            localStorage.getItem(
+                'mexplica-tema'
+            );
+
+
+        if (
+            salvo === '1'
+        ) {
+
+            document.body
+                .classList
+                .add(
+                    'dark-blue'
+                );
+
+        }
+
+    })();
+
+</script>
+
+
+<header class="header">
+
+    <nav class="nav container">
+
+        <a
+            href="/"
+            class="nav-logo"
+        >
+
+            <img
+                src="/icons/logo-mexplica.png"
+                alt="MEXPLICA"
+                class="logo-icon"
+            >
+
+        </a>
+
+
+        <ul class="nav-links">
+
+            <li>
+                <a href="/cadastro.html">
+                    Colabore
+                </a>
+            </li>
+
+            <li>
+                <a href="/comunidade">
+                    Comunidade
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    Ajuda
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    Sobre
+                </a>
+            </li>
+
+        </ul>
+
+
+        <div class="nav-actions">
+
+            <a
+                href="/perfil/<%= usuarioAtual.slug %>"
+                class="btn-acessar"
+            >
+
+                <%= usuarioAtual.nome %>
+
+            </a>
+
+        </div>
+
+
+        <button
+            class="nav-toggle"
+            aria-label="Abrir menu"
+            id="navToggle"
+        >
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </button>
+
+    </nav>
+
+</header>
+
+
+<main class="mexp-page">
+
+
+    <section class="container mexp-editor-wrap">
+
+
+        <a
+            href="<%= modo === 'editar'
+                ? `/tutoriais/${tutorial.slug}`
+                : `/perfil/${usuarioAtual.slug}`
+            %>"
+            class="mexp-back-link"
+        >
+            ← Voltar
+        </a>
+
+
+        <div class="mexp-section-heading">
+
+
+            <div>
+
+                <span class="mexp-eyebrow">
+                    COLABORADOR
+                </span>
+
+                <h1>
+
+                    <%= modo === 'criar'
+                        ? 'Publicar novo tutorial'
+                        : 'Editar tutorial'
+                    %>
+
+                </h1>
+
+            </div>
+
+
+            <p>
+
+                Escreva para quem pode ter pouca
+                familiaridade com tecnologia:
+                use frases simples, passos objetivos
+                e, quando possível, imagens ou vídeo.
+
+            </p>
+
+
+        </div>
+
+
+        <form
+            id="formTutorial"
+            class="mexp-form mexp-editor-form"
+            data-modo="<%= modo %>"
+            data-id="<%= tutorial ? tutorial.id : '' %>"
+            data-slug="<%= tutorial ? tutorial.slug : '' %>"
+        >
+
+
+            <label for="tutorialTitulo">
+                Título
+            </label>
+
+
+            <input
+                id="tutorialTitulo"
+                maxlength="160"
+                required
+                value="<%= tutorial ? tutorial.titulo : '' %>"
+                placeholder="Ex.: Saiba como aumentar a fonte do celular!"
+            >
+
+
+            <label for="tutorialCategoria">
+                Categoria visual
+            </label>
+
+
+            <select
+                id="tutorialCategoria"
+                required
+            >
+
+
+                <%
+                    categorias.forEach(
+                        categoria => {
+                %>
+
+
+                    <option
+                        value="<%= categoria.id %>"
+                        <%= tutorial && tutorial.categoriaId === categoria.id ? 'selected' : '' %>
+                    >
+
+                        <%= categoria.nome %>
+
+                    </option>
+
+
+                <% }) %>
+
+
+            </select>
+
+
+            <label for="tutorialResumo">
+                Resumo
+            </label>
+
+
+            <textarea
+                id="tutorialResumo"
+                maxlength="320"
+                required
+                placeholder="Explique em poucas palavras o que a pessoa aprenderá."
+            ><%= tutorial ? tutorial.resumo : '' %></textarea>
+
+
+            <label for="tutorialConteudo">
+                Introdução
+            </label>
+
+
+            <textarea
+                id="tutorialConteudo"
+                maxlength="6000"
+                required
+                placeholder="Explique o contexto antes do passo a passo."
+            ><%= tutorial ? tutorial.conteudo : '' %></textarea>
+
+
+            <label for="tutorialPassos">
+                Passo a passo
+            </label>
+
+
+            <p class="mexp-field-help">
+
+                Escreva um passo por linha.
+                O sistema numerará automaticamente.
+
+            </p>
+
+
+            <textarea
+                id="tutorialPassos"
+                required
+                placeholder="Abra as Configurações do celular.&#10;Entre em Tela ou Visor.&#10;Procure Tamanho da fonte.&#10;Arraste o controle para aumentar."
+            ><%= tutorial ? tutorial.passos.map(passo => passo.descricao).join('\n') : '' %></textarea>
+
+
+            <label for="tutorialImagens">
+                Imagens de apoio (opcional)
+            </label>
+
+
+            <p class="mexp-field-help">
+
+                Uma URL por linha, na ordem
+                em que as imagens devem aparecer.
+
+            </p>
+
+
+            <textarea
+                id="tutorialImagens"
+                placeholder="https://exemplo.com/passo-1.png&#10;https://exemplo.com/passo-2.png"
+            ><%= tutorial ? tutorial.imagens.map(imagem => imagem.url).join('\n') : '' %></textarea>
+
+
+            <label for="tutorialVideo">
+                Vídeo tutorial (opcional)
+            </label>
+
+
+            <input
+                id="tutorialVideo"
+                type="url"
+                value="<%= tutorial ? tutorial.videoUrl : '' %>"
+                placeholder="https://..."
+            >
+
+
+            <label for="tutorialTags">
+                Palavras-chave
+            </label>
+
+
+            <input
+                id="tutorialTags"
+                value="<%= tutorial ? tutorial.tags.join(', ') : '' %>"
+                placeholder="fonte, celular, android, acessibilidade"
+            >
+
+
+            <p
+                id="tutorialMensagem"
+                class="mexp-form-message"
+                aria-live="polite"
+            ></p>
+
+
+            <button
+                type="submit"
+                class="mexp-primary-button"
+            >
+
+                <%= modo === 'criar'
+                    ? 'Publicar tutorial'
+                    : 'Salvar alterações'
+                %>
+
+            </button>
+
+
+        </form>
+
+
+    </section>
+
+
+</main>
+
+
+<script src="/script.js"></script>
+
+<script src="/editor-tutorial.js"></script>
+
+
+</body>
+
+</html>

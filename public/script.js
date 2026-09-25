@@ -309,11 +309,55 @@ document.addEventListener('DOMContentLoaded', () => {
         function abrirMenuFonte() {
             atualizarCoresMenu();
 
-            const rect = fontBtn.getBoundingClientRect();
-            menuFonte.style.position = 'fixed';
-            menuFonte.style.top = (rect.bottom + 8) + 'px';
-            menuFonte.style.left = rect.left + 'px';
-            menuFonte.style.width = rect.width + 'px';
+            const rect =
+    fontBtn
+        .getBoundingClientRect();
+
+
+const larguraMenu =
+    Math.max(
+        rect.width,
+        280
+    );
+
+
+const esquerda =
+    Math.min(
+
+        Math.max(
+            8,
+            rect.left
+        ),
+
+        Math.max(
+            8,
+            window.innerWidth
+            -
+            larguraMenu
+            -
+            8
+        )
+
+    );
+
+
+menuFonte.style.position =
+    'fixed';
+
+
+menuFonte.style.top =
+    (rect.bottom + 8)
+    + 'px';
+
+
+menuFonte.style.left =
+    esquerda
+    + 'px';
+
+
+menuFonte.style.width =
+    larguraMenu
+    + 'px';
 
             document.body.appendChild(menuFonte);
             menuFonte.style.display = 'block';
@@ -338,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // estado inicial
         aplicarNivel(1);
         // reescreve o innerHTML do botao e reanexa o menu (que foi removido pelo innerHTML)
-        fontBtn.innerHTML = iconeAa + ' AUMENTAR TEXTO ' + setaAbaixo;
+        fontBtn.innerHTML = iconeAa + '<span class="acc-label">AUMENTAR TEXTO</span>' + '<span class="acc-caret">' + setaAbaixo + '</span>';
         fontBtn.appendChild(menuFonte);
     }
 
@@ -602,13 +646,55 @@ document.addEventListener('DOMContentLoaded', () => {
         function abrirMenuAcc() {
             atualizarEstiloMenuAcc();
 
-            // posiciona o menu relativo ao botao, anexado ao body
-            // isso evita o problema de z-index no mobile
-            const rect = accBtn.getBoundingClientRect();
-            menuAcc.style.position = 'fixed';
-            menuAcc.style.top = (rect.bottom + 8) + 'px';
-            menuAcc.style.left = rect.left + 'px';
-            menuAcc.style.width = rect.width + 'px';
+const rect =
+    accBtn
+        .getBoundingClientRect();
+
+
+const larguraMenu =
+    Math.max(
+        rect.width,
+        300
+    );
+
+
+const esquerda =
+    Math.min(
+
+        Math.max(
+            8,
+            rect.left
+        ),
+
+        Math.max(
+            8,
+            window.innerWidth
+            -
+            larguraMenu
+            -
+            8
+        )
+
+    );
+
+
+menuAcc.style.position =
+    'fixed';
+
+
+menuAcc.style.top =
+    (rect.bottom + 8)
+    + 'px';
+
+
+menuAcc.style.left =
+    esquerda
+    + 'px';
+
+
+menuAcc.style.width =
+    larguraMenu
+    + 'px';
 
             document.body.appendChild(menuAcc);
             menuAcc.style.display = 'block';

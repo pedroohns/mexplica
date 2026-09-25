@@ -3,6 +3,7 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
+
 const {
     removerDadosDoUsuario
 } =
@@ -11,32 +12,25 @@ const {
     );
 
 
-// READ
 function listar(
     req,
     res
 ) {
 
-    const usuarios =
-        UsuarioModel
+    return res.json(
 
+        UsuarioModel
             .findAll()
 
             .map(
                 UsuarioModel.toPublic
-            );
+            )
 
-
-    return res.json(
-        usuarios
     );
 
 }
 
 
-// =============================
-// RANKING
-// =============================
 function ranking(
     req,
     res
@@ -55,70 +49,64 @@ function ranking(
         )
 
             ? Math.min(
+
                 Math.max(
                     limiteSolicitado,
                     1
                 ),
+
                 50
+
             )
 
             : 10;
 
 
-    const colaboradores =
-        UsuarioModel
+    return res.json(
 
+        UsuarioModel
             .getRanking(
                 limite
             )
 
             .map(
                 UsuarioModel.toPublic
-            );
+            )
 
-
-    return res.json(
-        colaboradores
     );
 
 }
 
 
-// =============================
-// PLATINA DISPONIVEL
-// =============================
 function platinaDisponiveis(
     req,
     res
 ) {
 
-    const colaboradores =
-        UsuarioModel
+    return res.json(
 
+        UsuarioModel
             .getPlatinaDisponiveis()
 
             .map(
                 UsuarioModel.toPublic
-            );
+            )
 
-
-    return res.json(
-        colaboradores
     );
 
 }
 
 
-// READ BY ID
 function buscarPorId(
     req,
     res
 ) {
 
     const usuario =
-        UsuarioModel.findById(
-            req.params.id
-        );
+        UsuarioModel
+            .findById(
+                req.params.id
+            );
 
 
     if (!usuario) {
@@ -136,16 +124,17 @@ function buscarPorId(
 
 
     return res.json(
+
         UsuarioModel
             .toPublic(
                 usuario
             )
+
     );
 
 }
 
 
-// UPDATE
 function atualizar(
     req,
     res
@@ -181,13 +170,17 @@ function atualizar(
     if (
         typeof req.body.nome
         === 'string'
+
         &&
+
         req.body.nome.trim()
     ) {
 
         alteracoes.nome =
             req.body.nome
+
                 .trim()
+
                 .slice(
                     0,
                     60
@@ -199,16 +192,19 @@ function atualizar(
     if (
         typeof req.body.sobrenome
         === 'string'
+
         &&
+
         req.body
             .sobrenome
             .trim()
     ) {
 
         alteracoes.sobrenome =
-            req.body
-                .sobrenome
+            req.body.sobrenome
+
                 .trim()
+
                 .slice(
                     0,
                     80
@@ -224,7 +220,9 @@ function atualizar(
 
         alteracoes.bio =
             req.body.bio
+
                 .trim()
+
                 .slice(
                     0,
                     500
@@ -248,9 +246,13 @@ function atualizar(
             !Number.isInteger(
                 idade
             )
+
             ||
+
             idade < 10
+
             ||
+
             idade > 120
         ) {
 
@@ -275,7 +277,9 @@ function atualizar(
     if (
         typeof req.body.genero
         === 'string'
+
         &&
+
         req.body.genero.trim()
     ) {
 
@@ -288,7 +292,9 @@ function atualizar(
 
     if (
         req.usuario.colaborador
+
         &&
+
         Array.isArray(
             req.body.especialidades
         )
@@ -316,10 +322,14 @@ function atualizar(
 
 
     const usuarioAtualizado =
-        UsuarioModel.update(
-            id,
-            alteracoes
-        );
+        UsuarioModel
+            .update(
+
+                id,
+
+                alteracoes
+
+            );
 
 
     return res.json({
@@ -338,9 +348,6 @@ function atualizar(
 }
 
 
-// =============================
-// DISPONIBILIDADE PLATINA
-// =============================
 function atualizarDisponibilidade(
     req,
     res
@@ -359,8 +366,11 @@ function atualizarDisponibilidade(
     const usuario =
         UsuarioModel
             .definirDisponibilidade(
+
                 req.usuario.id,
+
                 disponivel
+
             );
 
 
@@ -384,7 +394,6 @@ function atualizarDisponibilidade(
 }
 
 
-// DELETE
 function excluir(
     req,
     res

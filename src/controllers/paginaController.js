@@ -3,15 +3,18 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
-const DuvidaModel =
+
+const TutorialModel =
     require(
-        '../models/duvidaModel'
+        '../models/tutorialModel'
     );
 
-const RespostaModel =
+
+const ComentarioModel =
     require(
-        '../models/respostaModel'
+        '../models/comentarioModel'
     );
+
 
 const AvaliacaoModel =
     require(
@@ -19,26 +22,25 @@ const AvaliacaoModel =
     );
 
 
-function enriquecerResposta(
-    resposta,
-    usuarioAtualId = null
+const {
+
+    getCategoria,
+
+    listarCategorias
+
+} =
+    require(
+        '../utils/categorias'
+    );
+
+
+function enriquecerComentario(
+    comentario
 ) {
-
-    const minhaAvaliacao =
-        usuarioAtualId
-
-            ? AvaliacaoModel
-                .findByRespostaEAvaliador(
-                    resposta.id,
-                    usuarioAtualId
-                )
-
-            : null;
-
 
     return {
 
-        ...resposta,
+        ...comentario,
 
         autor:
             UsuarioModel
@@ -46,21 +48,68 @@ function enriquecerResposta(
 
                     UsuarioModel
                         .findById(
-                            resposta.usuarioId
+                            comentario.usuarioId
+                        )
+
+                )
+
+    };
+
+}
+
+
+function enriquecerTutorial(
+    tutorial,
+    usuarioAtualId = null
+) {
+
+    const minhaAvaliacao =
+        usuarioAtualId
+
+            ? AvaliacaoModel
+                .findByTutorialEAvaliador(
+
+                    tutorial.id,
+
+                    usuarioAtualId
+
+                )
+
+            : null;
+
+
+    return {
+
+        ...tutorial,
+
+        autor:
+            UsuarioModel
+                .toPublic(
+
+                    UsuarioModel
+                        .findById(
+                            tutorial.autorId
                         )
 
                 ),
 
-        duvida:
-            DuvidaModel.findById(
-                resposta.duvidaId
+        categoria:
+            getCategoria(
+                tutorial.categoriaId
             ),
 
         avaliacao:
             AvaliacaoModel
-                .resumoDaResposta(
-                    resposta.id
+                .resumoDoTutorial(
+                    tutorial.id
                 ),
+
+        quantidadeComentarios:
+            ComentarioModel
+                .findByTutorialId(
+                    tutorial.id
+                )
+                .length,
 
         minhaAvaliacao:
             minhaAvaliacao
@@ -82,40 +131,6 @@ function enriquecerResposta(
 }
 
 
-function enriquecerDuvida(
-    duvida
-) {
-
-    return {
-
-        ...duvida,
-
-        autor:
-            UsuarioModel
-                .toPublic(
-
-                    UsuarioModel
-                        .findById(
-                            duvida.usuarioId
-                        )
-
-                ),
-
-        quantidadeRespostas:
-            RespostaModel
-                .findByDuvidaId(
-                    duvida.id
-                )
-                .length
-
-    };
-
-}
-
-
-// =============================
-// COMUNIDADE
-// =============================
 function comunidade(
     req,
     res
@@ -131,13 +146,18 @@ function comunidade(
             );
 
 
-    const maioresDuvidas =
-        DuvidaModel
+    const tutoriaisEmAlta =
+        TutorialModel
 
-            .maioresDaSemana(6)
+            .maisAcessadosDaSemana(
+                6
+            )
 
             .map(
-                enriquecerDuvida
+                tutorial =>
+                    enriquecerTutorial(
+                        tutorial
+                    )
             );
 
 
@@ -147,7 +167,7 @@ function comunidade(
 
             ranking,
 
-            maioresDuvidas
+            tutoriaisEmAlta
 
         }
     );
@@ -155,9 +175,6 @@ function comunidade(
 }
 
 
-// =============================
-// PERFIL
-// =============================
 function perfil(
     req,
     res
@@ -181,41 +198,48 @@ function perfil(
     }
 
 
-    const duvidas =
-        DuvidaModel
+    const tutoriais =
+        TutorialModel
 
-            .findByUserId(
+            .findByAutorId(
                 usuario.id
             )
 
             .map(
-                enriquecerDuvida
-            );
+                tutorial =>
 
+                    enriquecerTutorial(
 
-    const respostas =
-        RespostaModel
+                        tutorial,
 
-            .findByUserId(
-                usuario.id
-            )
-
-            .map(
-                resposta =>
-                    enriquecerResposta(
-                        resposta,
                         req.usuario?.id
                         || null
+
                     )
             );
 
 
+    const comentariosFeitos =
+        ComentarioModel
+            .findByUserId(
+                usuario.id
+            );
+
+
+    const avaliacoesFeitas =
+        AvaliacaoModel
+            .findByAvaliadorId(
+                usuario.id
+            );
+
+
     const avaliacoesRecebidas =
-        respostas.flatMap(
-            resposta =>
+        tutoriais.flatMap(
+            tutorial =>
+
                 AvaliacaoModel
-                    .findByRespostaId(
-                        resposta.id
+                    .findByTutorialId(
+                        tutorial.id
                     )
         );
 
@@ -224,6 +248,7 @@ function perfil(
         avaliacoesRecebidas.length
 
             ? Number(
+
                 (
                     avaliacoesRecebidas
                         .reduce(
@@ -241,7 +266,10 @@ function perfil(
 
                     avaliacoesRecebidas
                         .length
-                ).toFixed(1)
+                )
+
+                .toFixed(1)
+
             )
 
             : 0;
@@ -257,19 +285,22 @@ function perfil(
                         usuario
                     ),
 
-            duvidas,
-
-            respostas,
+            tutoriais,
 
             estatisticas: {
 
-                totalDuvidas:
-                    duvidas.length,
+                totalTutoriais:
+                    tutoriais.length,
 
-                totalRespostas:
-                    respostas.length,
+                totalComentarios:
+                    comentariosFeitos
+                        .length,
 
-                totalAvaliacoes:
+                totalAvaliacoesFeitas:
+                    avaliacoesFeitas
+                        .length,
+
+                totalAvaliacoesRecebidas:
                     avaliacoesRecebidas
                         .length,
 
@@ -283,42 +314,39 @@ function perfil(
 }
 
 
-// =============================
-// PAGINA DA DUVIDA
-// =============================
-function duvida(
+function tutorial(
     req,
     res
 ) {
 
-    const encontrada =
-        DuvidaModel
+    const encontrado =
+        TutorialModel
             .findBySlug(
                 req.params.slug
             );
 
 
-    if (!encontrada) {
+    if (!encontrado) {
 
         return res
             .status(404)
             .send(
-                'Dúvida não encontrada.'
+                'Tutorial não encontrado.'
             );
 
     }
 
 
-    DuvidaModel
+    TutorialModel
         .incrementarVisualizacao(
-            encontrada.id
+            encontrado.id
         );
 
 
-    const duvidaAtualizada =
-        DuvidaModel
+    const tutorialAtualizado =
+        TutorialModel
             .findById(
-                encontrada.id
+                encontrado.id
             );
 
 
@@ -327,32 +355,173 @@ function duvida(
         || null;
 
 
-    const respostas =
-        RespostaModel
+    const tutorialCompleto =
+        enriquecerTutorial(
 
-            .findByDuvidaId(
-                duvidaAtualizada.id
+            tutorialAtualizado,
+
+            usuarioAtualId
+
+        );
+
+
+    const comentarios =
+        ComentarioModel
+
+            .findByTutorialId(
+                tutorialAtualizado.id
             )
 
             .map(
-                resposta =>
-                    enriquecerResposta(
-                        resposta,
-                        usuarioAtualId
-                    )
+                enriquecerComentario
             );
 
 
     return res.render(
-        'duvida',
+        'tutorial',
         {
 
-            duvida:
-                enriquecerDuvida(
-                    duvidaAtualizada
+            tutorial:
+                tutorialCompleto,
+
+            comentarios
+
+        }
+    );
+
+}
+
+
+function novoTutorial(
+    req,
+    res
+) {
+
+    if (!req.usuario) {
+
+        const redirect =
+            encodeURIComponent(
+                '/tutoriais/novo'
+            );
+
+
+        return res.redirect(
+            `/cadastro.html?redirect=${redirect}`
+        );
+
+    }
+
+
+    if (
+        !req.usuario.colaborador
+    ) {
+
+        return res
+            .status(403)
+            .send(
+                'Apenas colaboradores podem publicar tutoriais.'
+            );
+
+    }
+
+
+    return res.render(
+        'editor-tutorial',
+        {
+
+            modo:
+                'criar',
+
+            tutorial:
+                null,
+
+            categorias:
+                listarCategorias()
+
+        }
+    );
+
+}
+
+
+function editarTutorial(
+    req,
+    res
+) {
+
+    if (!req.usuario) {
+
+        const destino =
+            `/tutoriais/${req.params.slug}/editar`;
+
+
+        const redirect =
+            encodeURIComponent(
+                destino
+            );
+
+
+        return res.redirect(
+            `/cadastro.html?redirect=${redirect}`
+        );
+
+    }
+
+
+    const tutorial =
+        TutorialModel
+            .findBySlug(
+                req.params.slug
+            );
+
+
+    if (!tutorial) {
+
+        return res
+            .status(404)
+            .send(
+                'Tutorial não encontrado.'
+            );
+
+    }
+
+
+    if (
+        !req.usuario.colaborador
+
+        ||
+
+        tutorial.autorId
+        !== req.usuario.id
+    ) {
+
+        return res
+            .status(403)
+            .send(
+                'Você só pode editar os próprios tutoriais.'
+            );
+
+    }
+
+
+    return res.render(
+        'editor-tutorial',
+        {
+
+            modo:
+                'editar',
+
+            tutorial:
+                enriquecerTutorial(
+
+                    tutorial,
+
+                    req.usuario.id
+
                 ),
 
-            respostas
+            categorias:
+                listarCategorias()
 
         }
     );
@@ -366,6 +535,10 @@ module.exports = {
 
     perfil,
 
-    duvida
+    tutorial,
+
+    novoTutorial,
+
+    editarTutorial
 
 };

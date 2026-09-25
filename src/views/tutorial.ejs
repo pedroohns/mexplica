@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        MEXPLICA - <%= tutorial.titulo %>
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/style.css"
+    >
+
+    <link
+        rel="shortcut icon"
+        href="/icons/favicon.ico"
+        type="image/x-icon"
+    >
+
+</head>
+
+
+<body>
+
+
+<script>
+
+    (function() {
+
+        var salvo =
+            localStorage.getItem(
+                'mexplica-tema'
+            );
+
+
+        if (
+            salvo === '1'
+        ) {
+
+            document.body
+                .classList
+                .add(
+                    'dark-blue'
+                );
+
+        }
+
+    })();
+
+</script>
+
+
+<header class="header">
+
+    <nav class="nav container">
+
+        <a
+            href="/"
+            class="nav-logo"
+        >
+
+            <img
+                src="/icons/logo-mexplica.png"
+                alt="MEXPLICA"
+                class="logo-icon"
+            >
+
+        </a>
+
+
+        <ul class="nav-links">
+
+            <li>
+                <a href="/cadastro.html">
+                    Colabore
+                </a>
+            </li>
+
+            <li>
+                <a href="/comunidade">
+                    Comunidade
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    Ajuda
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    Sobre
+                </a>
+            </li>
+
+        </ul>
+
+
+        <div class="nav-actions">
+
+            <% if (usuarioAtual) { %>
+
+                <a
+                    href="/perfil/<%= usuarioAtual.slug %>"
+                    class="btn-acessar"
+                >
+                    <%= usuarioAtual.nome %>
+                </a>
+
+            <% } else { %>
+
+                <a
+                    href="/cadastro.html"
+                    class="btn-acessar"
+                >
+                    acessar conta
+                </a>
+
+            <% } %>
+
+        </div>
+
+
+        <button
+            class="nav-toggle"
+            aria-label="Abrir menu"
+            id="navToggle"
+        >
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </button>
+
+    </nav>
+
+</header>
+
+
+<main class="mexp-page">
+
+
+    <article
+        class="container mexp-tutorial-detail mexp-theme-<%= tutorial.categoria.classe %>"
+        data-tutorial-id="<%= tutorial.id %>"
+    >
+
+
+        <a
+            href="/"
+            class="mexp-back-link"
+        >
+            ← Voltar para a pesquisa
+        </a>
+
+
+        <header class="mexp-tutorial-header">
+
+
+            <div class="mexp-tutorial-category">
+
+                <img
+                    src="<%= tutorial.categoria.icone %>"
+                    alt=""
+                    aria-hidden="true"
+                >
+
+                <span>
+                    <%= tutorial.categoria.nome %>
+                </span>
+
+            </div>
+
+
+            <h1>
+                <%= tutorial.titulo %>
+            </h1>
+
+
+            <p class="mexp-tutorial-summary">
+
+                <%= tutorial.resumo %>
+
+            </p>
+
+
+            <div class="mexp-tutorial-meta">
+
+
+                <span>
+
+                    Publicado por
+
+                    <a
+                        href="/perfil/<%= tutorial.autor.slug %>"
+                    >
+
+                        <%= tutorial.autor.nomeCompleto %>
+
+                    </a>
+
+                </span>
+
+
+                <span>
+
+                    <%= tutorial.visualizacoes %>
+                    visualizações
+
+                </span>
+
+
+                <span>
+
+                    <%= tutorial.quantidadeComentarios %>
+                    comentários
+
+                </span>
+
+
+                <span>
+
+                    <%= tutorial.avaliacao.quantidade
+
+                        ? `${tutorial.avaliacao.media} ★ · ${tutorial.avaliacao.quantidade} avaliações`
+
+                        : 'Ainda sem avaliações'
+
+                    %>
+
+                </span>
+
+
+            </div>
+
+
+            <%
+                if (
+                    usuarioAtual
+                    &&
+                    usuarioAtual.id
+                    === tutorial.autorId
+                ) {
+            %>
+
+
+                <div class="mexp-inline-actions">
+
+
+                    <a
+                        href="/tutoriais/<%= tutorial.slug %>/editar"
+                        class="mexp-secondary-button"
+                    >
+
+                        Editar tutorial
+
+                    </a>
+
+
+                    <button
+                        type="button"
+                        id="excluirTutorial"
+                        class="mexp-danger-button"
+                        data-id="<%= tutorial.id %>"
+                    >
+
+                        Excluir tutorial
+
+                    </button>
+
+
+                </div>
+
+
+            <% } %>
+
+
+        </header>
+
+
+        <section class="mexp-tutorial-content">
+
+            <h2>
+                Antes de começar
+            </h2>
+
+            <p>
+                <%= tutorial.conteudo %>
+            </p>
+
+        </section>
+
+
+        <section class="mexp-tutorial-content">
+
+            <h2>
+                Passo a passo
+            </h2>
+
+
+            <div class="mexp-steps-list">
+
+
+                <%
+                    tutorial.passos.forEach(
+                        passo => {
+                %>
+
+
+                    <div class="mexp-tutorial-step">
+
+
+                        <span class="mexp-step-number">
+
+                            <%= passo.ordem %>
+
+                        </span>
+
+
+                        <div>
+
+                            <h3>
+                                <%= passo.titulo %>
+                            </h3>
+
+                            <p>
+                                <%= passo.descricao %>
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+
+                <% }) %>
+
+
+            </div>
+
+        </section>
+
+
+        <% if (tutorial.imagens.length) { %>
+
+
+            <section class="mexp-tutorial-content">
+
+
+                <h2>
+                    Imagens de apoio
+                </h2>
+
+
+                <p class="mexp-section-description">
+
+                    Siga as imagens na ordem indicada
+                    para acompanhar o procedimento visualmente.
+
+                </p>
+
+
+                <div class="mexp-tutorial-gallery">
+
+
+                    <%
+                        tutorial.imagens.forEach(
+                            imagem => {
+                    %>
+
+
+                        <figure class="mexp-tutorial-image">
+
+
+                            <span class="mexp-image-order">
+
+                                <%= imagem.ordem %>
+
+                            </span>
+
+
+                            <img
+                                src="<%= imagem.url %>"
+                                alt="<%= imagem.alt %>"
+                                loading="lazy"
+                            >
+
+
+                            <% if (imagem.legenda) { %>
+
+                                <figcaption>
+
+                                    <%= imagem.legenda %>
+
+                                </figcaption>
+
+                            <% } %>
+
+
+                        </figure>
+
+
+                    <% }) %>
+
+
+                </div>
+
+
+            </section>
+
+
+        <% } %>
+
+
+        <% if (tutorial.videoUrl) { %>
+
+
+            <section class="mexp-tutorial-content">
+
+
+                <h2>
+                    Vídeo tutorial
+                </h2>
+
+
+                <p>
+
+                    Se preferir acompanhar visualmente,
+                    o colaborador também adicionou um
+                    vídeo de apoio.
+
+                </p>
+
+
+                <a
+                    href="<%= tutorial.videoUrl %>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="mexp-primary-link"
+                >
+
+                    Assistir ao vídeo tutorial
+
+                </a>
+
+
+            </section>
+
+
+        <% } %>
+
+
+        <% if (tutorial.tags.length) { %>
+
+
+            <div class="mexp-tag-row mexp-tutorial-tags">
+
+
+                <%
+                    tutorial.tags.forEach(
+                        tag => {
+                %>
+
+                    <span class="mexp-tag">
+
+                        #<%= tag %>
+
+                    </span>
+
+                <% }) %>
+
+
+            </div>
+
+
+        <% } %>
+
+
+    </article>
+
+
+    <section class="container mexp-section">
+
+
+        <div class="mexp-section-heading">
+
+
+            <div>
+
+                <span class="mexp-eyebrow">
+                    AVALIAÇÃO
+                </span>
+
+                <h2>
+                    Este tutorial ajudou você?
+                </h2>
+
+            </div>
+
+
+            <p>
+
+                Sua avaliação gera pontos para
+                o colaborador e ajuda a destacar
+                conteúdos úteis na plataforma.
+
+            </p>
+
+
+        </div>
+
+
+        <%
+            if (
+                usuarioAtual
+                &&
+                usuarioAtual.id
+                !== tutorial.autorId
+            ) {
+        %>
+
+
+            <div
+                class="mexp-rating-panel mexp-theme-<%= tutorial.categoria.classe %>"
+                id="tutorialRating"
+                data-tutorial-id="<%= tutorial.id %>"
+                data-avaliacao-id="<%= tutorial.minhaAvaliacao ? tutorial.minhaAvaliacao.id : '' %>"
+            >
+
+
+                <div
+                    class="mexp-stars"
+                    aria-label="Avaliar tutorial de 1 a 5 estrelas"
+                >
+
+
+                    <%
+                        for (
+                            let nota = 1;
+                            nota <= 5;
+                            nota += 1
+                        ) {
+                    %>
+
+
+                        <button
+                            type="button"
+                            class="mexp-star <%= tutorial.minhaAvaliacao && nota <= tutorial.minhaAvaliacao.nota ? 'is-active' : '' %>"
+                            data-nota="<%= nota %>"
+                            aria-label="<%= nota %> estrela<%= nota === 1 ? '' : 's' %>"
+                        >
+                            ★
+                        </button>
+
+
+                    <% } %>
+
+
+                </div>
+
+
+                <% if (tutorial.minhaAvaliacao) { %>
+
+
+                    <button
+                        type="button"
+                        id="removerAvaliacao"
+                        class="mexp-text-button"
+                    >
+
+                        Remover minha avaliação
+
+                    </button>
+
+
+                <% } %>
+
+
+            </div>
+
+
+        <% } else if (!usuarioAtual) { %>
+
+
+            <div class="mexp-callout">
+
+
+                <div>
+
+                    <strong>
+                        Entre na sua conta para avaliar
+                    </strong>
+
+                    <p>
+
+                        Você pode ler todos os tutoriais
+                        sem login. A conta só é necessária
+                        para avaliar ou comentar.
+
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="/cadastro.html?redirect=<%= encodeURIComponent(`/tutoriais/${tutorial.slug}`) %>"
+                    class="mexp-primary-link"
+                >
+                    Acessar conta
+                </a>
+
+
+            </div>
+
+
+        <% } else { %>
+
+
+            <p class="mexp-empty">
+
+                O autor não pode avaliar
+                o próprio tutorial.
+
+            </p>
+
+
+        <% } %>
+
+
+    </section>
+
+
+    <section class="container mexp-section">
+
+
+        <div class="mexp-section-heading">
+
+
+            <div>
+
+                <span class="mexp-eyebrow">
+                    COMENTÁRIOS
+                </span>
+
+                <h2>
+
+                    <%= comentarios.length %>
+
+                    comentário<%= comentarios.length === 1 ? '' : 's' %>
+
+                </h2>
+
+            </div>
+
+
+            <p>
+
+                Conte se o tutorial funcionou
+                para você ou deixe um agradecimento
+                ao colaborador.
+
+            </p>
+
+
+        </div>
+
+
+        <% if (usuarioAtual) { %>
+
+
+            <form
+                id="formComentario"
+                class="mexp-form"
+                data-tutorial-id="<%= tutorial.id %>"
+            >
+
+
+                <label for="comentarioTexto">
+                    Seu comentário
+                </label>
+
+
+                <textarea
+                    id="comentarioTexto"
+                    maxlength="1000"
+                    required
+                    placeholder="Ex.: Muito obrigado! Consegui resolver meu problema."
+                ></textarea>
+
+
+                <p
+                    id="comentarioMensagem"
+                    class="mexp-form-message"
+                    aria-live="polite"
+                ></p>
+
+
+                <button
+                    type="submit"
+                    class="mexp-primary-button"
+                >
+                    Publicar comentário
+                </button>
+
+
+            </form>
+
+
+        <% } else { %>
+
+
+            <p class="mexp-login-hint">
+
+                <a
+                    href="/cadastro.html?redirect=<%= encodeURIComponent(`/tutoriais/${tutorial.slug}`) %>"
+                >
+                    Entre na sua conta
+                </a>
+
+                para comentar.
+
+            </p>
+
+
+        <% } %>
+
+
+        <div class="mexp-comments-list">
+
+
+            <% if (!comentarios.length) { %>
+
+
+                <p class="mexp-empty">
+
+                    Ainda não há comentários
+                    neste tutorial.
+
+                </p>
+
+
+            <% } %>
+
+
+            <%
+                comentarios.forEach(
+                    comentario => {
+            %>
+
+
+                <article
+                    class="mexp-comment-card"
+                    data-comentario-id="<%= comentario.id %>"
+                >
+
+
+                    <div class="mexp-answer-author">
+
+
+                        <div class="mexp-avatar">
+
+                            <%= comentario.autor.nome.charAt(0) %>
+
+                        </div>
+
+
+                        <div>
+
+
+                            <a
+                                href="/perfil/<%= comentario.autor.slug %>"
+                            >
+
+                                <strong>
+
+                                    <%= comentario.autor.nomeCompleto %>
+
+                                </strong>
+
+                            </a>
+
+
+                            <span>
+
+                                <%= comentario.autor.colaborador
+
+                                    ? `Colaborador ${comentario.autor.nivel}`
+
+                                    : 'Usuário'
+
+                                %>
+
+                            </span>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <p class="mexp-comment-text">
+
+                        <%= comentario.texto %>
+
+                    </p>
+
+
+                    <%
+                        if (
+                            usuarioAtual
+                            &&
+                            usuarioAtual.id
+                            === comentario.usuarioId
+                        ) {
+                    %>
+
+
+                        <div class="mexp-inline-actions">
+
+
+                            <button
+                                type="button"
+                                class="mexp-text-button editar-comentario"
+                                data-id="<%= comentario.id %>"
+                            >
+                                Editar
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="mexp-text-button excluir-comentario"
+                                data-id="<%= comentario.id %>"
+                            >
+                                Excluir
+                            </button>
+
+
+                        </div>
+
+
+                    <% } %>
+
+
+                </article>
+
+
+            <% }) %>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+<script src="/script.js"></script>
+
+<script src="/tutorial.js"></script>
+
+
+</body>
+
+</html>

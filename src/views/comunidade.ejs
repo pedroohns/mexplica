@@ -31,6 +31,7 @@
 
 <body>
 
+
 <script>
 
     (function() {
@@ -39,6 +40,7 @@
             localStorage.getItem(
                 'mexplica-tema'
             );
+
 
         if (
             salvo === '1'
@@ -112,9 +114,7 @@
                     href="/perfil/<%= usuarioAtual.slug %>"
                     class="btn-acessar"
                 >
-
                     <%= usuarioAtual.nome %>
-
                 </a>
 
             <% } else { %>
@@ -150,31 +150,40 @@
 
 <main class="mexp-page">
 
-<section
-    class="mexp-page-hero container"
->
 
-    <div class="mexp-hero-logo">
-        <img
-            src="icons/logo-mexplica.png"
-            alt=""
-            aria-hidden="true"
-            class="hero-logo-img"
-        >
-    </div>
+    <section class="mexp-page-hero container">
 
-    <h1>
-        Quem ajuda a comunidade
-        a aprender tecnologia
-    </h1>
+
+        <div class="mexp-hero-logo">
+
+            <img
+                src="/icons/logo-mexplica.png"
+                alt=""
+                aria-hidden="true"
+                class="hero-logo-img"
+            >
+
+        </div>
+
+
+        <h1>
+
+            Quem ajuda a comunidade
+            a aprender tecnologia
+
+        </h1>
+
 
         <p>
+
             Conheça os colaboradores em destaque
-            e veja quais dúvidas chamaram mais
-            atenção nesta semana.
-            Para encontrar a resposta para o seu
-            problema, use a pesquisa da página inicial.
+            e veja os tutoriais que mais ajudaram
+            a comunidade nesta semana.
+            Para resolver uma dúvida,
+            use a pesquisa da página inicial.
+
         </p>
+
 
         <a
             href="/"
@@ -183,12 +192,15 @@
             Pesquisar uma dúvida
         </a>
 
+
     </section>
 
 
     <section class="container mexp-section">
 
+
         <div class="mexp-section-heading">
+
 
             <div>
 
@@ -202,20 +214,29 @@
 
             </div>
 
+
             <p>
+
                 O ranking reúne colaboradores
-                Diamante e Platina, ordenados
-                pela pontuação acumulada.
+                Diamante e Platina, ordenados pela
+                pontuação conquistada com as avaliações
+                dos tutoriais publicados.
+
             </p>
+
 
         </div>
 
 
         <div class="mexp-ranking-list">
 
+
             <%
                 ranking.forEach(
-                    (colaborador, index) => {
+                    (
+                        colaborador,
+                        index
+                    ) => {
             %>
 
 
@@ -223,6 +244,7 @@
                     href="/perfil/<%= colaborador.slug %>"
                     class="mexp-ranking-card"
                 >
+
 
                     <span class="mexp-ranking-position">
 
@@ -254,11 +276,7 @@
                         </span>
 
 
-                        <%
-                            if (
-                                colaborador.especialidades.length
-                            ) {
-                        %>
+                        <% if (colaborador.especialidades.length) { %>
 
                             <small>
 
@@ -271,40 +289,32 @@
                     </div>
 
 
-                    <%
-                        if (
-                            colaborador.nivel
-                            === 'Platina'
-                        ) {
-                    %>
+                    <span
+                        class="mexp-badge <%= colaborador.nivel === 'Platina' ? 'mexp-badge-platinum' : '' %>"
+                    >
 
-                        <span
-                            class="mexp-badge mexp-badge-platinum"
-                        >
-                            PLATINA
-                        </span>
+                        <%= colaborador.nivel.toUpperCase() %>
 
-                    <% } else { %>
+                    </span>
 
-                        <span class="mexp-badge">
-                            DIAMANTE
-                        </span>
-
-                    <% } %>
 
                 </a>
 
 
             <% }) %>
 
+
         </div>
+
 
     </section>
 
 
     <section class="container mexp-section">
 
+
         <div class="mexp-section-heading">
+
 
             <div>
 
@@ -313,74 +323,121 @@
                 </span>
 
                 <h2>
-                    Maiores dúvidas da semana
+                    Tutoriais mais acessados da semana
                 </h2>
 
             </div>
 
+
             <p>
-                Assuntos que mais receberam
-                visualizações recentemente
-                na plataforma.
+
+                Conteúdos publicados voluntariamente
+                pelos colaboradores que receberam
+                mais visualizações recentemente.
+
             </p>
+
 
         </div>
 
 
         <div class="mexp-question-grid">
 
+
             <%
-                maioresDuvidas.forEach(
-                    duvida => {
+                tutoriaisEmAlta.forEach(
+                    tutorial => {
             %>
 
 
                 <a
-                    href="/duvidas/<%= duvida.slug %>"
-                    class="mexp-question-card"
+                    href="/tutoriais/<%= tutorial.slug %>"
+                    class="mexp-question-card mexp-theme-<%= tutorial.categoria.classe %>"
                 >
 
-                    <span class="mexp-category">
 
-                        <%= duvida.categoria %>
+                    <div class="mexp-card-category-line">
 
-                    </span>
+
+                        <img
+                            src="<%= tutorial.categoria.icone %>"
+                            alt=""
+                            aria-hidden="true"
+                        >
+
+
+                        <span class="mexp-category">
+
+                            <%= tutorial.categoria.nome %>
+
+                        </span>
+
+
+                    </div>
+
 
                     <h3>
-                        <%= duvida.titulo %>
+                        <%= tutorial.titulo %>
                     </h3>
 
+
                     <p>
-                        <%= duvida.conteudo %>
+                        <%= tutorial.resumo %>
                     </p>
+
 
                     <div class="mexp-question-meta">
 
-                        <span>
-                            <%= duvida.visualizacoes %>
-                            visualizações
-                        </span>
 
                         <span>
-                            <%= duvida.quantidadeRespostas %>
-                            respostas
+
+                            <%= tutorial.visualizacoes %>
+                            visualizações
+
                         </span>
+
+
+                        <span>
+
+                            <%= tutorial.avaliacao.quantidade
+
+                                ? `${tutorial.avaliacao.media} ★`
+
+                                : 'sem avaliações'
+
+                            %>
+
+                        </span>
+
+
+                        <span>
+
+                            <%= tutorial.quantidadeComentarios %>
+                            comentários
+
+                        </span>
+
 
                     </div>
+
 
                 </a>
 
 
             <% }) %>
 
+
         </div>
 
+
     </section>
+
 
 </main>
 
 
 <script src="/script.js"></script>
+
 
 </body>
 

@@ -26,7 +26,6 @@ function carregarUsuario(
             : null;
 
 
-    // caso a conta tenha sido excluida mas ainda exista uma sessao antiga
     if (
         usuarioId
         &&
@@ -109,7 +108,7 @@ function exigirColaborador(
             .json({
 
                 erro:
-                    'Apenas colaboradores podem responder dúvidas.'
+                    'Apenas colaboradores podem publicar ou editar tutoriais.'
 
             });
 
@@ -143,7 +142,9 @@ function exigirPlatina(
 
     if (
         !req.usuario.colaborador
+
         ||
+
         req.usuario.nivel
         !== 'Platina'
     ) {

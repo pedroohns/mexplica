@@ -2,59 +2,182 @@ const avaliacoes = [
 
     {
         id: 1,
-
-        respostaId:
-            1,
-
-        avaliadorId:
-            1,
-
-        nota:
-            5,
-
-        criadoEm:
-            '2026-09-22T17:00:00.000Z',
-
-        atualizadoEm:
-            null
+        tutorialId: 1,
+        avaliadorId: 1,
+        nota: 5,
+        criadoEm: '2026-09-24T10:12:00.000Z',
+        atualizadoEm: null
     },
 
     {
         id: 2,
-
-        respostaId:
-            2,
-
-        avaliadorId:
-            1,
-
-        nota:
-            5,
-
-        criadoEm:
-            '2026-09-22T17:02:00.000Z',
-
-        atualizadoEm:
-            null
+        tutorialId: 1,
+        avaliadorId: 5,
+        nota: 5,
+        criadoEm: '2026-09-24T11:20:00.000Z',
+        atualizadoEm: null
     },
 
     {
         id: 3,
+        tutorialId: 2,
+        avaliadorId: 6,
+        nota: 4,
+        criadoEm: '2026-09-24T09:00:00.000Z',
+        atualizadoEm: null
+    },
 
-        respostaId:
-            3,
+    {
+        id: 4,
+        tutorialId: 3,
+        avaliadorId: 1,
+        nota: 5,
+        criadoEm: '2026-09-23T20:05:00.000Z',
+        atualizadoEm: null
+    },
 
-        avaliadorId:
-            1,
+    {
+        id: 5,
+        tutorialId: 3,
+        avaliadorId: 10,
+        nota: 5,
+        criadoEm: '2026-09-23T21:00:00.000Z',
+        atualizadoEm: null
+    },
 
-        nota:
-            4,
+    {
+        id: 6,
+        tutorialId: 4,
+        avaliadorId: 12,
+        nota: 5,
+        criadoEm: '2026-09-23T17:10:00.000Z',
+        atualizadoEm: null
+    },
 
-        criadoEm:
-            '2026-09-23T11:20:00.000Z',
+    {
+        id: 7,
+        tutorialId: 5,
+        avaliadorId: 10,
+        nota: 4,
+        criadoEm: '2026-09-23T13:05:00.000Z',
+        atualizadoEm: null
+    },
 
-        atualizadoEm:
-            null
+    {
+        id: 8,
+        tutorialId: 6,
+        avaliadorId: 5,
+        nota: 5,
+        criadoEm: '2026-09-22T19:00:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 9,
+        tutorialId: 7,
+        avaliadorId: 1,
+        nota: 5,
+        criadoEm: '2026-09-22T16:35:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 10,
+        tutorialId: 8,
+        avaliadorId: 6,
+        nota: 4,
+        criadoEm: '2026-09-21T18:00:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 11,
+        tutorialId: 9,
+        avaliadorId: 12,
+        nota: 5,
+        criadoEm: '2026-09-21T14:00:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 12,
+        tutorialId: 10,
+        avaliadorId: 5,
+        nota: 5,
+        criadoEm: '2026-09-21T09:45:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 13,
+        tutorialId: 10,
+        avaliadorId: 6,
+        nota: 5,
+        criadoEm: '2026-09-21T10:20:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 14,
+        tutorialId: 11,
+        avaliadorId: 10,
+        nota: 4,
+        criadoEm: '2026-09-20T16:00:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 15,
+        tutorialId: 12,
+        avaliadorId: 6,
+        nota: 5,
+        criadoEm: '2026-09-20T12:25:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 16,
+        tutorialId: 13,
+        avaliadorId: 1,
+        nota: 4,
+        criadoEm: '2026-09-20T08:30:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 17,
+        tutorialId: 14,
+        avaliadorId: 10,
+        nota: 5,
+        criadoEm: '2026-09-20T08:15:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 18,
+        tutorialId: 15,
+        avaliadorId: 12,
+        nota: 5,
+        criadoEm: '2026-09-19T12:00:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 19,
+        tutorialId: 17,
+        avaliadorId: 12,
+        nota: 5,
+        criadoEm: '2026-09-19T15:15:00.000Z',
+        atualizadoEm: null
+    },
+
+    {
+        id: 20,
+        tutorialId: 18,
+        avaliadorId: 5,
+        nota: 5,
+        criadoEm: '2026-09-18T11:00:00.000Z',
+        atualizadoEm: null
     }
 
 ];
@@ -78,7 +201,8 @@ function proximoId() {
                     avaliacao.id
             )
         )
-        + 1
+        +
+        1
     );
 
 }
@@ -89,7 +213,8 @@ function pontosPorNota(
 ) {
 
     return Number(nota)
-        * 10;
+        *
+        10;
 
 }
 
@@ -113,25 +238,26 @@ function findById(id) {
                 avaliacao.id
                 === numero
         )
-        || null
+        ||
+        null
     );
 
 }
 
 
-function findByRespostaId(
-    respostaId
+function findByTutorialId(
+    tutorialId
 ) {
 
     const numero =
         Number(
-            respostaId
+            tutorialId
         );
 
 
     return avaliacoes.filter(
         avaliacao =>
-            avaliacao.respostaId
+            avaliacao.tutorialId
             === numero
     );
 
@@ -157,14 +283,14 @@ function findByAvaliadorId(
 }
 
 
-function findByRespostaEAvaliador(
-    respostaId,
+function findByTutorialEAvaliador(
+    tutorialId,
     avaliadorId
 ) {
 
-    const respostaNumero =
+    const tutorialNumero =
         Number(
-            respostaId
+            tutorialId
         );
 
 
@@ -177,25 +303,29 @@ function findByRespostaEAvaliador(
     return (
         avaliacoes.find(
             avaliacao =>
-                avaliacao.respostaId
-                === respostaNumero
+
+                avaliacao.tutorialId
+                === tutorialNumero
+
                 &&
+
                 avaliacao.avaliadorId
                 === avaliadorNumero
         )
-        || null
+        ||
+        null
     );
 
 }
 
 
-function resumoDaResposta(
-    respostaId
+function resumoDoTutorial(
+    tutorialId
 ) {
 
     const lista =
-        findByRespostaId(
-            respostaId
+        findByTutorialId(
+            tutorialId
         );
 
 
@@ -233,11 +363,15 @@ function resumoDaResposta(
 
         media:
             Number(
+
                 (
                     soma
                     /
                     lista.length
-                ).toFixed(1)
+                )
+
+                .toFixed(1)
+
             ),
 
         quantidade:
@@ -248,17 +382,18 @@ function resumoDaResposta(
 }
 
 
-// CREATE
-function create(dados) {
+function create(
+    dados
+) {
 
     const novaAvaliacao = {
 
         id:
             proximoId(),
 
-        respostaId:
+        tutorialId:
             Number(
-                dados.respostaId
+                dados.tutorialId
             ),
 
         avaliadorId:
@@ -291,7 +426,6 @@ function create(dados) {
 }
 
 
-// UPDATE
 function update(
     id,
     nota
@@ -302,14 +436,14 @@ function update(
 
 
     if (!avaliacao) {
+
         return null;
+
     }
 
 
     avaliacao.nota =
-        Number(
-            nota
-        );
+        Number(nota);
 
 
     avaliacao.atualizadoEm =
@@ -322,7 +456,6 @@ function update(
 }
 
 
-// DELETE
 function remove(id) {
 
     const numero =
@@ -346,7 +479,9 @@ function remove(id) {
     }
 
 
-    const [removida] =
+    const [
+        removida
+    ] =
         avaliacoes.splice(
             indice,
             1
@@ -366,13 +501,13 @@ module.exports = {
 
     findById,
 
-    findByRespostaId,
+    findByTutorialId,
 
     findByAvaliadorId,
 
-    findByRespostaEAvaliador,
+    findByTutorialEAvaliador,
 
-    resumoDaResposta,
+    resumoDoTutorial,
 
     create,
 

@@ -3,15 +3,18 @@ const AvaliacaoModel =
         '../models/avaliacaoModel'
     );
 
-const RespostaModel =
+
+const TutorialModel =
     require(
-        '../models/respostaModel'
+        '../models/tutorialModel'
     );
+
 
 const UsuarioModel =
     require(
         '../models/usuarioModel'
     );
+
 
 const {
     removerAvaliacaoComAjuste
@@ -35,9 +38,13 @@ function validarNota(
         Number.isInteger(
             numero
         )
+
         &&
+
         numero >= 1
+
         &&
+
         numero <= 5
     )
 
@@ -48,26 +55,26 @@ function validarNota(
 }
 
 
-// READ
-function listarPorResposta(
+function listarPorTutorial(
     req,
     res
 ) {
 
-    const resposta =
-        RespostaModel.findById(
-            req.params.respostaId
-        );
+    const tutorial =
+        TutorialModel
+            .findById(
+                req.params.tutorialId
+            );
 
 
-    if (!resposta) {
+    if (!tutorial) {
 
         return res
             .status(404)
             .json({
 
                 erro:
-                    'Resposta não encontrada.'
+                    'Tutorial não encontrado.'
 
             });
 
@@ -76,12 +83,12 @@ function listarPorResposta(
 
     return res.json({
 
-        respostaId:
-            resposta.id,
+        tutorialId:
+            tutorial.id,
 
         ...AvaliacaoModel
-            .resumoDaResposta(
-                resposta.id
+            .resumoDoTutorial(
+                tutorial.id
             )
 
     });
@@ -89,35 +96,34 @@ function listarPorResposta(
 }
 
 
-// CREATE
 function criar(
     req,
     res
 ) {
 
-    const resposta =
-        RespostaModel.findById(
-            req.params.respostaId
-        );
+    const tutorial =
+        TutorialModel
+            .findById(
+                req.params.tutorialId
+            );
 
 
-    if (!resposta) {
+    if (!tutorial) {
 
         return res
             .status(404)
             .json({
 
                 erro:
-                    'Resposta não encontrada.'
+                    'Tutorial não encontrado.'
 
             });
 
     }
 
 
-    // nao pode avaliar a propria resposta
     if (
-        resposta.usuarioId
+        tutorial.autorId
         === req.usuario.id
     ) {
 
@@ -126,7 +132,7 @@ function criar(
             .json({
 
                 erro:
-                    'Você não pode avaliar a própria resposta.'
+                    'Você não pode avaliar o próprio tutorial.'
 
             });
 
@@ -135,9 +141,9 @@ function criar(
 
     const existente =
         AvaliacaoModel
-            .findByRespostaEAvaliador(
+            .findByTutorialEAvaliador(
 
-                resposta.id,
+                tutorial.id,
 
                 req.usuario.id
 
@@ -151,7 +157,7 @@ function criar(
             .json({
 
                 erro:
-                    'Você já avaliou esta resposta. Edite sua avaliação existente.'
+                    'Você já avaliou este tutorial. Edite sua avaliação existente.'
 
             });
 
@@ -179,9 +185,10 @@ function criar(
 
 
     const colaborador =
-        UsuarioModel.findById(
-            resposta.usuarioId
-        );
+        UsuarioModel
+            .findById(
+                tutorial.autorId
+            );
 
 
     const nivelAnterior =
@@ -190,24 +197,25 @@ function criar(
 
 
     const avaliacao =
-        AvaliacaoModel.create({
+        AvaliacaoModel
+            .create({
 
-            respostaId:
-                resposta.id,
+                tutorialId:
+                    tutorial.id,
 
-            avaliadorId:
-                req.usuario.id,
+                avaliadorId:
+                    req.usuario.id,
 
-            nota
+                nota
 
-        });
+            });
 
 
     const atualizado =
         UsuarioModel
             .adicionarPontos(
 
-                resposta.usuarioId,
+                tutorial.autorId,
 
                 AvaliacaoModel
                     .pontosPorNota(
@@ -228,8 +236,8 @@ function criar(
 
             resumo:
                 AvaliacaoModel
-                    .resumoDaResposta(
-                        resposta.id
+                    .resumoDoTutorial(
+                        tutorial.id
                     ),
 
             colaborador:
@@ -240,10 +248,14 @@ function criar(
 
             mudouNivel:
                 Boolean(
+
                     atualizado
+
                     &&
+
                     nivelAnterior
                     !== atualizado.nivel
+
                 ),
 
             nivelAnterior,
@@ -257,16 +269,16 @@ function criar(
 }
 
 
-// UPDATE
 function atualizar(
     req,
     res
 ) {
 
     const avaliacao =
-        AvaliacaoModel.findById(
-            req.params.id
-        );
+        AvaliacaoModel
+            .findById(
+                req.params.id
+            );
 
 
     if (!avaliacao) {
@@ -320,20 +332,21 @@ function atualizar(
     }
 
 
-    const resposta =
-        RespostaModel.findById(
-            avaliacao.respostaId
-        );
+    const tutorial =
+        TutorialModel
+            .findById(
+                avaliacao.tutorialId
+            );
 
 
-    if (!resposta) {
+    if (!tutorial) {
 
         return res
             .status(404)
             .json({
 
                 erro:
-                    'A resposta relacionada não foi encontrada.'
+                    'O tutorial relacionado não foi encontrado.'
 
             });
 
@@ -341,9 +354,10 @@ function atualizar(
 
 
     const colaborador =
-        UsuarioModel.findById(
-            resposta.usuarioId
-        );
+        UsuarioModel
+            .findById(
+                tutorial.autorId
+            );
 
 
     const nivelAnterior =
@@ -351,11 +365,17 @@ function atualizar(
         || null;
 
 
-    // exemplo:
-    // antiga = 5 estrelas = 50 pontos
-    // nova   = 3 estrelas = 30 pontos
-    // diferença = -20
+    /*
+        Exemplo:
+
+        nota antiga = 5 - 50 pontos
+        nota nova   = 3 - 30 pontos
+
+        diferença = -20
+    */
+
     const diferenca =
+
         AvaliacaoModel
             .pontosPorNota(
                 nota
@@ -370,17 +390,24 @@ function atualizar(
 
 
     const atualizada =
-        AvaliacaoModel.update(
-            avaliacao.id,
-            nota
-        );
+        AvaliacaoModel
+            .update(
+
+                avaliacao.id,
+
+                nota
+
+            );
 
 
     const usuarioAtualizado =
         UsuarioModel
             .adicionarPontos(
-                resposta.usuarioId,
+
+                tutorial.autorId,
+
                 diferenca
+
             );
 
 
@@ -394,8 +421,8 @@ function atualizar(
 
         resumo:
             AvaliacaoModel
-                .resumoDaResposta(
-                    resposta.id
+                .resumoDoTutorial(
+                    tutorial.id
                 ),
 
         colaborador:
@@ -406,10 +433,14 @@ function atualizar(
 
         mudouNivel:
             Boolean(
+
                 usuarioAtualizado
+
                 &&
+
                 nivelAnterior
                 !== usuarioAtualizado.nivel
+
             ),
 
         nivelAnterior,
@@ -423,16 +454,16 @@ function atualizar(
 }
 
 
-// DELETE
 function excluir(
     req,
     res
 ) {
 
     const avaliacao =
-        AvaliacaoModel.findById(
-            req.params.id
-        );
+        AvaliacaoModel
+            .findById(
+                req.params.id
+            );
 
 
     if (!avaliacao) {
@@ -483,7 +514,7 @@ function excluir(
 
 module.exports = {
 
-    listarPorResposta,
+    listarPorTutorial,
 
     criar,
 
