@@ -12,23 +12,27 @@
         );
 
 
-
-
-    const searchBox =
+    const searchInputWrap =
         document.getElementById(
-            'searchBox'
+            'searchInputWrap'
         );
 
 
-    const resultsBox =
+    const searchResults =
         document.getElementById(
             'searchResults'
         );
 
 
-    const searchToolsRow =
+    const searchToolsLeft =
         document.getElementById(
-            'searchToolsRow'
+            'searchToolsLeft'
+        );
+
+
+    const searchToolsRight =
+        document.getElementById(
+            'searchToolsRight'
         );
 
 
@@ -50,16 +54,35 @@
         );
 
 
+    const heroLogo =
+        document.getElementById(
+            'heroLogo'
+        );
+
+
     const accountButton =
         document.querySelector(
             '.btn-acessar'
         );
 
+    const filterSearchBtn =
+        document.getElementById(
+        'filterSearchBtn'
+    );
+
+
+    const filterSearchMenu =
+        document.getElementById(
+        'filterSearchMenu'
+    );
+
 
     if (
+        !heroSection
+        ||
         !searchInput
         ||
-        !resultsBox
+        !searchResults
     ) {
 
         return;
@@ -78,13 +101,73 @@
     let modoBuscaAtivo =
         false;
 
+        let filtroCategoriaAtual =
+    '';
 
-    /*
-        guardamos a posiçao original
-        dos elementos que serao
-        temporariamente movidos para
-        dentro da search bar.
-    */
+
+const categoriasFiltro = {
+
+    'seguranca-usabilidade': {
+
+        id:
+            'seguranca-usabilidade',
+
+        nome:
+            'Segurança e Usabilidade',
+
+        nomeCurto:
+            'Segurança',
+
+        icone:
+            '/icons/vermelho.png',
+
+        classe:
+            'red'
+
+    },
+
+
+    'comunicacao-interacao': {
+
+        id:
+            'comunicacao-interacao',
+
+        nome:
+            'Comunicação e Interação',
+
+        nomeCurto:
+            'Comunicação',
+
+        icone:
+            '/icons/verde.png',
+
+        classe:
+            'green'
+
+    },
+
+
+    'sistemas-acessibilidade': {
+
+        id:
+            'sistemas-acessibilidade',
+
+        nome:
+            'Sistemas e Acessibilidade',
+
+        nomeCurto:
+            'Sistemas',
+
+        icone:
+            '/icons/azul.png',
+
+        classe:
+            'blue'
+
+    }
+
+};
+
 
     const accessibilityAnchor =
         document.createComment(
@@ -98,22 +181,25 @@
         );
 
 
-    if (accessibilityBar) {
-
-        accessibilityBar.before(
-            accessibilityAnchor
+    const heroLogoAnchor =
+        document.createComment(
+            'mexplica-hero-logo-anchor'
         );
 
-    }
+
+    accessibilityBar?.before(
+        accessibilityAnchor
+    );
 
 
-    if (contactCards) {
+    contactCards?.before(
+        contactAnchor
+    );
 
-        contactCards.before(
-            contactAnchor
-        );
 
-    }
+    heroLogo?.before(
+        heroLogoAnchor
+    );
 
 
     async function requisicao(
@@ -125,9 +211,7 @@
             await fetch(
                 url,
                 {
-
                     headers: {
-
                         'Content-Type':
                             'application/json',
 
@@ -135,11 +219,9 @@
                             options.headers
                             || {}
                         )
-
                     },
 
                     ...options
-
                 }
             );
 
@@ -189,13 +271,11 @@
         catch {
 
             sessao = {
-
                 autenticado:
                     false,
 
                 usuario:
                     null
-
             };
 
         }
@@ -203,13 +283,9 @@
 
         if (
             accountButton
-
             &&
-
             sessao.autenticado
-
             &&
-
             sessao.usuario
         ) {
 
@@ -222,11 +298,8 @@
 
 
             accountButton.setAttribute(
-
                 'aria-label',
-
                 `Abrir perfil de ${sessao.usuario.nome}`
-
             );
 
         }
@@ -237,9 +310,6 @@
     }
 
 
-    // =============================
-    // ANIMAÇAO DO FIGMA
-    // =============================
     function ativarModoBusca() {
 
         if (
@@ -256,44 +326,61 @@
 
 
         heroSection
-            ?.classList
+            .classList
             .add(
                 'search-mode'
             );
 
 
-        if (searchToolsRow) {
+        if (
+            heroLogo
+            &&
+            searchInputWrap
+        ) {
+
+            searchInputWrap.insertBefore(
+                heroLogo,
+                searchInputWrap.firstChild
+            );
+
+        }
 
 
-            if (accessibilityBar) {
+        if (
+            searchOptions
+            &&
+            searchToolsLeft
+        ) {
 
-                searchToolsRow
-                    .appendChild(
-                        accessibilityBar
-                    );
+            searchToolsLeft.appendChild(
+                searchOptions
+            );
 
-            }
-
-
-            if (searchOptions) {
-
-                searchToolsRow
-                    .appendChild(
-                        searchOptions
-                    );
-
-            }
+        }
 
 
-            if (contactCards) {
+        if (
+            contactCards
+            &&
+            searchToolsRight
+        ) {
 
-                searchToolsRow
-                    .appendChild(
-                        contactCards
-                    );
+            searchToolsRight.appendChild(
+                contactCards
+            );
 
-            }
+        }
 
+
+        if (
+            accessibilityBar
+            &&
+            searchToolsRight
+        ) {
+
+            searchToolsRight.appendChild(
+                accessibilityBar
+            );
 
         }
 
@@ -316,17 +403,29 @@
 
 
         heroSection
-            ?.classList
+            .classList
             .remove(
                 'search-mode'
             );
 
 
         if (
+            heroLogo
+            &&
+            heroLogoAnchor.parentNode
+        ) {
+
+            heroLogoAnchor.after(
+                heroLogo
+            );
+
+        }
+
+
+        if (
             accessibilityBar
             &&
-            accessibilityAnchor
-                .parentNode
+            accessibilityAnchor.parentNode
         ) {
 
             accessibilityAnchor.after(
@@ -339,8 +438,7 @@
         if (
             contactCards
             &&
-            contactAnchor
-                .parentNode
+            contactAnchor.parentNode
         ) {
 
             contactAnchor.after(
@@ -351,18 +449,216 @@
 
     }
 
+    function obterFiltroAtual() {
+
+    if (
+        !filtroCategoriaAtual
+    ) {
+
+        return null;
+
+    }
+
+
+    return (
+        categoriasFiltro[
+            filtroCategoriaAtual
+        ]
+        ||
+        null
+    );
+
+}
+
+
+function abrirMenuFiltro() {
+
+    if (
+        !filterSearchMenu
+        ||
+        !filterSearchBtn
+    ) {
+
+        return;
+
+    }
+
+
+    filterSearchMenu
+        .classList
+        .add(
+            'is-open'
+        );
+
+
+    filterSearchBtn
+        .setAttribute(
+            'aria-expanded',
+            'true'
+        );
+
+}
+
+
+function fecharMenuFiltro() {
+
+    if (
+        !filterSearchMenu
+        ||
+        !filterSearchBtn
+    ) {
+
+        return;
+
+    }
+
+
+    filterSearchMenu
+        .classList
+        .remove(
+            'is-open'
+        );
+
+
+    filterSearchBtn
+        .setAttribute(
+            'aria-expanded',
+            'false'
+        );
+
+}
+
+
+function alternarMenuFiltro() {
+
+    if (
+        !filterSearchMenu
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        filterSearchMenu
+            .classList
+            .contains(
+                'is-open'
+            )
+    ) {
+
+        fecharMenuFiltro();
+
+    }
+
+    else {
+
+        abrirMenuFiltro();
+
+    }
+
+}
+
+
+function atualizarVisualFiltro() {
+
+    if (
+        !filterSearchBtn
+        ||
+        !filterSearchMenu
+    ) {
+
+        return;
+
+    }
+
+
+    filterSearchBtn
+        .classList
+        .toggle(
+            'is-filtered',
+            Boolean(
+                filtroCategoriaAtual
+            )
+        );
+
+
+    filterSearchMenu
+
+        .querySelectorAll(
+            '.search-filter-option'
+        )
+
+        .forEach(
+            opcao => {
+
+                opcao
+                    .classList
+                    .toggle(
+
+                        'is-selected',
+
+                        opcao.dataset.category
+                        === filtroCategoriaAtual
+
+                    );
+
+            }
+        );
+
+}
+
+
+function selecionarFiltro(
+    categoriaId
+) {
+
+    filtroCategoriaAtual =
+        categoriaId
+        || '';
+
+
+    atualizarVisualFiltro();
+
+    fecharMenuFiltro();
+
+
+    /*
+        Se já há uma pesquisa digitada,
+        atualizamos os resultados imediatamente.
+    */
+
+    if (
+        searchInput
+            .value
+            .trim()
+            .length >= 2
+    ) {
+
+        buscar();
+
+    }
+
+}
+
 
     function limparResultados() {
 
-        resultsBox
+        searchResults
             .replaceChildren();
 
 
-        resultsBox
+        searchResults
             .classList
             .add(
                 'hidden'
             );
+
+
+        delete searchResults
+            .dataset
+            .theme;
 
     }
 
@@ -396,18 +692,168 @@
     }
 
 
-    function criarCategoria(
-        tutorial
+    function obterIniciais(
+        autor
     ) {
 
-        const categoria =
+        const nomeCompleto =
+            `${autor?.nome || ''} ${autor?.sobrenome || ''}`
+                .trim();
+
+
+        return nomeCompleto
+            .split(' ')
+            .filter(Boolean)
+            .slice(0, 2)
+            .map(
+                parte =>
+                    parte[0]
+                        ?.toUpperCase()
+                        || ''
+            )
+            .join('')
+
+            ||
+
+            'MX';
+
+    }
+
+
+    function criarEstrelas(
+        media
+    ) {
+
+        const estrelas =
             document.createElement(
                 'div'
             );
 
 
-        categoria.className =
-            'mexp-search-category';
+        estrelas.className =
+            'mexp-search-card-stars';
+
+
+        const nota =
+            Number(
+                media
+            )
+            || 0;
+
+
+        const preenchidas =
+            Math.round(
+                nota
+            );
+
+
+        for (
+            let i = 1;
+            i <= 5;
+            i += 1
+        ) {
+
+            const estrela =
+                document.createElement(
+                    'span'
+                );
+
+
+            estrela.textContent =
+                '★';
+
+
+            if (
+                i <= preenchidas
+            ) {
+
+                estrela.classList.add(
+                    'is-filled'
+                );
+
+            }
+
+
+            estrelas.appendChild(
+                estrela
+            );
+
+        }
+
+
+        return estrelas;
+
+    }
+
+
+    function criarLinhaCategoria(
+        categoria
+    ) {
+
+        const linha =
+            document.createElement(
+                'span'
+            );
+
+
+        linha.className =
+            'mexp-search-category-line';
+
+
+        const icone =
+            document.createElement(
+                'img'
+            );
+
+
+        icone.src =
+            categoria.icone;
+
+
+        icone.alt =
+            '';
+
+
+        icone.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+
+        const texto =
+            document.createElement(
+                'strong'
+            );
+
+
+        texto.textContent =
+            categoria.nome
+                .toLowerCase();
+
+
+        linha.append(
+            icone,
+            texto
+        );
+
+
+        return linha;
+
+    }
+
+
+    function criarCategoriaPill(
+        tutorial
+    ) {
+
+        const pill =
+            document.createElement(
+                'div'
+            );
+
+
+        pill.className =
+            `mexp-search-card-category mexp-theme-${tutorial.categoria.classe}`;
 
 
         const icone =
@@ -432,230 +878,618 @@
         );
 
 
-        const nome =
+        const texto =
             criarTexto(
-
                 'span',
-
-                'mexp-category',
-
-                tutorial
-                    .categoria
-                    .nome
-
+                '',
+                tutorial.categoria.nome
+                    .toUpperCase()
             );
 
 
-        categoria.append(
+        pill.append(
             icone,
-            nome
+            texto
         );
 
 
-        return categoria;
+        return pill;
 
     }
+
+
+    function criarAcaoContador(
+        icone,
+        valor
+    ) {
+
+        const item =
+            document.createElement(
+                'div'
+            );
+
+
+        item.className =
+            'mexp-search-card-action';
+
+
+        const simbolo =
+            document.createElement(
+                'span'
+            );
+
+
+        simbolo.className =
+            'mexp-search-card-action-icon';
+
+
+        simbolo.textContent =
+            icone;
+
+
+        const texto =
+            document.createElement(
+                'span'
+            );
+
+
+        texto.textContent =
+            String(
+                valor
+            );
+
+
+        item.append(
+            simbolo,
+            texto
+        );
+
+
+        return item;
+
+    }
+
+
+    function criarBotaoCompartilhar(
+        tutorial
+    ) {
+
+        const botao =
+            document.createElement(
+                'button'
+            );
+
+
+        botao.type =
+            'button';
+
+
+        botao.className =
+            'mexp-search-card-share';
+
+
+        botao.setAttribute(
+            'aria-label',
+            `Compartilhar tutorial ${tutorial.titulo}`
+        );
+
+
+        botao.innerHTML =
+            '<span aria-hidden="true">⤴</span>';
+
+
+        botao.addEventListener(
+            'click',
+            async event => {
+
+                event.stopPropagation();
+
+
+                const link =
+                    `${window.location.origin}/tutoriais/${tutorial.slug}`;
+
+
+                try {
+
+                    if (
+                        navigator.share
+                    ) {
+
+                        await navigator.share({
+                            title:
+                                tutorial.titulo,
+
+                            text:
+                                tutorial.resumo,
+
+                            url:
+                                link
+                        });
+
+                        return;
+
+                    }
+
+
+                    await navigator.clipboard.writeText(
+                        link
+                    );
+
+
+                    botao.classList.add(
+                        'is-copied'
+                    );
+
+
+                    botao.setAttribute(
+                        'aria-label',
+                        'Link copiado com sucesso'
+                    );
+
+
+                    setTimeout(
+                        () => {
+
+                            botao.classList.remove(
+                                'is-copied'
+                            );
+
+
+                            botao.setAttribute(
+                                'aria-label',
+                                `Compartilhar tutorial ${tutorial.titulo}`
+                            );
+
+                        },
+                        1500
+                    );
+
+                }
+
+                catch {
+
+                    window.open(
+                        link,
+                        '_blank',
+                        'noopener'
+                    );
+
+                }
+
+            }
+        );
+
+
+        return botao;
+
+    }
+
+
+    function criarCardResultado(
+        tutorial
+    ) {
+
+        const card =
+            document.createElement(
+                'article'
+            );
+
+
+        card.className =
+            `mexp-search-card mexp-theme-${tutorial.categoria.classe}`;
+
+
+        card.addEventListener(
+            'click',
+            event => {
+
+                if (
+                    event.target.closest(
+                        'button'
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                window.location.href =
+                    `/tutoriais/${tutorial.slug}`;
+
+            }
+        );
+
+
+        card.appendChild(
+            criarCategoriaPill(
+                tutorial
+            )
+        );
+
+
+        card.appendChild(
+            criarTexto(
+                'h3',
+                'mexp-search-card-title',
+                tutorial.titulo
+            )
+        );
+
+
+        card.appendChild(
+            criarTexto(
+                'p',
+                'mexp-search-card-summary',
+                tutorial.resumo
+            )
+        );
+
+
+        const rodape =
+            document.createElement(
+                'div'
+            );
+
+
+        rodape.className =
+            'mexp-search-card-footer';
+
+
+        const autorInfo =
+            document.createElement(
+                'div'
+            );
+
+
+        autorInfo.className =
+            'mexp-search-card-author';
+
+
+        const avatar =
+            criarTexto(
+                'div',
+                'mexp-search-card-avatar',
+                obterIniciais(
+                    tutorial.autor
+                )
+            );
+
+
+        const autorMeta =
+            document.createElement(
+                'div'
+            );
+
+
+        autorMeta.className =
+            'mexp-search-card-author-meta';
+
+
+        autorMeta.appendChild(
+            criarTexto(
+                'strong',
+                '',
+                tutorial.autor.nomeCompleto
+                    ||
+                    `${tutorial.autor.nome} ${tutorial.autor.sobrenome}`
+                        .trim()
+            )
+        );
+
+
+        autorMeta.appendChild(
+            criarEstrelas(
+                tutorial.avaliacao.media
+            )
+        );
+
+
+        autorInfo.append(
+            avatar,
+            autorMeta
+        );
+
+
+        const acoes =
+            document.createElement(
+                'div'
+            );
+
+
+        acoes.className =
+            'mexp-search-card-actions';
+
+
+        acoes.appendChild(
+            criarAcaoContador(
+                '♡',
+                tutorial.avaliacao.quantidade
+                    || 0
+            )
+        );
+
+
+        acoes.appendChild(
+            criarAcaoContador(
+                '💬',
+                tutorial.quantidadeComentarios
+                    || 0
+            )
+        );
+
+
+        acoes.appendChild(
+            criarBotaoCompartilhar(
+                tutorial
+            )
+        );
+
+
+        rodape.append(
+            autorInfo,
+            acoes
+        );
+
+
+        card.appendChild(
+            rodape
+        );
+
+
+        return card;
+
+    }
+
+
+    function criarCabecalhoResultados(
+    dados
+) {
+
+    const cabecalho =
+        document.createElement(
+            'div'
+        );
+
+
+    cabecalho.className =
+        'mexp-search-results-head';
+
+
+    const filtroAtual =
+        obterFiltroAtual();
+
+
+    /*
+        A cor temática do cabeçalho
+        só existe quando o usuário
+        realmente escolheu um filtro.
+    */
+
+    searchResults.dataset.theme =
+        filtroAtual
+
+            ? filtroAtual.classe
+
+            : 'mixed';
+
+
+    const titulo =
+        document.createElement(
+            'h2'
+        );
+
+
+    titulo.className =
+        'mexp-search-results-title';
+
+
+    if (
+        dados.quantidade > 0
+    ) {
+
+        const quantidade =
+            document.createElement(
+                'span'
+            );
+
+
+        quantidade.className =
+            'mexp-results-count';
+
+
+        quantidade.textContent =
+            `${dados.quantidade} resultado${dados.quantidade === 1 ? '' : 's'}`;
+
+
+        titulo.append(
+
+            quantidade,
+
+            document.createTextNode(
+                ' encontrados para sua busca'
+            )
+
+        );
+
+    }
+
+    else {
+
+        titulo.textContent =
+            'Nenhum resultado encontrado para sua busca';
+
+    }
+
+
+    cabecalho.appendChild(
+        titulo
+    );
+
+
+    /*
+        IMPORTANTE:
+
+        Só mostramos uma categoria específica
+        quando o usuário selecionou explicitamente
+        o filtro.
+    */
+
+    if (
+        filtroAtual
+    ) {
+
+        const subtitulo =
+            document.createElement(
+                'p'
+            );
+
+
+        subtitulo.className =
+            'mexp-search-results-subtitle';
+
+
+        subtitulo.append(
+            'Seus resultados estão identificados como: '
+        );
+
+
+        subtitulo.appendChild(
+            criarLinhaCategoria(
+                filtroAtual
+            )
+        );
+
+
+        subtitulo.append(
+            '.'
+        );
+
+
+        cabecalho.appendChild(
+            subtitulo
+        );
+
+    }
+
+    else if (
+        dados.quantidade > 0
+    ) {
+
+        cabecalho.appendChild(
+
+            criarTexto(
+                'p',
+                'mexp-search-results-subtitle',
+                'Encontramos tutoriais em diferentes categorias para ajudar na sua pesquisa.'
+            )
+
+        );
+
+    }
+
+    else {
+
+        cabecalho.appendChild(
+
+            criarTexto(
+                'p',
+                'mexp-search-results-subtitle',
+                'Tente pesquisar com palavras mais curtas, mais simples ou com outro termo relacionado.'
+            )
+
+        );
+
+    }
+
+
+    return cabecalho;
+
+}
 
 
     function renderizarResultados(
         dados
     ) {
 
-        resultsBox
+        searchResults
             .replaceChildren();
 
 
-        resultsBox
+        searchResults
             .classList
             .remove(
                 'hidden'
             );
 
 
-        const cabecalho =
+        searchResults.appendChild(
+            criarCabecalhoResultados(
+                dados
+            )
+        );
+
+
+        if (
+            dados.quantidade === 0
+        ) {
+
+            const vazio =
+                document.createElement(
+                    'div'
+                );
+
+
+            vazio.className =
+                'mexp-search-empty';
+
+
+            vazio.innerHTML =
+                `
+                    <strong>
+                        Ainda não encontramos um tutorial para esse termo.
+                    </strong>
+
+                    <p>
+                        Tente pesquisar com outras palavras enquanto novos tutoriais são publicados pelos colaboradores.
+                    </p>
+                `;
+
+
+            searchResults.appendChild(
+                vazio
+            );
+
+            return;
+
+        }
+
+
+        const grid =
             document.createElement(
                 'div'
             );
 
 
-        cabecalho.className =
-            'mexp-search-results-head';
-
-
-        if (
-            dados.quantidade > 0
-        ) {
-
-            cabecalho.appendChild(
-
-                criarTexto(
-
-                    'strong',
-
-                    '',
-
-                    `${dados.quantidade} ${dados.quantidade === 1 ? 'tutorial' : 'tutoriais'} encontrado${dados.quantidade === 1 ? '' : 's'}`
-
-                )
-
-            );
-
-
-            cabecalho.appendChild(
-
-                criarTexto(
-
-                    'span',
-
-                    '',
-
-                    'Clique em um resultado para abrir o tutorial completo.'
-
-                )
-
-            );
-
-        }
-
-        else {
-
-            cabecalho.appendChild(
-
-                criarTexto(
-
-                    'strong',
-
-                    '',
-
-                    'Ainda não encontramos um tutorial para essa pesquisa.'
-
-                )
-
-            );
-
-
-            cabecalho.appendChild(
-
-                criarTexto(
-
-                    'span',
-
-                    '',
-
-                    'Tente usar palavras diferentes ou mais curtas. Novos tutoriais são publicados voluntariamente pelos colaboradores.'
-
-                )
-
-            );
-
-        }
-
-
-        resultsBox.appendChild(
-            cabecalho
-        );
+        grid.className =
+            'mexp-search-results-grid';
 
 
         dados.resultados.forEach(
             tutorial => {
 
-
-                const link =
-                    document.createElement(
-                        'a'
-                    );
-
-
-                link.href =
-                    `/tutoriais/${tutorial.slug}`;
-
-
-                link.className =
-                    `mexp-search-result mexp-theme-${tutorial.categoria.classe}`;
-
-
-                const topo =
-                    document.createElement(
-                        'div'
-                    );
-
-
-                topo.className =
-                    'mexp-search-result-top';
-
-
-                topo.appendChild(
-                    criarCategoria(
+                grid.appendChild(
+                    criarCardResultado(
                         tutorial
                     )
                 );
 
-
-                const avaliacao =
-                    tutorial
-                        .avaliacao
-                        .quantidade
-
-                        ? `${tutorial.avaliacao.media} ★`
-
-                        : 'sem avaliações';
-
-
-                topo.appendChild(
-
-                    criarTexto(
-
-                        'span',
-
-                        'mexp-search-result-count',
-
-                        `${avaliacao} · ${tutorial.quantidadeComentarios} comentário${tutorial.quantidadeComentarios === 1 ? '' : 's'}`
-
-                    )
-
-                );
-
-
-                link.appendChild(
-                    topo
-                );
-
-
-                link.appendChild(
-
-                    criarTexto(
-
-                        'h3',
-
-                        '',
-
-                        tutorial.titulo
-
-                    )
-
-                );
-
-
-                link.appendChild(
-
-                    criarTexto(
-
-                        'p',
-
-                        '',
-
-                        tutorial.resumo
-
-                    )
-
-                );
-
-
-                resultsBox.appendChild(
-                    link
-                );
-
             }
+        );
+
+
+        searchResults.appendChild(
+            grid
         );
 
     }
@@ -683,37 +1517,53 @@
         }
 
 
-        resultsBox
+        searchResults
             .classList
             .remove(
                 'hidden'
             );
 
 
-        resultsBox
+        searchResults
             .replaceChildren(
-
                 criarTexto(
-
                     'p',
-
                     'mexp-search-loading',
-
                     'Buscando tutoriais...'
-
                 )
-
             );
 
 
         try {
 
-            const dados =
-                await requisicao(
+            const parametros =
+    new URLSearchParams();
 
-                    `/api/tutoriais/buscar?q=${encodeURIComponent(termo)}`
 
-                );
+parametros.set(
+    'q',
+    termo
+);
+
+
+if (
+    filtroCategoriaAtual
+) {
+
+    parametros.set(
+        'categoria',
+        filtroCategoriaAtual
+    );
+
+}
+
+
+const dados =
+    await requisicao(
+
+        `/api/tutoriais/buscar?${parametros.toString()}`
+
+    );
 
 
             renderizarResultados(
@@ -724,19 +1574,13 @@
 
         catch (erro) {
 
-            resultsBox
+            searchResults
                 .replaceChildren(
-
                     criarTexto(
-
                         'p',
-
                         'mexp-form-message',
-
                         erro.message
-
                     )
-
                 );
 
         }
@@ -755,10 +1599,10 @@
         ativarModoBusca
     );
 
+
     searchInput.addEventListener(
         'keydown',
         event => {
-
 
             if (
                 event.key
@@ -781,16 +1625,20 @@
                     '';
 
 
-                limparResultados();
+                clearTimeout(
+                    timerBusca
+                );
 
+
+                limparResultados();
 
                 desativarModoBusca();
 
+                fecharMenuFiltro();
 
                 searchInput.blur();
 
             }
-
 
         }
     );
@@ -799,7 +1647,6 @@
     searchInput.addEventListener(
         'input',
         () => {
-
 
             ativarModoBusca();
 
@@ -826,37 +1673,77 @@
             timerBusca =
                 setTimeout(
                     buscar,
-                    400
+                    350
                 );
-
 
         }
     );
+
+    if (
+    filterSearchBtn
+    &&
+    filterSearchMenu
+) {
+
+    filterSearchBtn.addEventListener(
+        'click',
+        event => {
+
+            event.stopPropagation();
+
+            alternarMenuFiltro();
+
+        }
+    );
+
+
+    filterSearchMenu
+
+        .querySelectorAll(
+            '.search-filter-option'
+        )
+
+        .forEach(
+            opcao => {
+
+                opcao.addEventListener(
+                    'click',
+                    event => {
+
+                        event.stopPropagation();
+
+
+                        selecionarFiltro(
+                            opcao.dataset.category
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
 
 
     document.addEventListener(
         'click',
         event => {
 
+                    if (
+            !event.target.closest(
+                '.search-filter-wrap'
+            )
+        ) {
 
-            if (!heroSection) {
+            fecharMenuFiltro();
 
-                return;
-
-            }
-
-
-            /*
-                os menus de acessibilidade
-                sao anexados temporariamente
-                ao body pelo script.js.
-            */
+        }
 
             if (
-                event.target
-                    .closest?.(
-                        '#menu-acc, #menu-fonte'
-                    )
+                event.target.closest?.(
+                    '#menu-acc, #menu-fonte'
+                )
             ) {
 
                 return;
@@ -865,24 +1752,17 @@
 
 
             if (
-                !heroSection
-                    .contains(
-                        event.target
-                    )
-
+                !heroSection.contains(
+                    event.target
+                )
                 &&
-
-                !searchInput
-                    .value
-                    .trim()
+                !searchInput.value.trim()
             ) {
 
                 limparResultados();
-
                 desativarModoBusca();
 
             }
-
 
         }
     );

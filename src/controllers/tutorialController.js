@@ -606,6 +606,14 @@ function buscar(
         .trim();
 
 
+    const categoriaId =
+        String(
+            req.query.categoria
+            || ''
+        )
+        .trim();
+
+
     const usuarioAtualId =
         req.usuario?.id
         || null;
@@ -619,6 +627,10 @@ function buscar(
 
             termo,
 
+            categoria:
+                categoriaId
+                || null,
+
             quantidade:
                 0,
 
@@ -630,26 +642,88 @@ function buscar(
     }
 
 
-    const resultados =
+    /*
+        Se uma categoria foi enviada,
+        garantimos que ela realmente existe.
+    */
+
+    if (
+        categoriaId
+        &&
+        !categoriaValida(
+            categoriaId
+        )
+    ) {
+
+        return res
+            .status(400)
+            .json({
+
+                erro:
+                    'Categoria de pesquisa inválida.'
+
+            });
+
+    }
+
+
+    /*
+        Buscamos todos os resultados compatíveis.
+
+        Antes havia um limite padrão no Model.
+        Como a interface agora pode crescer
+        verticalmente, pedimos todos os resultados.
+    */
+
+    let encontrados =
         TutorialModel
-
             .buscar(
-                termo
-            )
 
-            .map(
+                termo,
+
+                Number.MAX_SAFE_INTEGER
+
+            );
+
+
+    /*
+        Se o usuário escolheu um filtro,
+        mantemos somente aquela categoria.
+    */
+
+    if (
+        categoriaId
+    ) {
+
+        encontrados =
+            encontrados.filter(
                 tutorial =>
 
-                    enriquecerTutorial(
-                        tutorial,
-                        usuarioAtualId
-                    )
+                    tutorial.categoriaId
+                    === categoriaId
             );
+
+    }
+
+
+    const resultados =
+        encontrados.map(
+            tutorial =>
+
+                enriquecerTutorial(
+                    tutorial,
+                    usuarioAtualId
+                )
+        );
 
 
     return res.json({
 
         termo,
+
+        categoria:
+            categoriaId
+            || null,
 
         quantidade:
             resultados.length,
