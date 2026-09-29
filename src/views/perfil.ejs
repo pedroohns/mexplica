@@ -148,440 +148,635 @@
 </header>
 
 
-<main class="mexp-page">
+<main class="profile-page">
 
 
-    <section class="container mexp-profile-card">
+    <!-- ======================================================
+         CABEÇALHO DO PERFIL
+         ====================================================== -->
+
+    <section class="profile-hero">
 
 
-        <div class="mexp-profile-avatar">
-
-            <%= perfil.nome.charAt(0) %>
-
-        </div>
-
-
-        <div class="mexp-profile-main">
+        <div
+            class="profile-cover"
+            aria-hidden="true"
+        ></div>
 
 
-            <span class="mexp-eyebrow">
-                PERFIL
-            </span>
+        <div class="container profile-shell">
 
 
-            <h1>
-                <%= perfil.nomeCompleto %>
-            </h1>
+            <!-- FOTO PADRÃO COM INICIAIS -->
+
+            <div
+                class="profile-avatar-large"
+                aria-label="Iniciais de <%= perfil.nomeCompleto %>"
+            >
+
+                <%= perfil.iniciais %>
+
+            </div>
 
 
-            <p>
+            <!-- IDENTIDADE -->
 
-                <%= perfil.bio
-
-                    || 'Este usuário ainda não adicionou uma biografia.'
-
-                %>
-
-            </p>
+            <div class="profile-identity">
 
 
-            <div class="mexp-tag-row">
+                <h1>
+                    <%= perfil.nomeCompleto %>
+                </h1>
 
 
-                <% if (perfil.colaborador) { %>
+                <span class="profile-handle">
+
+                    <%= perfil.handle %>
+
+                </span>
 
 
-                    <span
-                        class="mexp-badge <%= perfil.nivel === 'Platina' ? 'mexp-badge-platinum' : '' %>"
+                <p class="profile-bio">
+
+                    <%= perfil.bio
+
+                        || 'Este usuário ainda não adicionou uma descrição.'
+
+                    %>
+
+                </p>
+
+
+            </div>
+
+
+            <!-- LOCALIZAÇÃO / NÍVEL / DATA -->
+
+            <div class="profile-meta-row">
+
+
+                <div
+                    class="profile-meta-item profile-meta-location"
+                >
+
+                    <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
                     >
+                        <path
+                            d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"
+                        ></path>
 
-                        COLABORADOR
-                        <%= perfil.nivel.toUpperCase() %>
+                        <circle
+                            cx="12"
+                            cy="10"
+                            r="2.5"
+                        ></circle>
+                    </svg>
 
+
+                    <span>
+                        <%= perfil.localizacao %>
                     </span>
 
 
-                    <%
-                        perfil.especialidades.forEach(
-                            especialidade => {
-                    %>
+                </div>
 
 
-                        <span class="mexp-tag">
+                <!-- TIPO / NÍVEL -->
 
-                            <%= especialidade %>
+                <div class="profile-role-pill">
+
+
+                    <% if (perfil.colaborador) { %>
+
+
+                        <img
+                            src="/icons/<%= String(perfil.nivel).toLowerCase() %>.png"
+                            alt=""
+                            aria-hidden="true"
+                        >
+
+
+                        <span>
+
+                            Colaborador
+                            <%= String(perfil.nivel).toLowerCase() %>
 
                         </span>
 
 
-                    <% }) %>
+                    <% } else { %>
 
 
-                <% } else { %>
+                        <span>
+                            Usuário
+                        </span>
 
 
-                    <span class="mexp-tag">
-                        USUÁRIO DA COMUNIDADE
+                    <% } %>
+
+
+                </div>
+
+
+                <!-- ANO -->
+
+                <div
+                    class="profile-meta-item profile-meta-date"
+                >
+
+                    <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                    >
+
+                        <rect
+                            x="3"
+                            y="5"
+                            width="18"
+                            height="16"
+                            rx="2"
+                        ></rect>
+
+                        <path
+                            d="M16 3v4M8 3v4M3 11h18"
+                        ></path>
+
+                    </svg>
+
+
+                    <span>
+
+                        Entrou em
+                        <%= anoEntrada %>
+
                     </span>
 
 
-                <% } %>
+                </div>
 
 
             </div>
 
 
-        </div>
+            <!-- ==================================================
+                 ESTATÍSTICAS
+                 ================================================== -->
+
+            <div class="profile-stats-row">
 
 
-    </section>
+                <div class="profile-stat-item">
+
+                    <strong>
+                        POSTAGENS
+                    </strong>
+
+                    <span>
+                        <%= estatisticas.totalTutoriais %>
+                    </span>
+
+                </div>
 
 
-    <section class="container mexp-stats-grid">
+                <div class="profile-stat-item">
+
+                    <strong>
+                        RANKING GERAL
+                    </strong>
+
+                    <span>
+                        <%= estatisticas.posicaoRanking %>
+                    </span>
+
+                </div>
 
 
-        <% if (perfil.colaborador) { %>
+                <div class="profile-stat-item">
 
+                    <strong>
+                        AVALIAÇÕES
+                    </strong>
 
-            <div class="mexp-stat">
+                    <span>
 
-                <strong>
-                    <%= perfil.pontos %>
-                </strong>
+                        <%= estatisticas.totalAvaliacoesRecebidas > 0
 
-                <span>
-                    pontos
-                </span>
+                            ? estatisticas.totalAvaliacoesRecebidas
+
+                            : '-'
+
+                        %>
+
+                    </span>
+
+                </div>
+
 
             </div>
 
 
-            <div class="mexp-stat">
+            <!-- ==================================================
+                 AÇÕES - APENAS NO MEU PRÓPRIO PERFIL
+                 ================================================== -->
 
-                <strong>
-                    <%= estatisticas.totalTutoriais %>
-                </strong>
-
-                <span>
-                    tutoriais publicados
-                </span>
-
-            </div>
+            <% if (ehPerfilProprio) { %>
 
 
-            <div class="mexp-stat">
-
-                <strong>
-                    <%= estatisticas.mediaGeral || '—' %>
-                </strong>
-
-                <span>
-                    avaliação média
-                </span>
-
-            </div>
+                <div class="profile-actions-row">
 
 
-            <div class="mexp-stat">
-
-                <strong>
-                    <%= estatisticas.totalAvaliacoesRecebidas %>
-                </strong>
-
-                <span>
-                    avaliações recebidas
-                </span>
-
-            </div>
+                    <% if (perfil.colaborador) { %>
 
 
-        <% } else { %>
+                        <a
+                            href="/tutoriais/novo"
+                            class="profile-action-btn profile-action-primary"
+                        >
+
+                            <span aria-hidden="true">
+                                ＋
+                            </span>
+
+                            <span>
+                                Fazer publicação
+                            </span>
+
+                        </a>
 
 
-            <div class="mexp-stat">
-
-                <strong>
-                    <%= estatisticas.totalComentarios %>
-                </strong>
-
-                <span>
-                    comentários
-                </span>
-
-            </div>
+                    <% } %>
 
 
-            <div class="mexp-stat">
+                    <button
+                        type="button"
+                        class="profile-action-btn"
+                        id="openEditProfileModal"
+                    >
 
-                <strong>
-                    <%= estatisticas.totalAvaliacoesFeitas %>
-                </strong>
+                        <svg
+                            width="17"
+                            height="17"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            aria-hidden="true"
+                        >
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                        </svg>
 
-                <span>
-                    avaliações feitas
-                </span>
+                        <span>
+                            Editar perfil
+                        </span>
 
-            </div>
-
-
-        <% } %>
-
-
-    </section>
-
-
-    <% if (perfil.nivel === 'Platina') { %>
-
-
-        <section class="container mexp-callout">
-
-
-            <div>
-
-                <strong>
-                    Atendimento direto para colaboradores Platina
-                </strong>
-
-                <p>
-
-                    Status atual:
-
-                    <%= perfil.disponivelAtendimento
-
-                        ? 'disponível para chamadas e chat'
-
-                        : 'indisponível no momento'
-
-                    %>.
-
-                </p>
-
-            </div>
+                    </button>
 
 
-            <%
-                if (
-                    usuarioAtual
-                    &&
-                    usuarioAtual.id
-                    === perfil.id
-                ) {
-            %>
+                    <button
+                        type="button"
+                        class="profile-action-btn"
+                        id="shareProfileButton"
+                    >
+
+                        <svg
+                            width="17"
+                            height="17"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            aria-hidden="true"
+                        >
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"></path>
+                        </svg>
+
+                        <span class="profile-share-label">
+                            Compartilhar
+                        </span>
+
+                    </button>
 
 
-                <button
-                    id="toggleDisponibilidade"
-                    class="mexp-secondary-button"
-                    data-disponivel="<%= perfil.disponivelAtendimento ? 'true' : 'false' %>"
-                    type="button"
-                >
+                    <!-- MAIS -->
 
-                    <%= perfil.disponivelAtendimento
+                    <div class="profile-action-menu-wrap">
 
-                        ? 'Ficar indisponível'
 
-                        : 'Ficar disponível'
+                        <button
+                            type="button"
+                            class="profile-action-circle"
+                            id="profileMoreButton"
+                            aria-label="Mais opções"
+                            aria-expanded="false"
+                        >
 
-                    %>
+                            <span aria-hidden="true">
+                                •••
+                            </span>
 
-                </button>
+                        </button>
+
+
+                        <div
+                            class="profile-action-dropdown"
+                            id="profileMoreMenu"
+                            hidden
+                        >
+
+
+                            <% if (perfil.nivel === 'Platina') { %>
+
+
+                                <button
+                                    type="button"
+                                    id="toggleDisponibilidade"
+                                    data-disponivel="<%= perfil.disponivelAtendimento ? 'true' : 'false' %>"
+                                >
+
+                                    <span aria-hidden="true">
+                                        ◉
+                                    </span>
+
+                                    <span>
+
+                                        <%= perfil.disponivelAtendimento
+
+                                            ? 'Ficar indisponível'
+
+                                            : 'Ficar disponível'
+
+                                        %>
+
+                                    </span>
+
+                                </button>
+
+
+                            <% } %>
+
+
+                            <button
+                                type="button"
+                                id="logoutButton"
+                            >
+
+                                <span aria-hidden="true">
+                                    ↪
+                                </span>
+
+                                <span>
+                                    Sair da conta
+                                </span>
+
+                            </button>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- CONFIGURAÇÕES -->
+
+                    <div class="profile-action-menu-wrap">
+
+
+                        <button
+                            type="button"
+                            class="profile-action-circle"
+                            id="profileSettingsButton"
+                            aria-label="Configurações da conta"
+                            aria-expanded="false"
+                        >
+
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                aria-hidden="true"
+                            >
+                                <circle cx="12" cy="12" r="3"></circle>
+
+                                <path
+                                    d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3V9.6h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.88L4.2 7.06l2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4h-.1a1.7 1.7 0 0 0-1.7.6Z"
+                                ></path>
+
+                            </svg>
+
+                        </button>
+
+
+                        <div
+                            class="profile-action-dropdown profile-settings-dropdown"
+                            id="profileSettingsMenu"
+                            hidden
+                        >
+
+                            <button
+                                type="button"
+                                class="profile-danger-menu-item"
+                                id="openDeleteModal"
+                            >
+
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"></path>
+                                </svg>
+
+                                <span>
+                                    Excluir conta
+                                </span>
+
+                            </button>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
 
 
             <% } %>
 
 
-        </section>
+        </div>
 
 
-    <% } %>
+    </section>
 
 
-    <%
-        if (
-            usuarioAtual
-            &&
-            usuarioAtual.id
-            === perfil.id
-        ) {
-    %>
+    <!-- ======================================================
+         PUBLICAÇÕES
+         ====================================================== -->
+
+    <section
+        class="container profile-content-section"
+    >
 
 
-        <% if (perfil.colaborador) { %>
+        <% if (tutoriais.length > 0) { %>
 
 
-            <section class="container mexp-callout mexp-publish-callout">
+            <!-- FILTROS -->
 
-
-                <div>
-
-                    <strong>
-                        Compartilhe o que você sabe
-                    </strong>
-
-                    <p>
-
-                        Publique um tutorial voluntário
-                        para ajudar outras pessoas a usar
-                        tecnologia com mais autonomia.
-
-                    </p>
-
-                </div>
-
-
-                <a
-                    href="/tutoriais/novo"
-                    class="mexp-primary-link"
-                >
-                    Publicar novo tutorial
-                </a>
-
-
-            </section>
-
-
-        <% } %>
-
-
-        <section class="container mexp-section">
-
-
-            <div class="mexp-section-heading">
-
-
-                <div>
-
-                    <span class="mexp-eyebrow">
-                        MINHA CONTA
-                    </span>
-
-                    <h2>
-                        Editar perfil
-                    </h2>
-
-                </div>
-
-
-            </div>
-
-
-            <form
-                id="formEditarPerfil"
-                class="mexp-form"
-                data-id="<%= perfil.id %>"
+            <div
+                class="profile-post-filters"
+                id="profilePostFilters"
+                aria-label="Filtrar publicações por categoria"
             >
 
 
-                <label for="perfilBio">
-                    Biografia
-                </label>
-
-
-                <textarea
-                    id="perfilBio"
-                    name="bio"
-                    maxlength="500"
-                ><%= perfil.bio %></textarea>
-
-
-                <button
-                    type="submit"
-                    class="mexp-primary-button"
+                <span
+                    class="profile-filter-icon"
+                    aria-hidden="true"
                 >
-                    Salvar alterações
-                </button>
 
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
 
-            </form>
+                        <path
+                            d="M4 5h16l-6 7v5l-4 2v-7Z"
+                        ></path>
 
+                    </svg>
 
-            <div class="mexp-inline-actions">
+                </span>
 
 
                 <button
-                    id="logoutButton"
-                    class="mexp-secondary-button"
                     type="button"
+                    class="profile-filter-btn profile-filter-all is-active"
+                    data-filter="all"
+                    aria-pressed="true"
                 >
-                    Sair da conta
+
+                    TUDO
+
                 </button>
 
 
                 <button
-                    id="excluirConta"
-                    class="mexp-danger-button"
-                    data-id="<%= perfil.id %>"
                     type="button"
+                    class="profile-filter-btn profile-filter-blue"
+                    data-filter="sistemas-acessibilidade"
+                    aria-pressed="false"
                 >
-                    Excluir minha conta
-                </button>
 
+                    <img
+                        src="/icons/azul.png"
+                        alt=""
+                        aria-hidden="true"
+                    >
 
-            </div>
-
-
-        </section>
-
-
-    <% } %>
-
-
-    <% if (perfil.colaborador) { %>
-
-
-        <section class="container mexp-section">
-
-
-            <div class="mexp-section-heading">
-
-
-                <div>
-
-                    <span class="mexp-eyebrow">
-                        CONTRIBUIÇÕES
+                    <span>
+                        SISTEMAS E ACESSIBILIDADE
                     </span>
 
-                    <h2>
-                        Tutoriais publicados
-                    </h2>
+                </button>
 
-                </div>
+
+                <button
+                    type="button"
+                    class="profile-filter-btn profile-filter-green"
+                    data-filter="comunicacao-interacao"
+                    aria-pressed="false"
+                >
+
+                    <img
+                        src="/icons/verde.png"
+                        alt=""
+                        aria-hidden="true"
+                    >
+
+                    <span>
+                        COMUNICAÇÃO E INTERAÇÃO
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="profile-filter-btn profile-filter-red"
+                    data-filter="seguranca-usabilidade"
+                    aria-pressed="false"
+                >
+
+                    <img
+                        src="/icons/vermelho.png"
+                        alt=""
+                        aria-hidden="true"
+                    >
+
+                    <span>
+                        SEGURANÇA E USABILIDADE
+                    </span>
+
+                </button>
 
 
             </div>
 
 
-            <div class="mexp-question-grid">
+            <!-- CARDS -->
+
+            <div
+                class="profile-posts-grid"
+                id="profilePostsGrid"
+            >
 
 
-                <% if (!tutoriais.length) { %>
+                <% tutoriais.forEach(tutorial => { %>
 
 
-                    <p class="mexp-empty">
-
-                        Este colaborador ainda
-                        não publicou nenhum tutorial.
-
-                    </p>
-
-
-                <% } %>
-
-
-                <%
-                    tutoriais.forEach(
-                        tutorial => {
-                %>
-
-
-                    <a
-                        href="/tutoriais/<%= tutorial.slug %>"
-                        class="mexp-question-card mexp-theme-<%= tutorial.categoria.classe %>"
+                    <article
+                        class="mexp-search-card profile-post-card mexp-theme-<%= tutorial.categoria.classe %>"
+                        data-category="<%= tutorial.categoriaId %>"
+                        data-href="/tutoriais/<%= tutorial.slug %>"
+                        tabindex="0"
+                        role="link"
+                        aria-label="Abrir tutorial <%= tutorial.titulo %>"
                     >
 
 
-                        <div class="mexp-card-category-line">
-
+                        <div
+                            class="mexp-search-card-category mexp-theme-<%= tutorial.categoria.classe %>"
+                        >
 
                             <img
                                 src="<%= tutorial.categoria.icone %>"
@@ -589,63 +784,148 @@
                                 aria-hidden="true"
                             >
 
-
-                            <span class="mexp-category">
-
-                                <%= tutorial.categoria.nome %>
-
+                            <span>
+                                <%= tutorial.categoria.nome.toUpperCase() %>
                             </span>
-
 
                         </div>
 
 
-                        <h3>
+                        <h3 class="mexp-search-card-title">
+
                             <%= tutorial.titulo %>
+
                         </h3>
 
 
-                        <p>
+                        <p class="mexp-search-card-summary">
+
                             <%= tutorial.resumo %>
+
                         </p>
 
 
-                        <div class="mexp-question-meta">
+                        <div class="mexp-search-card-footer">
 
 
-                            <span>
-
-                                <%= tutorial.visualizacoes %>
-                                visualizações
-
-                            </span>
+                            <div class="mexp-search-card-author">
 
 
-                            <span>
+                                <div class="mexp-search-card-avatar">
 
-                                <%= tutorial.avaliacao.quantidade
+                                    <%= tutorial.autor.iniciais %>
 
-                                    ? `${tutorial.avaliacao.media} ★`
-
-                                    : 'sem avaliações'
-
-                                %>
-
-                            </span>
+                                </div>
 
 
-                            <span>
+                                <div class="mexp-search-card-author-meta">
 
-                                <%= tutorial.quantidadeComentarios %>
-                                comentários
 
-                            </span>
+                                    <strong>
+
+                                        <%= tutorial.autor.nomeCompleto %>
+
+                                    </strong>
+
+
+                                    <div
+                                        class="mexp-search-card-stars"
+                                        aria-label="Avaliação média: <%= tutorial.avaliacao.media || 0 %> de 5"
+                                    >
+
+
+                                        <%
+                                            for (
+                                                let estrela = 1;
+                                                estrela <= 5;
+                                                estrela += 1
+                                            ) {
+                                        %>
+
+
+                                            <span
+                                                class="<%= estrela <= Math.round(tutorial.avaliacao.media || 0) ? 'is-filled' : '' %>"
+                                            >
+                                                ★
+                                            </span>
+
+
+                                        <% } %>
+
+
+                                    </div>
+
+
+                                </div>
+
+
+                            </div>
+
+
+                            <div class="mexp-search-card-actions">
+
+
+                                <div
+                                    class="mexp-search-card-action"
+                                    title="Avaliações"
+                                >
+
+                                    <span
+                                        class="mexp-search-card-action-icon"
+                                        aria-hidden="true"
+                                    >
+                                        ♡
+                                    </span>
+
+                                    <span>
+                                        <%= tutorial.avaliacao.quantidade || 0 %>
+                                    </span>
+
+                                </div>
+
+
+                                <div
+                                    class="mexp-search-card-action"
+                                    title="Comentários"
+                                >
+
+                                    <span
+                                        class="mexp-search-card-action-icon"
+                                        aria-hidden="true"
+                                    >
+                                        💬
+                                    </span>
+
+                                    <span>
+                                        <%= tutorial.quantidadeComentarios || 0 %>
+                                    </span>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    class="mexp-search-card-share profile-post-share"
+                                    aria-label="Compartilhar tutorial <%= tutorial.titulo %>"
+                                    data-title="<%= tutorial.titulo %>"
+                                    data-summary="<%= tutorial.resumo %>"
+                                    data-url="/tutoriais/<%= tutorial.slug %>"
+                                >
+
+                                    <span aria-hidden="true">
+                                        ⤴
+                                    </span>
+
+                                </button>
+
+
+                            </div>
 
 
                         </div>
 
 
-                    </a>
+                    </article>
 
 
                 <% }) %>
@@ -654,13 +934,371 @@
             </div>
 
 
-        </section>
+        <% } else { %>
 
 
-    <% } %>
+            <!-- ==================================================
+                 PERFIL VAZIO
+                 ================================================== -->
+
+            <div class="profile-empty-state">
+
+
+                <img
+                    src="/icons/ninho-vazio.png"
+                    alt="Ninho vazio"
+                    class="profile-empty-icon"
+                    onerror="this.style.display='none'"
+                >
+
+
+                <% if (ehPerfilProprio && perfil.colaborador) { %>
+
+
+                    <p>
+
+                        Seu perfil ainda está vazio,
+                        faça uma publicação para ver
+                        suas aparições e respostas.
+
+                    </p>
+
+
+                <% } else if (ehPerfilProprio) { %>
+
+
+                    <p>
+                        Seu perfil ainda não possui publicações.
+                    </p>
+
+
+                <% } else { %>
+
+
+                    <p>
+                        Esse perfil ainda não possui publicações.
+                    </p>
+
+
+                <% } %>
+
+
+            </div>
+
+
+        <% } %>
+
+
+    </section>
 
 
 </main>
+
+
+<!-- ==========================================================
+     FOOTER
+     ========================================================== -->
+
+<footer class="footer">
+
+    <div class="container footer-inner">
+
+
+        <div class="footer-brand">
+
+            <img
+                src="/icons/logo-completa.png"
+                alt=""
+                class="footer-logo-icon"
+                aria-hidden="true"
+            >
+
+        </div>
+
+
+        <div class="footer-columns">
+
+
+            <div class="footer-col">
+
+                <h4>
+                    CONTATO
+                </h4>
+
+                <ul>
+                    <li><a href="#">SUPORTE</a></li>
+                    <li><a href="#">POLÍTICA DE PRIVACIDADE</a></li>
+                    <li><a href="#">TERMO DE USO</a></li>
+                    <li><a href="#">BLOG</a></li>
+                </ul>
+
+            </div>
+
+
+            <div class="footer-col">
+
+                <h4>
+                    DÚVIDAS FREQUENTES
+                </h4>
+
+                <ul>
+                    <li><a href="#">CARREIRAS</a></li>
+                    <li><a href="#">TERMOS DE SERVIÇO</a></li>
+                    <li><a href="#">FEEDBACK</a></li>
+                    <li><a href="#">REDE SOCIAL</a></li>
+                </ul>
+
+            </div>
+
+
+            <div class="footer-col">
+
+                <h4>
+                    ATENDIMENTO
+                </h4>
+
+                <ul>
+                    <li><a href="#">APOIO TÉCNICO</a></li>
+                    <li><a href="#">SEGURANÇA</a></li>
+                    <li><a href="#">EVENTOS</a></li>
+                    <li><a href="#">NEWSLETTER</a></li>
+                </ul>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <div class="footer-copy">
+
+        <span>
+            © MEXPLICA 2025. Todos os direitos reservados.
+        </span>
+
+    </div>
+
+
+</footer>
+
+
+<!-- ==========================================================
+     MODAIS - SOMENTE NO PRÓPRIO PERFIL
+     ========================================================== -->
+
+<% if (ehPerfilProprio) { %>
+
+
+    <!-- EDITAR PERFIL -->
+
+    <div
+        class="profile-modal"
+        id="editProfileModal"
+        hidden
+    >
+
+
+        <div
+            class="profile-modal-backdrop"
+            data-close-modal="editProfileModal"
+        ></div>
+
+
+        <div
+            class="profile-modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="editProfileTitle"
+        >
+
+
+            <button
+                type="button"
+                class="profile-modal-close"
+                data-close-modal="editProfileModal"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+
+            <img
+                src="/icons/logo-completa.png"
+                alt="MEXPLICA"
+                class="profile-modal-logo"
+            >
+
+
+            <h2 id="editProfileTitle">
+                Editar perfil
+            </h2>
+
+
+            <form
+                id="formEditarPerfil"
+                data-id="<%= perfil.id %>"
+            >
+
+
+                <label for="perfilLocalizacao">
+                    Localização
+                </label>
+
+
+                <input
+                    id="perfilLocalizacao"
+                    type="text"
+                    maxlength="100"
+                    value="<%= perfil.localizacao %>"
+                    placeholder="Ex.: Rio de Janeiro, Brasil"
+                >
+
+
+                <label for="perfilBio">
+                    Descrição breve
+                </label>
+
+
+                <textarea
+                    id="perfilBio"
+                    maxlength="500"
+                ><%= perfil.bio %></textarea>
+
+
+                <p
+                    id="editProfileMessage"
+                    class="profile-modal-message"
+                    aria-live="polite"
+                ></p>
+
+
+                <div class="profile-modal-actions">
+
+
+                    <button
+                        type="submit"
+                        class="profile-modal-primary"
+                    >
+                        Salvar alterações
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="profile-modal-secondary"
+                        data-close-modal="editProfileModal"
+                    >
+                        Cancelar
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- EXCLUIR CONTA -->
+
+    <div
+        class="profile-modal"
+        id="deleteAccountModal"
+        hidden
+    >
+
+
+        <div
+            class="profile-modal-backdrop"
+            data-close-modal="deleteAccountModal"
+        ></div>
+
+
+        <div
+            class="profile-modal-card profile-delete-modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="deleteAccountTitle"
+        >
+
+
+            <button
+                type="button"
+                class="profile-modal-close"
+                data-close-modal="deleteAccountModal"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+
+            <img
+                src="/icons/logo-completa.png"
+                alt="MEXPLICA"
+                class="profile-modal-logo"
+            >
+
+
+            <h2 id="deleteAccountTitle">
+                Excluir conta
+            </h2>
+
+
+            <p class="profile-delete-copy">
+
+                Deseja mesmo excluir sua conta?
+                Seus posts serão perdidos.
+
+            </p>
+
+
+            <p
+                id="deleteAccountMessage"
+                class="profile-modal-message"
+                aria-live="polite"
+            ></p>
+
+
+            <div class="profile-modal-actions">
+
+
+                <button
+                    type="button"
+                    class="profile-modal-danger"
+                    id="confirmDeleteAccount"
+                    data-id="<%= perfil.id %>"
+                >
+                    Excluir minha conta
+                </button>
+
+
+                <button
+                    type="button"
+                    class="profile-modal-secondary"
+                    data-close-modal="deleteAccountModal"
+                >
+                    Cancelar
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+<% } %>
 
 
 <script src="/script.js"></script>

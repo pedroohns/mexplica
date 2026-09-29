@@ -275,6 +275,68 @@ function perfil(
             : 0;
 
 
+    // =============================
+    // POSIÇÃO NO RANKING
+    // =============================
+
+    const rankingCompleto =
+        UsuarioModel
+            .getRanking(
+                Number.MAX_SAFE_INTEGER
+            );
+
+
+    const indiceRanking =
+        rankingCompleto
+            .findIndex(
+                colaborador =>
+                    colaborador.id
+                    === usuario.id
+            );
+
+
+    const posicaoRanking =
+        indiceRanking >= 0
+
+            ? `${indiceRanking + 1}º`
+
+            : '-';
+
+
+    // =============================
+    // ANO DE CRIAÇÃO DA CONTA
+    // =============================
+
+    const dataCriacao =
+        new Date(
+            usuario.criadoEm
+        );
+
+
+    const anoEntrada =
+        Number.isNaN(
+            dataCriacao.getTime()
+        )
+
+            ? '-'
+
+            : dataCriacao
+                .getFullYear();
+
+
+    // =============================
+    // MEU PRÓPRIO PERFIL?
+    // =============================
+
+    const ehPerfilProprio =
+        Boolean(
+            req.usuario
+            &&
+            req.usuario.id
+            === usuario.id
+        );
+
+
     return res.render(
         'perfil',
         {
@@ -287,10 +349,16 @@ function perfil(
 
             tutoriais,
 
+            ehPerfilProprio,
+
+            anoEntrada,
+
             estatisticas: {
 
                 totalTutoriais:
                     tutoriais.length,
+
+                posicaoRanking,
 
                 totalComentarios:
                     comentariosFeitos

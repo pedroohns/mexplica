@@ -230,6 +230,26 @@ function atualizar(
 
     }
 
+    if (
+        typeof req.body.localizacao
+        === 'string'
+    ) {
+
+        const localizacao =
+            req.body.localizacao
+                .trim()
+                .slice(
+                    0,
+                    100
+                );
+
+
+        alteracoes.localizacao =
+            localizacao
+            || 'Brasil';
+
+    }
+
 
     if (
         req.body.idade

@@ -867,6 +867,44 @@ function sincronizarNivel(
 
 }
 
+function gerarIniciais(
+    nome = '',
+    sobrenome = ''
+) {
+
+    const partes =
+        `${nome} ${sobrenome}`
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+
+    if (
+        partes.length === 0
+    ) {
+
+        return 'MX';
+
+    }
+
+
+    return partes
+
+        .slice(
+            0,
+            2
+        )
+
+        .map(
+            parte =>
+                parte
+                    .charAt(0)
+                    .toUpperCase()
+        )
+
+        .join('');
+
+}
 
 function toPublic(
     usuario
@@ -896,6 +934,22 @@ function toPublic(
         nomeCompleto:
             `${usuario.nome} ${usuario.sobrenome}`
                 .trim(),
+
+        iniciais:
+            gerarIniciais(
+                usuario.nome,
+                usuario.sobrenome
+            ),
+
+        handle:
+            `@${String(
+                usuario.slug
+                || 'usuario'
+            ).replace(/-/g, '')}`,
+
+        localizacao:
+            usuario.localizacao
+            || 'Brasil',
 
         tipo:
             usuario.tipo,
@@ -1024,7 +1078,7 @@ function findByIdentifier(
             identificador
             || ''
         )
-        .trim();
+            .trim();
 
 
     if (!valor) {
@@ -1094,9 +1148,9 @@ function getRanking(
                     'Diamante',
                     'Platina'
                 ]
-                .includes(
-                    usuario.nivel
-                )
+                    .includes(
+                        usuario.nivel
+                    )
         )
 
         .sort(
@@ -1195,6 +1249,10 @@ function create(
         bio:
             dados.bio
             || '',
+
+        localizacao:
+            dados.localizacao
+            || 'Brasil',
 
         especialidades:
             Array.isArray(
