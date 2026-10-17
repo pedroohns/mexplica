@@ -350,6 +350,119 @@ test(
     }
 );
 
+// =============================
+// USUÁRIOS / RANKING
+// =============================
+test(
+    'GET /api/usuarios/ranking retorna o ranking de colaboradores',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/api/usuarios/ranking`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const dados =
+            await resposta.json();
+
+
+        assert.ok(
+            Array.isArray(
+                dados
+            )
+        );
+
+
+        assert.ok(
+            dados.length > 0
+        );
+
+    }
+);
+
+
+// =============================
+// COMENTÁRIOS
+// =============================
+test(
+    'GET /api/tutoriais/1/comentarios retorna comentários do tutorial',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/api/tutoriais/1/comentarios`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const dados =
+            await resposta.json();
+
+
+        assert.ok(
+            Array.isArray(
+                dados
+            )
+        );
+
+    }
+);
+
+
+// =============================
+// AVALIAÇÕES
+// =============================
+test(
+    'GET /api/tutoriais/1/avaliacoes retorna resumo das avaliações',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/api/tutoriais/1/avaliacoes`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const dados =
+            await resposta.json();
+
+
+        assert.equal(
+            dados.tutorialId,
+            1
+        );
+
+
+        assert.equal(
+            typeof dados.media,
+            'number'
+        );
+
+
+        assert.equal(
+            typeof dados.quantidade,
+            'number'
+        );
+
+    }
+);
 
 // =============================
 // 404
