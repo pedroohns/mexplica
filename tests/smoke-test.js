@@ -1,0 +1,403 @@
+const {
+    test,
+    before,
+    after
+} = require('node:test');
+
+
+const assert =
+    require('node:assert/strict');
+
+
+process.env.NODE_ENV =
+    'test';
+
+
+process.env.SESSION_SECRET =
+    process.env.SESSION_SECRET
+    || 'mexplica-chave-exclusiva-para-testes';
+
+
+const app =
+    require('../src/index');
+
+
+let server;
+let baseUrl;
+
+
+// =============================
+// INICIA SERVIDOR DE TESTE
+// =============================
+before(
+    async () => {
+
+        server =
+            app.listen(
+                0,
+                '127.0.0.1'
+            );
+
+
+        await new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                server.once(
+                    'listening',
+                    resolve
+                );
+
+
+                server.once(
+                    'error',
+                    reject
+                );
+
+            }
+        );
+
+
+        const endereco =
+            server.address();
+
+
+        baseUrl =
+            `http://127.0.0.1:${endereco.port}`;
+
+    }
+);
+
+
+// =============================
+// ENCERRA SERVIDOR
+// =============================
+after(
+    async () => {
+
+        await new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                server.close(
+                    erro => {
+
+                        if (erro) {
+
+                            return reject(
+                                erro
+                            );
+
+                        }
+
+
+                        resolve();
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+
+// =============================
+// HOME
+// =============================
+test(
+    'GET / retorna a página inicial',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+    }
+);
+
+
+// =============================
+// HEALTH CHECK
+// =============================
+test(
+    'GET /api/health confirma que a API está funcionando',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/api/health`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const dados =
+            await resposta.json();
+
+
+        assert.equal(
+            dados.status,
+            'ok'
+        );
+
+
+        assert.equal(
+            dados.projeto,
+            'MExplica'
+        );
+
+    }
+);
+
+
+// =============================
+// AUTENTICAÇÃO
+// =============================
+test(
+    'POST /api/auth/verificar encontra usuário existente',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/api/auth/verificar`,
+                {
+
+                    method:
+                        'POST',
+
+                    headers: {
+
+                        'Content-Type':
+                            'application/json'
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            identificador:
+                                'lucas@mexplica.com'
+
+                        })
+
+                }
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const dados =
+            await resposta.json();
+
+
+        assert.equal(
+            dados.cadastrado,
+            true
+        );
+
+
+        assert.equal(
+            dados.proximoPasso,
+            'login'
+        );
+
+
+        assert.equal(
+            dados.usuario.nome,
+            'Lucas'
+        );
+
+    }
+);
+
+
+// =============================
+// TUTORIAIS
+// =============================
+test(
+    'GET /api/tutoriais retorna a lista de tutoriais',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/api/tutoriais`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const dados =
+            await resposta.json();
+
+
+        assert.ok(
+            Array.isArray(
+                dados
+            )
+        );
+
+
+        assert.ok(
+            dados.length > 0
+        );
+
+    }
+);
+
+
+// =============================
+// AUTORIZAÇÃO
+// =============================
+test(
+    'POST /api/tutoriais bloqueia usuário não autenticado',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/api/tutoriais`,
+                {
+
+                    method:
+                        'POST',
+
+                    headers: {
+
+                        'Content-Type':
+                            'application/json'
+
+                    },
+
+                    body:
+                        JSON.stringify({})
+
+                }
+            );
+
+
+        assert.equal(
+            resposta.status,
+            401
+        );
+
+
+        const dados =
+            await resposta.json();
+
+
+        assert.ok(
+            dados.erro
+        );
+
+    }
+);
+
+
+// =============================
+// VIEW EJS
+// =============================
+test(
+    'GET /comunidade renderiza a comunidade',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/comunidade`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const tipo =
+            resposta.headers.get(
+                'content-type'
+            );
+
+
+        assert.match(
+            tipo,
+            /text\/html/
+        );
+
+    }
+);
+
+
+// =============================
+// 404
+// =============================
+test(
+    'rota inexistente da API retorna 404',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/api/rota-que-nao-existe`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            404
+        );
+
+
+        const dados =
+            await resposta.json();
+
+
+        assert.equal(
+            dados.erro,
+            'Rota não encontrada.'
+        );
+
+    }
+);
+
+
+// =============================
+// VERCEL
+// =============================
+test(
+    'api/index.js continua exportando a aplicação Express',
+    () => {
+
+        const appVercel =
+            require('../api/index');
+
+
+        assert.equal(
+            appVercel,
+            app
+        );
+
+    }
+);
