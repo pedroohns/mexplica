@@ -1,3 +1,8 @@
+const TutorialService =
+    require(
+        '../services/tutorialService'
+    );
+
 const UsuarioModel =
     require(
         '../models/usuarioModel'
@@ -23,9 +28,6 @@ const AvaliacaoModel =
 
 
 const {
-
-    getCategoria,
-
     listarCategorias
 
 } =
@@ -57,80 +59,6 @@ function enriquecerComentario(
 
 }
 
-
-function enriquecerTutorial(
-    tutorial,
-    usuarioAtualId = null
-) {
-
-    const minhaAvaliacao =
-        usuarioAtualId
-
-            ? AvaliacaoModel
-                .findByTutorialEAvaliador(
-
-                    tutorial.id,
-
-                    usuarioAtualId
-
-                )
-
-            : null;
-
-
-    return {
-
-        ...tutorial,
-
-        autor:
-            UsuarioModel
-                .toPublic(
-
-                    UsuarioModel
-                        .findById(
-                            tutorial.autorId
-                        )
-
-                ),
-
-        categoria:
-            getCategoria(
-                tutorial.categoriaId
-            ),
-
-        avaliacao:
-            AvaliacaoModel
-                .resumoDoTutorial(
-                    tutorial.id
-                ),
-
-        quantidadeComentarios:
-            ComentarioModel
-                .findByTutorialId(
-                    tutorial.id
-                )
-                .length,
-
-        minhaAvaliacao:
-            minhaAvaliacao
-
-                ? {
-
-                    id:
-                        minhaAvaliacao.id,
-
-                    nota:
-                        minhaAvaliacao.nota
-
-                }
-
-                : null
-
-    };
-
-}
-
-
 function comunidade(
     req,
     res
@@ -155,7 +83,7 @@ function comunidade(
 
             .map(
                 tutorial =>
-                    enriquecerTutorial(
+                    TutorialService.enriquecerTutorial(
                         tutorial
                     )
             );
@@ -208,7 +136,7 @@ function perfil(
             .map(
                 tutorial =>
 
-                    enriquecerTutorial(
+                    TutorialService.enriquecerTutorial(
 
                         tutorial,
 
@@ -424,7 +352,7 @@ function tutorial(
 
 
     const tutorialCompleto =
-        enriquecerTutorial(
+        TutorialService.enriquecerTutorial(
 
             tutorialAtualizado,
 
@@ -580,7 +508,7 @@ function editarTutorial(
                 'editar',
 
             tutorial:
-                enriquecerTutorial(
+                TutorialService.enriquecerTutorial(
 
                     tutorial,
 
