@@ -6,64 +6,49 @@ const tutoriais =
 function normalizarTexto(
     valor = ''
 ) {
-
     return String(valor)
-
         .normalize(
             'NFD'
         )
-
         .replace(
             /[\u0300-\u036f]/g,
             ''
         )
-
         .toLowerCase()
-
         .trim();
-
 }
-
 
 function criarSlugBase(
     valor = ''
 ) {
-
     return normalizarTexto(
         valor
     )
-
         .replace(
             /[^a-z0-9]+/g,
             '-'
         )
-
         .replace(
             /^-+|-+$/g,
             ''
         );
-
 }
 
 
 function criarSlugUnico(
     titulo
 ) {
-
     const base =
         criarSlugBase(
             titulo
         )
         || 'tutorial';
 
-
     let slug =
         base;
 
-
     let sufixo =
         2;
-
 
     while (
         tutoriais.some(
@@ -72,32 +57,22 @@ function criarSlugUnico(
                 === slug
         )
     ) {
-
         slug =
             `${base}-${sufixo}`;
 
         sufixo +=
             1;
-
     }
-
-
     return slug;
-
 }
 
-
 function proximoId() {
-
     if (
         tutoriais.length
         === 0
     ) {
-
         return 1;
-
     }
-
 
     return (
         Math.max(
@@ -109,16 +84,12 @@ function proximoId() {
         +
         1
     );
-
 }
 
-
 function findAll() {
-
     return [
         ...tutoriais
     ]
-
         .sort(
             (a, b) =>
 
@@ -132,15 +103,12 @@ function findAll() {
                     a.criadoEm
                 )
         );
-
 }
 
 
 function findById(id) {
-
     const numero =
         Number(id);
-
 
     return (
         tutoriais.find(
@@ -151,14 +119,11 @@ function findById(id) {
         ||
         null
     );
-
 }
-
 
 function findBySlug(
     slug
 ) {
-
     return (
         tutoriais.find(
             tutorial =>
@@ -168,19 +133,15 @@ function findBySlug(
         ||
         null
     );
-
 }
-
 
 function findByAutorId(
     autorId
 ) {
-
     const numero =
         Number(
             autorId
         );
-
 
     return tutoriais
 
@@ -189,7 +150,6 @@ function findByAutorId(
                 tutorial.autorId
                 === numero
         )
-
         .sort(
             (a, b) =>
 
@@ -203,7 +163,6 @@ function findByAutorId(
                     a.criadoEm
                 )
         );
-
 }
 
 
@@ -214,33 +173,25 @@ function buscar(
     termo,
     limite = 10
 ) {
-
     const consulta =
         normalizarTexto(
             termo
         );
 
-
     if (
         consulta.length < 2
     ) {
-
         return [];
-
     }
-
 
     const palavras =
         consulta
-
             .split(
                 /\s+/
             )
-
             .filter(
                 Boolean
             );
-
 
     return tutoriais
 
@@ -251,26 +202,18 @@ function buscar(
                     normalizarTexto(
                         tutorial.titulo
                     );
-
-
                 const resumo =
                     normalizarTexto(
                         tutorial.resumo
                     );
-
-
                 const conteudo =
                     normalizarTexto(
                         tutorial.conteudo
                     );
-
-
                 const categoria =
                     normalizarTexto(
                         tutorial.categoriaId
                     );
-
-
                 const tags =
                     normalizarTexto(
 
@@ -279,43 +222,31 @@ function buscar(
                             || []
                         )
                         .join(' ')
-
                     );
-
-
                 const passos =
                     normalizarTexto(
-
                         (
                             tutorial.passos
                             || []
                         )
-
                         .map(
                             passo =>
                                 `${passo.titulo} ${passo.descricao}`
                         )
-
                         .join(' ')
-
                     );
-
 
                 let pontuacao =
                     0;
-
 
                 if (
                     titulo.includes(
                         consulta
                     )
                 ) {
-
                     pontuacao +=
                         30;
-
                 }
-
 
                 if (
                     tags.includes(
@@ -325,45 +256,34 @@ function buscar(
 
                     pontuacao +=
                         16;
-
                 }
-
 
                 if (
                     resumo.includes(
                         consulta
                     )
                 ) {
-
                     pontuacao +=
                         12;
-
                 }
-
 
                 if (
                     categoria.includes(
                         consulta
                     )
                 ) {
-
                     pontuacao +=
                         8;
-
                 }
-
 
                 if (
                     conteudo.includes(
                         consulta
                     )
                 ) {
-
                     pontuacao +=
                         5;
-
                 }
-
 
                 if (
                     passos.includes(
@@ -373,96 +293,70 @@ function buscar(
 
                     pontuacao +=
                         3;
-
                 }
-
 
                 palavras.forEach(
                     palavra => {
-
                         if (
                             titulo.includes(
                                 palavra
                             )
                         ) {
-
                             pontuacao +=
                                 7;
-
                         }
-
 
                         if (
                             tags.includes(
                                 palavra
                             )
                         ) {
-
                             pontuacao +=
                                 5;
-
                         }
-
 
                         if (
                             resumo.includes(
                                 palavra
                             )
                         ) {
-
                             pontuacao +=
                                 4;
-
                         }
-
 
                         if (
                             categoria.includes(
                                 palavra
                             )
                         ) {
-
                             pontuacao +=
                                 3;
-
                         }
-
 
                         if (
                             conteudo.includes(
                                 palavra
                             )
                         ) {
-
                             pontuacao +=
                                 2;
-
                         }
-
 
                         if (
                             passos.includes(
                                 palavra
                             )
                         ) {
-
                             pontuacao +=
                                 1;
-
                         }
-
                     }
                 );
 
-
                 return {
-
                     tutorial,
-
                     pontuacao
-
                 };
-
             }
         )
 
@@ -470,10 +364,8 @@ function buscar(
             item =>
                 item.pontuacao > 0
         )
-
         .sort(
             (a, b) =>
-
                 b.pontuacao
                 -
                 a.pontuacao
@@ -488,27 +380,21 @@ function buscar(
                 a.tutorial
                     .visualizacoes
         )
-
         .slice(
             0,
             limite
         )
-
         .map(
             item =>
                 item.tutorial
         );
-
 }
-
 
 function maisAcessadosDaSemana(
     limite = 6
 ) {
-
     const agora =
         Date.now();
-
 
     const seteDias =
         7
@@ -521,7 +407,6 @@ function maisAcessadosDaSemana(
         *
         1000;
 
-
     const recentes =
         tutoriais.filter(
             tutorial => {
@@ -531,7 +416,6 @@ function maisAcessadosDaSemana(
                         tutorial.criadoEm
                     )
                     .getTime();
-
 
                 return (
                     Number.isFinite(
@@ -543,23 +427,17 @@ function maisAcessadosDaSemana(
                     agora - data
                     <= seteDias
                 );
-
             }
         );
 
-
     const base =
         recentes.length > 0
-
             ? recentes
-
             : tutoriais;
-
 
     return [
         ...base
     ]
-
         .sort(
             (a, b) =>
 
@@ -579,159 +457,107 @@ function maisAcessadosDaSemana(
                     a.criadoEm
                 )
         )
-
         .slice(
             0,
             limite
         );
-
 }
-
 
 function incrementarVisualizacao(
     id
 ) {
-
     const tutorial =
         findById(id);
 
-
     if (!tutorial) {
-
         return null;
-
     }
-
 
     tutorial.visualizacoes +=
         1;
-
-
     return tutorial;
-
 }
-
 
 // CREATE
 function create(
     dados
 ) {
-
     const novoTutorial = {
-
         id:
             proximoId(),
-
         slug:
             criarSlugUnico(
                 dados.titulo
             ),
-
         autorId:
             Number(
                 dados.autorId
             ),
-
         categoriaId:
             dados.categoriaId,
-
         titulo:
             dados.titulo,
-
         resumo:
             dados.resumo,
-
         conteudo:
             dados.conteudo,
-
         passos:
             Array.isArray(
                 dados.passos
             )
-
                 ? dados.passos
-
                 : [],
-
         imagens:
             Array.isArray(
                 dados.imagens
             )
-
                 ? dados.imagens
-
                 : [],
-
         videoUrl:
             dados.videoUrl
             || '',
-
         tags:
             Array.isArray(
                 dados.tags
             )
-
                 ? dados.tags
-
                 : [],
-
         visualizacoes:
             0,
-
         criadoEm:
             new Date()
                 .toISOString(),
-
         atualizadoEm:
             null
-
     };
-
 
     tutoriais.push(
         novoTutorial
     );
-
-
     return novoTutorial;
-
 }
-
 
 // UPDATE
 function update(
     id,
     alteracoes
 ) {
-
     const tutorial =
         findById(id);
 
-
     if (!tutorial) {
-
         return null;
-
     }
 
-
     Object.assign(
-
         tutorial,
-
         alteracoes,
-
         {
-
             atualizadoEm:
                 new Date()
                     .toISOString()
-
         }
-
     );
-
-
     /*
         o slug nao muda.
 
@@ -739,20 +565,13 @@ function update(
         que já foi compartilhada continua
         funcionando.
     */
-
-
     return tutorial;
-
 }
 
-
 // DELETE
-
 function remove(id) {
-
     const numero =
         Number(id);
-
 
     const indice =
         tutoriais.findIndex(
@@ -761,15 +580,11 @@ function remove(id) {
                 === numero
         );
 
-
     if (
         indice === -1
     ) {
-
         return null;
-
     }
-
 
     const [
         removido
@@ -779,34 +594,19 @@ function remove(id) {
             1
         );
 
-
     return removido;
-
 }
 
-
 module.exports = {
-
     normalizarTexto,
-
     findAll,
-
     findById,
-
     findBySlug,
-
     findByAutorId,
-
     buscar,
-
     maisAcessadosDaSemana,
-
     incrementarVisualizacao,
-
     create,
-
     update,
-
     remove
-
 };

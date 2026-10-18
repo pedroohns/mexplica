@@ -6,72 +6,56 @@ const usuarios =
 const NIVEL_DIAMANTE =
     1000;
 
-
 const NIVEL_PLATINA =
     2500;
 
 function normalizarTelefone(
     valor = ''
 ) {
-
     return String(valor)
         .replace(
             /\D/g,
             ''
         );
-
 }
 
 function criarSlugBase(
     valor = ''
 ) {
-
     return String(valor)
-
         .normalize(
             'NFD'
         )
-
         .replace(
             /[\u0300-\u036f]/g,
             ''
         )
-
         .toLowerCase()
-
         .trim()
-
         .replace(
             /[^a-z0-9]+/g,
             '-'
         )
-
         .replace(
             /^-+|-+$/g,
             ''
         );
-
 }
-
 
 function criarSlugUnico(
     nomeCompleto
 ) {
-
     const base =
         criarSlugBase(
             nomeCompleto
         )
         || 'usuario';
 
-
     let slug =
         base;
 
-
     let sufixo =
         2;
-
 
     while (
         usuarios.some(
@@ -80,31 +64,21 @@ function criarSlugUnico(
                 === slug
         )
     ) {
-
         slug =
             `${base}-${sufixo}`;
 
         sufixo +=
             1;
-
     }
-
-
     return slug;
-
 }
 
-
 function proximoId() {
-
     if (
         usuarios.length === 0
     ) {
-
         return 1;
-
     }
-
 
     return (
         Math.max(
@@ -116,126 +90,88 @@ function proximoId() {
         +
         1
     );
-
 }
-
 
 function calcularNivel(
     pontos,
     colaborador
 ) {
-
     if (!colaborador) {
-
         return null;
-
     }
-
 
     if (
         pontos >= NIVEL_PLATINA
     ) {
-
         return 'Platina';
-
     }
-
 
     if (
         pontos >= NIVEL_DIAMANTE
     ) {
-
         return 'Diamante';
-
     }
 
-
     return 'Comum';
-
 }
 
 
 function sincronizarNivel(
     usuario
 ) {
-
     if (!usuario) {
-
         return null;
-
     }
-
 
     usuario.nivel =
         calcularNivel(
-
             usuario.pontos,
-
             usuario.colaborador
-
         );
-
 
     usuario.tipo =
         usuario.colaborador
-
             ? 'colaborador'
-
             : 'usuario';
-
 
     if (
         usuario.nivel
         !== 'Platina'
     ) {
-
         usuario.disponivelAtendimento =
             false;
-
     }
-
-
     return usuario;
-
 }
 
 function gerarIniciais(
     nome = '',
     sobrenome = ''
 ) {
-
     const partes =
         `${nome} ${sobrenome}`
             .trim()
             .split(/\s+/)
             .filter(Boolean);
 
-
     if (
         partes.length === 0
     ) {
-
         return 'MX';
-
     }
-
-
     return partes
 
         .slice(
             0,
             2
         )
-
         .map(
             parte =>
                 parte
                     .charAt(0)
                     .toUpperCase()
         )
-
         .join('');
-
 }
 
 function toPublic(
@@ -243,14 +179,10 @@ function toPublic(
 ) {
 
     if (!usuario) {
-
         return null;
-
     }
 
-
     return {
-
         id:
             usuario.id,
 
@@ -318,25 +250,18 @@ function toPublic(
 
         criadoEm:
             usuario.criadoEm
-
     };
-
 }
-
 
 function toPrivate(
     usuario
 ) {
 
     if (!usuario) {
-
         return null;
-
     }
 
-
     return {
-
         ...toPublic(
             usuario
         ),
@@ -352,24 +277,16 @@ function toPrivate(
 
         genero:
             usuario.genero
-
     };
-
 }
-
 
 function findAll() {
-
     return usuarios;
-
 }
 
-
 function findById(id) {
-
     const numero =
         Number(id);
-
 
     return (
         usuarios.find(
@@ -380,14 +297,11 @@ function findById(id) {
         ||
         null
     );
-
 }
-
 
 function findBySlug(
     slug
 ) {
-
     return (
         usuarios.find(
             usuario =>
@@ -397,9 +311,7 @@ function findBySlug(
         ||
         null
     );
-
 }
-
 
 function findByIdentifier(
     identificador
@@ -412,21 +324,15 @@ function findByIdentifier(
         )
             .trim();
 
-
     if (!valor) {
-
         return null;
-
     }
-
 
     if (
         valor.includes('@')
     ) {
-
         const email =
             valor.toLowerCase();
-
 
         return (
             usuarios.find(
@@ -438,15 +344,12 @@ function findByIdentifier(
             ||
             null
         );
-
     }
-
 
     const telefone =
         normalizarTelefone(
             valor
         );
-
 
     return (
         usuarios.find(
@@ -459,14 +362,11 @@ function findByIdentifier(
         ||
         null
     );
-
 }
-
 
 function getRanking(
     limite = 10
 ) {
-
     return usuarios
 
         .filter(
@@ -484,24 +384,19 @@ function getRanking(
                         usuario.nivel
                     )
         )
-
         .sort(
             (a, b) =>
                 b.pontos
                 -
                 a.pontos
         )
-
         .slice(
             0,
             limite
         );
-
 }
 
-
 function getPlatinaDisponiveis() {
-
     return usuarios.filter(
         usuario =>
 
@@ -517,9 +412,7 @@ function getPlatinaDisponiveis() {
             usuario
                 .disponivelAtendimento
     );
-
 }
-
 
 function create(
     dados
@@ -529,7 +422,6 @@ function create(
         Boolean(
             dados.colaborador
         );
-
 
     const novoUsuario = {
 
@@ -607,85 +499,63 @@ function create(
 
     };
 
-
     usuarios.push(
         novoUsuario
     );
 
-
     return novoUsuario;
-
 }
-
 
 function update(
     id,
     alteracoes
 ) {
-
     const usuario =
         findById(id);
 
-
     if (!usuario) {
-
         return null;
-
     }
-
 
     Object.assign(
         usuario,
         alteracoes
     );
 
-
     sincronizarNivel(
         usuario
     );
 
-
     return usuario;
-
 }
-
 
 function adicionarPontos(
     id,
     quantidade
 ) {
-
     const usuario =
         findById(id);
-
 
     if (
         !usuario
         ||
         !usuario.colaborador
     ) {
-
         return null;
-
     }
-
 
     const valor =
         Number(
             quantidade
         );
 
-
     if (
         !Number.isFinite(
             valor
         )
     ) {
-
         return usuario;
-
     }
-
 
     usuario.pontos =
         Math.max(
@@ -698,16 +568,12 @@ function adicionarPontos(
 
         );
 
-
     sincronizarNivel(
         usuario
     );
 
-
     return usuario;
-
 }
-
 
 function definirDisponibilidade(
     id,
@@ -717,35 +583,28 @@ function definirDisponibilidade(
     const usuario =
         findById(id);
 
-
     if (
         !usuario
         ||
         usuario.nivel
         !== 'Platina'
     ) {
-
         return null;
 
     }
-
 
     usuario.disponivelAtendimento =
         Boolean(
             disponivel
         );
 
-
     return usuario;
-
 }
-
 
 function remove(id) {
 
     const numero =
         Number(id);
-
 
     const indice =
         usuarios.findIndex(
@@ -754,15 +613,11 @@ function remove(id) {
                 === numero
         );
 
-
     if (
         indice === -1
     ) {
-
         return null;
-
     }
-
 
     const [
         removido
@@ -772,50 +627,27 @@ function remove(id) {
             1
         );
 
-
     return removido;
-
 }
 
-
 module.exports = {
-
     NIVEL_DIAMANTE,
-
     NIVEL_PLATINA,
-
     normalizarTelefone,
-
     criarSlugBase,
-
     calcularNivel,
-
     sincronizarNivel,
-
     toPublic,
-
     toPrivate,
-
     findAll,
-
     findById,
-
     findBySlug,
-
     findByIdentifier,
-
     getRanking,
-
     getPlatinaDisponiveis,
-
     create,
-
     update,
-
     adicionarPontos,
-
     definirDisponibilidade,
-
     remove
-
 };

@@ -3,17 +3,12 @@ const comentarios =
         '../data/comentarioData'
     );
 
-
 function proximoId() {
-
     if (
         comentarios.length === 0
     ) {
-
         return 1;
-
     }
-
 
     return (
         Math.max(
@@ -25,22 +20,15 @@ function proximoId() {
         +
         1
     );
-
 }
-
 
 function findAll() {
-
     return comentarios;
-
 }
 
-
 function findById(id) {
-
     const numero =
         Number(id);
-
 
     return (
         comentarios.find(
@@ -51,19 +39,15 @@ function findById(id) {
         ||
         null
     );
-
 }
-
 
 function findByTutorialId(
     tutorialId
 ) {
-
     const numero =
         Number(
             tutorialId
         );
-
 
     return comentarios
 
@@ -72,7 +56,6 @@ function findByTutorialId(
                 comentario.tutorialId
                 === numero
         )
-
         .sort(
             (a, b) =>
 
@@ -86,26 +69,21 @@ function findByTutorialId(
                     b.criadoEm
                 )
         );
-
 }
-
 
 function findByUserId(
     usuarioId
 ) {
-
     const numero =
         Number(
             usuarioId
         );
-
 
     return comentarios.filter(
         comentario =>
             comentario.usuarioId
             === numero
     );
-
 }
 
 
@@ -113,82 +91,59 @@ function findByUserId(
 function create(
     dados
 ) {
-
     const novoComentario = {
-
         id:
             proximoId(),
-
         tutorialId:
             Number(
                 dados.tutorialId
             ),
-
         usuarioId:
             Number(
                 dados.usuarioId
             ),
-
         texto:
             dados.texto,
-
         criadoEm:
             new Date()
                 .toISOString(),
-
         atualizadoEm:
             null
-
     };
-
 
     comentarios.push(
         novoComentario
     );
 
-
     return novoComentario;
-
 }
-
 
 // UPDATE
 function update(
     id,
     texto
 ) {
-
     const comentario =
         findById(id);
 
-
     if (!comentario) {
-
         return null;
-
     }
-
 
     comentario.texto =
         texto;
-
 
     comentario.atualizadoEm =
         new Date()
             .toISOString();
 
-
     return comentario;
-
 }
-
 
 // DELETE
 function remove(id) {
-
     const numero =
         Number(id);
-
 
     const indice =
         comentarios.findIndex(
@@ -197,15 +152,11 @@ function remove(id) {
                 === numero
         );
 
-
     if (
         indice === -1
     ) {
-
         return null;
-
     }
-
 
     const [
         removido
@@ -215,26 +166,15 @@ function remove(id) {
             1
         );
 
-
     return removido;
-
 }
 
-
 module.exports = {
-
     findAll,
-
     findById,
-
     findByTutorialId,
-
     findByUserId,
-
     create,
-
     update,
-
     remove
-
 };
