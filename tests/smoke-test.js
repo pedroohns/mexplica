@@ -465,6 +465,73 @@ test(
 );
 
 // =============================
+// PÁGINA DE PERFIL
+// =============================
+test(
+    'GET /perfil/lucas-mendes renderiza um perfil',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/perfil/lucas-mendes`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const tipo =
+            resposta.headers.get(
+                'content-type'
+            );
+
+
+        assert.match(
+            tipo,
+            /text\/html/
+        );
+
+    }
+);
+
+
+// =============================
+// PÁGINA DE TUTORIAL
+// =============================
+test(
+    'GET /tutoriais/saiba-como-aumentar-a-fonte-do-celular renderiza um tutorial',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/tutoriais/saiba-como-aumentar-a-fonte-do-celular`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const tipo =
+            resposta.headers.get(
+                'content-type'
+            );
+
+
+        assert.match(
+            tipo,
+            /text\/html/
+        );
+
+    }
+);
+
+// =============================
 // 404
 // =============================
 test(
