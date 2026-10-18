@@ -38,7 +38,7 @@ const {
     removerTutorialCompleto
 } =
     require(
-        '../utils/relacionamentos'
+        '../services/relacionamentoService'
     );
 
 
