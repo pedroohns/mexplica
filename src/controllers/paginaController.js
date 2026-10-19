@@ -13,9 +13,9 @@ const TutorialModel =
         '../models/tutorialModel'
     );
 
-const ComentarioModel =
+const ComentarioService =
     require(
-        '../models/comentarioModel'
+        '../services/comentarioService'
     );
 
 const PerfilService =
@@ -30,30 +30,6 @@ const {
     require(
         '../utils/categorias'
     );
-
-
-function enriquecerComentario(
-    comentario
-) {
-
-    return {
-
-        ...comentario,
-
-        autor:
-            UsuarioModel
-                .toPublic(
-
-                    UsuarioModel
-                        .findById(
-                            comentario.usuarioId
-                        )
-
-                )
-
-    };
-
-}
 
 function comunidade(
     req,
@@ -187,14 +163,8 @@ function tutorial(
 
 
     const comentarios =
-        ComentarioModel
-
-            .findByTutorialId(
+        ComentarioService.listarPorTutorial(
                 tutorialAtualizado.id
-            )
-
-            .map(
-                enriquecerComentario
             );
 
 
