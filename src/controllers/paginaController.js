@@ -8,24 +8,20 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
-
 const TutorialModel =
     require(
         '../models/tutorialModel'
     );
-
 
 const ComentarioModel =
     require(
         '../models/comentarioModel'
     );
 
-
-const AvaliacaoModel =
+const PerfilService =
     require(
-        '../models/avaliacaoModel'
+        '../services/perfilService'
     );
-
 
 const {
     listarCategorias
@@ -108,14 +104,19 @@ function perfil(
     res
 ) {
 
-    const usuario =
-        UsuarioModel
-            .findBySlug(
-                req.params.slug
+    const dadosPerfil =
+        PerfilService
+            .montarPerfil(
+
+                req.params.slug,
+
+                req.usuario?.id
+                || null
+
             );
 
 
-    if (!usuario) {
+    if (!dadosPerfil) {
 
         return res
             .status(404)
@@ -126,185 +127,9 @@ function perfil(
     }
 
 
-    const tutoriais =
-        TutorialModel
-
-            .findByAutorId(
-                usuario.id
-            )
-
-            .map(
-                tutorial =>
-
-                    TutorialService.enriquecerTutorial(
-
-                        tutorial,
-
-                        req.usuario?.id
-                        || null
-
-                    )
-            );
-
-
-    const comentariosFeitos =
-        ComentarioModel
-            .findByUserId(
-                usuario.id
-            );
-
-
-    const avaliacoesFeitas =
-        AvaliacaoModel
-            .findByAvaliadorId(
-                usuario.id
-            );
-
-
-    const avaliacoesRecebidas =
-        tutoriais.flatMap(
-            tutorial =>
-
-                AvaliacaoModel
-                    .findByTutorialId(
-                        tutorial.id
-                    )
-        );
-
-
-    const mediaGeral =
-        avaliacoesRecebidas.length
-
-            ? Number(
-
-                (
-                    avaliacoesRecebidas
-                        .reduce(
-                            (
-                                soma,
-                                item
-                            ) =>
-                                soma
-                                +
-                                item.nota,
-                            0
-                        )
-
-                    /
-
-                    avaliacoesRecebidas
-                        .length
-                )
-
-                .toFixed(1)
-
-            )
-
-            : 0;
-
-
-    // =============================
-    // POSIÇÃO NO RANKING
-    // =============================
-
-    const rankingCompleto =
-        UsuarioModel
-            .getRanking(
-                Number.MAX_SAFE_INTEGER
-            );
-
-
-    const indiceRanking =
-        rankingCompleto
-            .findIndex(
-                colaborador =>
-                    colaborador.id
-                    === usuario.id
-            );
-
-
-    const posicaoRanking =
-        indiceRanking >= 0
-
-            ? `${indiceRanking + 1}º`
-
-            : '-';
-
-
-    // =============================
-    // ANO DE CRIAÇÃO DA CONTA
-    // =============================
-
-    const dataCriacao =
-        new Date(
-            usuario.criadoEm
-        );
-
-
-    const anoEntrada =
-        Number.isNaN(
-            dataCriacao.getTime()
-        )
-
-            ? '-'
-
-            : dataCriacao
-                .getFullYear();
-
-
-    // =============================
-    // MEU PRÓPRIO PERFIL?
-    // =============================
-
-    const ehPerfilProprio =
-        Boolean(
-            req.usuario
-            &&
-            req.usuario.id
-            === usuario.id
-        );
-
-
     return res.render(
         'perfil',
-        {
-
-            perfil:
-                UsuarioModel
-                    .toPublic(
-                        usuario
-                    ),
-
-            tutoriais,
-
-            ehPerfilProprio,
-
-            anoEntrada,
-
-            estatisticas: {
-
-                totalTutoriais:
-                    tutoriais.length,
-
-                posicaoRanking,
-
-                totalComentarios:
-                    comentariosFeitos
-                        .length,
-
-                totalAvaliacoesFeitas:
-                    avaliacoesFeitas
-                        .length,
-
-                totalAvaliacoesRecebidas:
-                    avaliacoesRecebidas
-                        .length,
-
-                mediaGeral
-
-            }
-
-        }
+        dadosPerfil
     );
 
 }
