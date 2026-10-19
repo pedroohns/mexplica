@@ -556,9 +556,9 @@ test(
             
             '/js/perfil/account.js',
 
-            '/js/tutorial.js',
-
-            '/js/editor-tutorial.js',
+            '/js/tutorial/view.js',
+            
+            '/js/tutorial/editor.js',
 
             '/icons/favicon.ico',
 

@@ -48,9 +48,9 @@ const arquivos = [
 
     'public/js/perfil/account.js',
 
-    'public/js/tutorial.js',
+    'public/js/tutorial/view.js',
 
-    'public/js/editor-tutorial.js'
+    'public/js/tutorial/editor.js'
 
 ];
 
@@ -90,7 +90,7 @@ test(
                     'src/views/tutorial.ejs',
 
                 consumidor:
-                    '/js/tutorial.js'
+                    '/js/tutorial/view.js'
             },
 
             {
@@ -98,7 +98,7 @@ test(
                     'src/views/editor-tutorial.ejs',
 
                 consumidor:
-                    '/js/editor-tutorial.js'
+                    '/js/tutorial/editor.js'
             }
 
         ];
