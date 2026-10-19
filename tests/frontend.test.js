@@ -44,7 +44,9 @@ const arquivos = [
 
     'public/js/home/search.js',
 
-    'public/js/perfil.js',
+    'public/js/perfil/ui.js',
+
+    'public/js/perfil/account.js',
 
     'public/js/tutorial.js',
 
@@ -80,7 +82,7 @@ test(
                     'src/views/perfil.ejs',
 
                 consumidor:
-                    '/js/perfil.js'
+                    '/js/perfil/account.js'
             },
 
             {
@@ -155,6 +157,49 @@ test(
                 );
 
             }
+        );
+
+    }
+);
+
+
+test(
+    'perfil carrega UI antes das ações de conta',
+    () => {
+
+        const caminho =
+            path.resolve(
+                __dirname,
+                '..',
+                'src/views/perfil.ejs'
+            );
+
+        const conteudo =
+            fs.readFileSync(
+                caminho,
+                'utf8'
+            );
+
+        const posicaoUi =
+            conteudo.indexOf(
+                '/js/perfil/ui.js'
+            );
+
+        const posicaoAccount =
+            conteudo.indexOf(
+                '/js/perfil/account.js'
+            );
+
+        assert.ok(
+            posicaoUi >= 0
+        );
+
+        assert.ok(
+            posicaoAccount >= 0
+        );
+
+        assert.ok(
+            posicaoUi < posicaoAccount
         );
 
     }

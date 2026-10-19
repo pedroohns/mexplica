@@ -552,7 +552,9 @@ test(
 
             '/js/home/search.js',
 
-            '/js/perfil.js',
+            '/js/perfil/ui.js',
+            
+            '/js/perfil/account.js',
 
             '/js/tutorial.js',
 
