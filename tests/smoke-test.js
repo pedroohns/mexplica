@@ -542,7 +542,9 @@ test(
 
             '/css/style.css',
 
-            '/js/script.js',
+            '/js/core/site.js',
+
+            '/js/auth/cadastro.js',
 
             '/js/home-search.js',
 
