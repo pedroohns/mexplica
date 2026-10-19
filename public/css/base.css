@@ -1,0 +1,151 @@
+
+@font-face {
+    font-family: 'Nimbus Sans';
+    src: url('fonts/NimbusSanL-Bol.otf') format('otf');
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Nimbus Sans Regular';
+    src: url('fonts/NimbusSans-Regular.otf') format('otf');
+    font-weight: 400;
+}
+
+/* reset basico */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: #111111;
+    background: #ffffff;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+body.font-large {
+    font-size: 19px;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+}
+
+/* layout */
+.container {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 32px;
+}
+
+
+/* HEADER // NAV */
+
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    height: 58px;
+    gap: 0;
+}
+
+.nav-logo {
+    flex-shrink: 0;
+    margin-right: 48px;
+}
+
+.logo-icon {
+    height: 34px;
+    width: auto;
+}
+
+.nav-links {
+    display: flex;
+    gap: 36px;
+    flex: 1;
+}
+
+.nav-links a {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #111111;
+    transition: color 0.18s ease;
+}
+
+.nav-links a:hover {
+    color: #7B6EF6;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.btn-acessar {
+    background: #7B6EF6;
+    color: #ffffff;
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.18s ease;
+    border: 1px solid #111;
+}
+
+.btn-acessar:hover {
+    background: #3a318a;
+}
+
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px;
+    margin-left: auto;
+}
+
+.nav-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #111111;
+    border-radius: 2px;
+}
+
+
