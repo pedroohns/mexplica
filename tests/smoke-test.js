@@ -532,6 +532,60 @@ test(
 );
 
 // =============================
+// ARQUIVOS ESTÁTICOS
+// =============================
+test(
+    'arquivos estáticos principais são servidos corretamente',
+    async () => {
+
+        const arquivos = [
+
+            '/css/style.css',
+
+            '/js/script.js',
+
+            '/js/home-search.js',
+
+            '/js/perfil.js',
+
+            '/js/tutorial.js',
+
+            '/js/editor-tutorial.js',
+
+            '/icons/favicon.ico',
+
+            '/images/tutorials/pix-seguranca.jpg'
+
+        ];
+
+
+        for (
+            const arquivo
+            of arquivos
+        ) {
+
+            const resposta =
+                await fetch(
+                    `${baseUrl}${arquivo}`
+                );
+
+
+            assert.equal(
+
+                resposta.status,
+
+                200,
+
+                `Falha ao carregar ${arquivo}`
+
+            );
+
+        }
+
+    }
+);
+
+// =============================
 // 404
 // =============================
 test(
