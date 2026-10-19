@@ -546,7 +546,9 @@ test(
 
             '/js/auth/cadastro.js',
 
-            '/js/home-search.js',
+            '/js/home/search-render.js',
+
+            '/js/home/search.js',
 
             '/js/perfil.js',
 
@@ -583,6 +585,57 @@ test(
             );
 
         }
+
+    }
+);
+
+test(
+    'home carrega o renderer antes do script principal da busca',
+    async () => {
+
+        const resposta =
+            await fetch(
+                `${baseUrl}/`
+            );
+
+
+        assert.equal(
+            resposta.status,
+            200
+        );
+
+
+        const html =
+            await resposta.text();
+
+
+        const posicaoRenderer =
+            html.indexOf(
+                '/js/home/search-render.js'
+            );
+
+
+        const posicaoBusca =
+            html.indexOf(
+                '/js/home/search.js'
+            );
+
+
+        assert.ok(
+            posicaoRenderer >= 0
+        );
+
+
+        assert.ok(
+            posicaoBusca >= 0
+        );
+
+
+        assert.ok(
+            posicaoRenderer
+            <
+            posicaoBusca
+        );
 
     }
 );

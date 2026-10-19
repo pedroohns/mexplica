@@ -32,7 +32,9 @@ const arquivos = [
 
     'public/js/auth/cadastro.js',
 
-    'public/js/home-search.js',
+    'public/js/home/search-render.js',
+
+    'public/js/home/search.js',
 
     'public/js/perfil.js',
 
