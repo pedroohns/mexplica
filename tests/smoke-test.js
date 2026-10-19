@@ -544,6 +544,8 @@ test(
 
             '/js/core/site.js',
 
+            '/js/core/api.js',
+
             '/js/auth/cadastro.js',
 
             '/js/home/search-render.js',

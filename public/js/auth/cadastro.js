@@ -1,3 +1,7 @@
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
     // STEPS
     const step1 = document.getElementById('step-1');
     const stepLogin = document.getElementById('step-login');
@@ -65,39 +69,11 @@
 
 
     // FUNÇÃO PARA COMUNICAÇÃO COM A API
-    async function authRequest(
-        url,
-        options = {}
-    ) {
-
-        const resposta =
-            await fetch(
-                url,
-                {
-                    headers: {
-                        'Content-Type':
-                            'application/json',
-                        ...(
-                            options.headers
-                            || {}
-                        )
-                    },
-                    ...options
-                }
-            );
-
-        const dados =
-            await resposta.json();
-        if (!resposta.ok) {
-            throw new Error(
-                dados.erro
-                ||
-                'Não foi possível concluir a operação.'
-            );
-
-        }
-        return dados;
-    }
+    const {
+        requisicao:
+            authRequest
+    } =
+        window.MExplicaApi;
 
 
     // STEP 1 - MÉTODO DE CONTATO
@@ -994,3 +970,6 @@
             });
         });
     }
+
+    }
+);
