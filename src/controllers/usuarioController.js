@@ -8,7 +8,7 @@ const {
     removerDadosDoUsuario
 } =
     require(
-        '../utils/relacionamentos'
+        '../services/relacionamentoService'
     );
 
 

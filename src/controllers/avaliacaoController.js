@@ -20,7 +20,7 @@ const {
     removerAvaliacaoComAjuste
 } =
     require(
-        '../utils/relacionamentos'
+        '../services/relacionamentoService'
     );
 
 
