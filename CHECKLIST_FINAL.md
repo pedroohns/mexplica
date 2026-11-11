@@ -111,7 +111,7 @@
 
 ## Merge
 
-- [ ] Revisar diff da branch contra `main`
-- [ ] Confirmar testes verdes uma última vez
-- [ ] Fazer merge somente após Preview aprovado
-- [ ] Validar deploy de produção após merge
+- [ ✓ ] Revisar diff da branch contra `main`
+- [ ✓ ] Confirmar testes verdes uma última vez
+- [ ✓ ] Fazer merge somente após Preview aprovado
+- [ ✓ ] Validar deploy de produção após merge
