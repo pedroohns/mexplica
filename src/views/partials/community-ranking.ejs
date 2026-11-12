@@ -1,0 +1,50 @@
+<section class="community-ranking" aria-labelledby="ranking-<%= id %>">
+    <div class="community-ranking-heading">
+        <img class="community-ranking-logo" src="/icons/logo-mexplica.png" alt="" aria-hidden="true" width="48" height="54">
+        <h2 id="ranking-<%= id %>"><%= titulo %></h2>
+        <p><%= descricao %></p>
+    </div>
+
+    <% if (!participantes.length) { %>
+        <div class="community-ranking-empty">
+            <img src="/icons/maos.png" alt="" aria-hidden="true" width="56" height="56">
+            <p><%= vazio %></p>
+        </div>
+    <% } else { %>
+        <ol class="community-podium" aria-label="Três primeiros lugares">
+            <% participantes.slice(0, 3).forEach((colaborador, index) => { %>
+                <li class="community-podium-place community-place-<%= index + 1 %>" value="<%= index + 1 %>">
+                    <a href="/perfil/<%= colaborador.slug %>" class="community-podium-card">
+                        <span class="community-rank-number"><%= index + 1 %>º lugar</span>
+                        <span class="community-rank-avatar" aria-hidden="true"><%= colaborador.iniciais %></span>
+                        <strong><%= colaborador.nomeCompleto %></strong>
+                        <span class="community-rank-score">
+                            <%= (respostas ? colaborador.quantidadeTutoriais : colaborador.pontos).toLocaleString('pt-BR') %>
+                            <%= respostas ? (colaborador.quantidadeTutoriais === 1 ? 'tutorial' : 'tutoriais') : 'PTS' %>
+                        </span>
+                    </a>
+                </li>
+            <% }) %>
+        </ol>
+
+        <% if (participantes.length > 3) { %>
+            <ol class="community-ranking-rest" start="4" aria-label="Demais posições">
+                <% participantes.slice(3).forEach((colaborador, index) => { %>
+                    <li>
+                        <a class="community-ranking-row" href="/perfil/<%= colaborador.slug %>">
+                            <span class="community-list-position"><%= index + 4 %>º</span>
+                            <span class="community-rank-avatar" aria-hidden="true"><%= colaborador.iniciais %></span>
+                            <div class="community-list-info">
+                                <strong><%= colaborador.nomeCompleto %></strong>
+                                <span class="community-rank-score">
+                                    <%= (respostas ? colaborador.quantidadeTutoriais : colaborador.pontos).toLocaleString('pt-BR') %>
+                                    <%= respostas ? (colaborador.quantidadeTutoriais === 1 ? 'tutorial' : 'tutoriais') : 'PTS' %>
+                                </span>
+                            </div>
+                        </a>
+                    </li>
+                <% }) %>
+            </ol>
+        <% } %>
+    <% } %>
+</section>

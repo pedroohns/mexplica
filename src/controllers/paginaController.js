@@ -67,6 +67,8 @@ function comunidade(
 
             ranking,
 
+            rankingRespostas: TutorialService.rankingDeRespostas(),
+
             tutoriaisEmAlta
 
         }

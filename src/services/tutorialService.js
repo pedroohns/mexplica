@@ -3,6 +3,8 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
+const TutorialModel = require('../models/tutorialModel');
+
 const ComentarioModel =
     require(
         '../models/comentarioModel'
@@ -543,7 +545,41 @@ function enriquecerTutorial(
 
 }
 
+// A semana acompanha a janela móvel de sete dias usada na comunidade.
+// Sem publicações recentes, não substituímos o período por dados antigos.
+function rankingDeRespostas(limite = 10, agora = Date.now()) {
+    const inicio = agora - 7 * 24 * 60 * 60 * 1000;
+    const publicacoesPorAutor = new Map();
+
+    TutorialModel.findAll().forEach(tutorial => {
+        const data = new Date(tutorial.criadoEm).getTime();
+        if (!Number.isFinite(data) || data < inicio || data > agora) {
+            return;
+        }
+
+        publicacoesPorAutor.set(
+            tutorial.autorId,
+            (publicacoesPorAutor.get(tutorial.autorId) || 0) + 1
+        );
+    });
+
+    return [...publicacoesPorAutor].map(([autorId, quantidadeTutoriais]) => {
+        const autor = UsuarioModel.findById(autorId);
+        if (!autor?.colaborador) return null;
+
+        return {
+            ...UsuarioModel.toPublic(autor),
+            quantidadeTutoriais
+        };
+    }).filter(Boolean).sort((a, b) =>
+        b.quantidadeTutoriais - a.quantidadeTutoriais
+        || a.nomeCompleto.localeCompare(b.nomeCompleto, 'pt-BR')
+        || a.id - b.id
+    ).slice(0, limite);
+}
+
 module.exports = {
+    rankingDeRespostas,
     validarCampos,
     enriquecerTutorial
 };

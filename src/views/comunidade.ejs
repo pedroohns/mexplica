@@ -148,167 +148,40 @@
 </header>
 
 
-<main class="mexp-page">
+<main class="mexp-page community-page">
+    <div class="community-highlight">
+        <section class="container community-hero" aria-labelledby="community-title">
+            <h1 id="community-title">Comunidade MExplica</h1>
+            <p>Conheça nossos colaboradores em destaque e veja os tutoriais que mais ajudaram a comunidade neste mês.</p>
+        </section>
 
-
-    <section class="mexp-page-hero container">
-
-
-        <div class="mexp-hero-logo">
-
-            <img
-                src="/icons/logo-mexplica.png"
-                alt=""
-                aria-hidden="true"
-                class="hero-logo-img"
-            >
-
+        <div class="container community-rankings">
+            <%- include('partials/community-ranking', {
+                id: 'colaboradores',
+                titulo: 'Ranking de Colaboradores',
+                descricao: 'Estes são nossos colaboradores com maior pontuação neste mês.',
+                participantes: ranking,
+                respostas: false,
+                vazio: 'Os colaboradores em destaque aparecerão aqui conforme conquistarem pontos.'
+            }) %>
+            <%- include('partials/community-ranking', {
+                id: 'respostas',
+                titulo: 'Ranking de Respostas',
+                descricao: 'Estes são os colaboradores que mais publicaram tutoriais nesta semana.',
+                participantes: rankingRespostas,
+                respostas: true,
+                vazio: 'Ainda não há tutoriais publicados nos últimos sete dias. A próxima contribuição pode ser sua!'
+            }) %>
         </div>
+    </div>
 
-
-        <h1>
-
-            Quem ajuda a comunidade
-            a aprender tecnologia
-
-        </h1>
-
-
-        <p>
-
-            Conheça os colaboradores em destaque
-            e veja os tutoriais que mais ajudaram
-            a comunidade nesta semana.
-            Para resolver uma dúvida,
-            use a pesquisa da página inicial.
-
-        </p>
-
-
-        <a
-            href="/"
-            class="mexp-primary-link"
-        >
-            Pesquisar uma dúvida
+    <section class="container community-join" aria-labelledby="community-join-title">
+        <h2 id="community-join-title">Conheça a comunidade MExplica</h2>
+        <p>Aqui as pessoas se conectam com postagens e comentários. Faça parte da comunidade.</p>
+        <a class="mexp-primary-link community-cta" href="<%= usuarioAtual ? '/tutoriais/novo' : '/cadastro.html' %>">
+            <%= usuarioAtual ? '+ Fazer publicação' : 'Criar sua conta' %>
         </a>
-
-
     </section>
-
-
-    <section class="container mexp-section">
-
-
-        <div class="mexp-section-heading">
-
-
-            <div>
-
-                <span class="mexp-eyebrow">
-                    RANKING
-                </span>
-
-                <h2>
-                    Colaboradores em destaque
-                </h2>
-
-            </div>
-
-
-            <p>
-
-                O ranking reúne colaboradores
-                Diamante e Platina, ordenados pela
-                pontuação conquistada com as avaliações
-                dos tutoriais publicados.
-
-            </p>
-
-
-        </div>
-
-
-        <div class="mexp-ranking-list">
-
-
-            <%
-                ranking.forEach(
-                    (
-                        colaborador,
-                        index
-                    ) => {
-            %>
-
-
-                <a
-                    href="/perfil/<%= colaborador.slug %>"
-                    class="mexp-ranking-card"
-                >
-
-
-                    <span class="mexp-ranking-position">
-
-                        <%= index + 1 %>º
-
-                    </span>
-
-
-                    <div class="mexp-avatar">
-
-                        <%= colaborador.iniciais %>
-
-                    </div>
-
-
-                    <div class="mexp-ranking-info">
-
-                        <strong>
-                            <%= colaborador.nomeCompleto %>
-                        </strong>
-
-                        <span>
-
-                            <%= colaborador.nivel %>
-                            ·
-                            <%= colaborador.pontos %>
-                            pontos
-
-                        </span>
-
-
-                        <% if (colaborador.especialidades.length) { %>
-
-                            <small>
-
-                                <%= colaborador.especialidades.join(' · ') %>
-
-                            </small>
-
-                        <% } %>
-
-                    </div>
-
-
-                    <span
-                        class="mexp-badge <%= colaborador.nivel === 'Platina' ? 'mexp-badge-platinum' : '' %>"
-                    >
-
-                        <%= colaborador.nivel.toUpperCase() %>
-
-                    </span>
-
-
-                </a>
-
-
-            <% }) %>
-
-
-        </div>
-
-
-    </section>
-
 
     <section class="container mexp-section">
 
@@ -434,6 +307,47 @@
 
 
 </main>
+
+<footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-brand">
+                <img src="/icons/logo-completa.png" alt="" class="footer-logo-icon" aria-hidden="true">
+            </div>
+
+            <div class="footer-columns">
+                <div class="footer-col">
+                    <h4>CONTATO</h4>
+                    <ul>
+                        <li><a href="#">SUPORTE</a></li>
+                        <li><a href="#">POLÍTICA DE PRIVACIDADE</a></li>
+                        <li><a href="#">TERMO DE USO</a></li>
+                        <li><a href="#">BLOG</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>DÚVIDAS FREQUENTES</h4>
+                    <ul>
+                        <li><a href="#">CARREIRAS</a></li>
+                        <li><a href="#">TERMOS DE SERVIÇO</a></li>
+                        <li><a href="#">FEEDBACK</a></li>
+                        <li><a href="#">REDE SOCIAL</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>ATENDIMENTO</h4>
+                    <ul>
+                        <li><a href="#">APOIO TÉCNICO</a></li>
+                        <li><a href="#">SEGURANÇA</a></li>
+                        <li><a href="#">EVENTOS</a></li>
+                        <li><a href="#">NEWSLETTER</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-copy">
+            <span>© MEXPLICA 2025. Todos os direitos reservados.</span>
+        </div>
+    </footer>
 
 
 <script src="/js/core/site.js"></script>

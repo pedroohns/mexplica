@@ -694,3 +694,36 @@ test(
 
     }
 );
+
+test('comunidade preserva os tutoriais e o footer da home e usa a sessão no CTA', async () => {
+    const html = await (await fetch(`${baseUrl}/comunidade`)).text();
+    assert.match(html, /Comunidade MExplica/);
+    assert.match(html, /Conheça nossos colaboradores/);
+    assert.match(html, /Ranking de Colaboradores/);
+    assert.match(html, /Ranking de Respostas/);
+    assert.match(html, /community-cta" href="\/cadastro.html"/);
+    assert.match(html, /Criar sua conta/);
+
+    const TutorialModel = require('../src/models/tutorialModel');
+    for (const tutorial of TutorialModel.maisAcessadosDaSemana(6)) {
+        assert.ok(html.includes(`/tutoriais/${tutorial.slug}`));
+    }
+
+    const home = await (await fetch(`${baseUrl}/`)).text();
+    const footer = pagina => pagina.match(/<footer class="footer">[\s\S]*?<\/footer>/)[0]
+        .replace('src="icons/', 'src="/icons/');
+    assert.equal(footer(html), footer(home));
+
+    const login = await fetch(`${baseUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identificador: 'lucas@mexplica.com', senha: '123456' })
+    });
+    assert.equal(login.status, 200);
+    const cookie = login.headers.getSetCookie().map(c => c.split(';')[0]).join('; ');
+    const logado = await (await fetch(`${baseUrl}/comunidade`, { headers: { cookie } })).text();
+    assert.match(logado, /community-cta" href="\/tutoriais\/novo"/);
+    assert.match(logado, /\+ Fazer publicação/);
+    const editor = await fetch(`${baseUrl}/tutoriais/novo`, { headers: { cookie } });
+    assert.equal(editor.status, 200);
+});
