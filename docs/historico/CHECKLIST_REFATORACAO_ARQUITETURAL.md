@@ -1,4 +1,9 @@
-# Checklist final da refatoração - MExplica
+# Checklist da Refatoração Arquitetural
+
+> Documento histórico referente à refatoração arquitetural concluída e incorporada à `main`.
+> Não representa o estado atual de desenvolvimento do MExplica.
+
+# Checklist da refatoração - MExplica
 
 ## Testes automatizados
 
