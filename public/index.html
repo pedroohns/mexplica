@@ -369,6 +369,20 @@
             </div>
         </section>
 
+        <section class="mexplicai-cta" id="mexplicaiCta" aria-labelledby="mexplicaiCtaTitle">
+            <div class="container mexplicai-cta-inner">
+                <span class="mexplicai-thinking" aria-hidden="true">🤔</span>
+                <h2 id="mexplicaiCtaTitle">Não encontrou o que precisa?</h2>
+                <img src="/icons/mexplicai-logo-completa.png" alt="MEXPLICAI" class="mexplicai-brand">
+                <p>Use nosso chatbot <strong>MEXPLICAI</strong> para te auxiliar a encontrar o que precisa.</p>
+                <button type="button" class="mexplicai-start" id="mexplicaiStart" aria-controls="mexplicaiPanel" aria-expanded="false">
+                    <img src="/icons/mexplicai-logo.png" alt="" aria-hidden="true">
+                    <span>Iniciar conversa com <strong>MEXPLICAI</strong></span>
+                </button>
+                <p><button type="button" class="mexplicai-info-link" data-mexplicai-help>Clique aqui</button> para saber mais sobre o MEXPLICAI e seu funcionamento.</p>
+            </div>
+        </section>
+
         <section class="most-searched-section">
             <div class="container">
                 <div class="section-header">
@@ -571,21 +585,6 @@
             </div>
         </section>
 
-        <div vw class="enabled">
-                <div vw-access-button class="active"></div>
-                <div vw-plugin-wrapper>
-                <div class="vw-plugin-top-wrapper"></div>
-             </div>
-        </div>
-        <style>
-            [vw-access-button] {
-            bottom: 105px !important;
-         }
-        </style>
-        <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
-        <script>
-        new window.VLibras.Widget('https://vlibras.gov.br/app');
-        </script>
     </main>
 
     <footer class="footer">
@@ -629,9 +628,61 @@
         </div>
     </footer>
 
+    <section class="mexplicai-panel" id="mexplicaiPanel" role="dialog" aria-modal="false" aria-label="Conversa com MExplicAI" data-loading="true" hidden>
+        <header class="mexplicai-header">
+            <button type="button" class="mexplicai-icon-button" id="mexplicaiMinimize" aria-label="Minimizar MExplicAI">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <img src="/icons/mexplicai-logo.png" alt="MEXPLICAI" class="mexplicai-header-logo">
+            <button type="button" class="mexplicai-help-button" data-mexplicai-help><span aria-hidden="true">?</span> Ajuda</button>
+            <button type="button" class="mexplicai-icon-button mexplicai-close" id="mexplicaiClose" aria-label="Fechar MExplicAI">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>
+            </button>
+        </header>
+        <div class="mexplicai-loading" role="status" aria-label="Abrindo MExplicAI">
+            <img src="/icons/mexplicai-logo.png" alt="">
+        </div>
+        <div class="mexplicai-chat" id="mexplicaiChat" inert>
+            <div class="mexplicai-messages" id="mexplicaiMessages" role="log" aria-label="Mensagens da conversa" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+            <p class="mexplicai-status" id="mexplicaiStatus" role="status"></p>
+        </div>
+        <div class="mexplicai-composer-wrap" id="mexplicaiComposerWrap" inert>
+            <p class="mexplicai-attachment-note" id="mexplicaiAttachmentNote" role="status" hidden>Anexos ainda não são interpretados nesta versão do MExplicAI. Descreva sua dúvida em texto para que eu possa ajudar.</p>
+            <form class="mexplicai-composer" id="mexplicaiForm">
+                <button type="button" class="mexplicai-icon-button mexplicai-compose-button" id="mexplicaiAttach" aria-label="Sobre anexar arquivos" aria-controls="mexplicaiAttachmentNote" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>
+                </button>
+                <textarea id="mexplicaiInput" rows="1" maxlength="800" placeholder="Escreva aqui" aria-label="Sua mensagem para o MExplicAI" enterkeyhint="send"></textarea>
+                <button type="submit" class="mexplicai-icon-button mexplicai-compose-button" id="mexplicaiSend" aria-label="Enviar mensagem" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-7 7 7-7 7 7"/></svg>
+                </button>
+            </form>
+        </div>
+    </section>
+    <button type="button" class="mexplicai-bubble" id="mexplicaiBubble" aria-label="Restaurar conversa com MExplicAI" aria-controls="mexplicaiPanel" hidden>
+        <img src="/icons/mexplicai-logo.png" alt="" aria-hidden="true"><span>MExplicAI</span>
+    </button>
+
+    <dialog class="mexplicai-help-modal" id="mexplicaiHelp" role="dialog" aria-modal="true" aria-labelledby="mexplicaiHelpTitle">
+        <div class="mexplicai-help-content">
+            <img src="/icons/mexplicai-logo-completa.png" alt="MEXPLICAI" class="mexplicai-brand">
+            <h2 id="mexplicaiHelpTitle" tabindex="-1">O que é o MExplicAI?</h2>
+            <p>O MExplicAI é um assistente experimental do MExplica criado para oferecer orientações breves quando você precisa de ajuda com tecnologia.</p>
+            <p>Sempre que existir um tutorial relacionado à sua dúvida, o MExplicAI dará preferência ao conteúdo publicado por nossos colaboradores.</p>
+            <p>Nesta primeira versão, o MExplicAI ainda não utiliza um modelo de inteligência artificial. Ele funciona localmente no seu navegador, identificando palavras-chave e intenções e associando-as a respostas previamente preparadas.</p>
+            <p>As mensagens recentes e o estado da interface ficam no LocalStorage do navegador para manter a conversa neste aparelho. O texto da dúvida é usado na busca de tutoriais do MExplica. As mensagens desta versão não são enviadas a um modelo externo de IA.</p>
+            <p>O MExplicAI pode não compreender todas as perguntas e não substitui orientações profissionais ou conteúdos detalhados publicados pelos colaboradores.</p>
+            <p>No futuro, sua tecnologia poderá evoluir, preservando o objetivo principal do MExplica: aproximar pessoas que precisam de ajuda de pessoas dispostas a ensinar.</p>
+            <p class="mexplicai-privacy-note">Não envie senhas, códigos de autenticação, dados bancários ou outras informações sensíveis.</p>
+        </div>
+        <form method="dialog" class="mexplicai-help-footer"><button type="submit" class="mexplicai-done">Concluído</button></form>
+    </dialog>
+
     <script src="/js/core/site.js"></script>
     <script src="/js/core/api.js"></script>
     <script src="/js/home/search-render.js"></script>
     <script src="/js/home/search.js"></script>
+    <script src="/js/home/mexplicai-engine.js"></script>
+    <script src="/js/home/mexplicai.js"></script>
 </body>
 </html>

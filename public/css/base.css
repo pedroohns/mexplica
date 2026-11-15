@@ -11,6 +11,27 @@
     font-weight: 400;
 }
 
+/* Posição do host oficial; o conteúdo interno do VLibras não é alterado.
+   Acima do painel mobile do MExplicAI, com espaço para o composer. */
+#mexplicaVLibras[vw] {
+    position: fixed !important;
+    left: max(16px, env(safe-area-inset-left)) !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: max(105px, env(safe-area-inset-bottom)) !important;
+    transform: none !important;
+    z-index: 600 !important;
+}
+#mexplicaVLibras [vw-access-button],
+#mexplicaVLibras [vw-plugin-wrapper] {
+    left: 0 !important;
+    right: auto !important;
+}
+
+@media (max-width: 640px) {
+    :root { --mexplica-vlibras-top: calc(35vh - 20px); }
+}
+
 /* reset basico */
 *, *::before, *::after {
     box-sizing: border-box;

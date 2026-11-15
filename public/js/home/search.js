@@ -535,6 +535,9 @@
     document.addEventListener(
         'click',
         event => {
+            if (event.target.closest?.('#mexplicaiCta, #mexplicaiPanel, #mexplicaiBubble, #mexplicaiHelp')) {
+                return;
+            }
             if (
                 !event.target.closest(
                     '.search-filter-wrap'

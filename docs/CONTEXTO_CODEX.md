@@ -52,17 +52,14 @@ A branch atualmente usada para as implementações visuais e funcionais desta fa
 implementacao-visual
 ```
 
-No momento em que este contexto foi criado, `implementacao-visual` estava:
-
-```text
-2 commits à frente de main
-0 commits atrás de main
-```
-
-Os dois trabalhos já incorporados nessa branch são:
+Trabalhos desta fase na branch:
 
 1. implementação visual e funcional da nova página `/comunidade`;
-2. atualização de dependências transitivas de segurança no `package-lock.json`.
+2. atualização de dependências transitivas de segurança no `package-lock.json`;
+3. fluxo integrado de criação, edição e visualização de tutoriais por blocos;
+4. MExplicAI v1 local, concluindo as features visuais planejadas, disponível para revisão manual antes do merge.
+
+Consulte o Git para a contagem atual de commits. A implementação do MExplicAI não faz commit ou merge automaticamente.
 
 Não fazer implementações desta fase diretamente na `main`.
 
@@ -73,7 +70,7 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-50 testes
+68 testes (50 anteriores + 13 do MExplicAI + 5 da integração global do VLibras)
 ```
 
 Distribuição atual:
@@ -83,11 +80,13 @@ comentarioService.test.js       3
 community.test.js               1
 css.test.js                     2
 frontend.test.js                3
+mexplicai.test.js              13
 perfilService.test.js           3
 relacionamentoService.test.js   3
 smoke-test.js                  16
 tutorialService.test.js         4
 tutorialBlocos.test.js         15
+vlibras.test.js                 5
 ```
 
 Antes de uma alteração relevante:
@@ -158,12 +157,14 @@ public/js/
 │   └── cadastro.js
 ├── home/
 │   ├── search.js
-│   └── search-render.js
+│   ├── search-render.js
+│   ├── mexplicai-engine.js
+│   └── mexplicai.js
 ├── perfil/
 │   ├── ui.js
 │   └── account.js
 └── tutorial/
-        ├── contrato.js
+    ├── contrato.js
     ├── view.js
     └── editor.js
 ```
@@ -179,7 +180,8 @@ public/css/
 ├── community.css
 ├── tutorial.css
 ├── search.css
-└── profile.css
+├── profile.css
+└── mexplicai.css
 ```
 
 `style.css` continua sendo o ponto de entrada e importa os módulos em ordem controlada para preservar a cascata.
@@ -549,21 +551,25 @@ disponibilidade do vídeo.
 
 ---
 
-# 12. Trabalho funcional ainda planejado
+# 12. MExplicAI v1 implementado
 
-Após as implementações visuais atuais, está planejada uma primeira versão do:
+O MExplicAI v1 conclui a última feature visual planejada desta branch. A entrega permanece local para revisão manual antes do fechamento e merge na `main`.
 
-```text
-MExplicAI
-```
+A seção abaixo dos resultados aparece sempre que `search-mode` está ativo, inclusive com busca vazia ou zero resultados. O renderer dos cards permanece independente. O painel fixo usa metade da viewport no desktop, 68% no tablet e toda a largura no mobile, com scroll próprio e composer acessível junto ao teclado virtual. Oferece abertura breve, minimizar em bolha, fechar sem apagar histórico e modal nativo de ajuda compartilhado pelo painel e pelo CTA.
 
-A versão inicial NÃO será um modelo de IA real.
+`public/js/home/mexplicai-engine.js` contém funções puras compatíveis com browser e Node. Normaliza acentos, caixa, espaços e pontuação; compara palavras/frases inteiras e pontua termos principais, secundários e exemplos. Possui dez intenções: CarPlay, Android Auto, impressora Wi-Fi, espelhamento de TV, cache do navegador, compartilhamento de internet, teclado Bluetooth, pendrive, navegador padrão e fone Bluetooth. Também oferece saudações, agradecimentos e fallback. Não há modelo de IA, API externa de IA ou upload de anexos.
 
-A ideia atual é criar um mecanismo local de respostas breves para buscas sem resultado, usando regras/intenção/palavras-chave e possivelmente `localStorage` para estado ou histórico.
+`public/js/home/mexplicai.js` controla DOM, sessão, persistência e integração. Antes de uma resposta local, consulta `/api/tutoriais/buscar` pelo helper `MExplicaApi`. Confere relevância nos candidatos devolvidos pela busca existente: cobertura mínima de 60% dos termos úteis e correspondência em título/tags; para uma intenção conhecida, também exige correspondência do assunto. Assim, um tutorial de Spotify no carro não responde a uma pergunta de CarPlay. Um tutorial humano relevante sempre tem prioridade, com link interno `/tutoriais/:slug`; o conteúdo não é copiado. Falha de rede é informada e permite orientação local.
 
-O objetivo é permitir futura substituição dessa implementação por uma solução real de IA sem precisar redesenhar toda a experiência.
+As chaves `mexplicai:v1:history` e `mexplicai:v1:state` guardam no máximo 40 mensagens e o modo aberto/minimizado/fechado. Há limite de 800 caracteres por pergunta e validação dos campos, papéis e slugs ao restaurar. JSON corrompido ou armazenamento indisponível não impede o uso; nenhuma chave de outro recurso é apagada. Credenciais, sessão, avatar e arquivos não são persistidos pelo chat. O avatar usa iniciais de `/api/auth/sessao`; visitantes recebem `V` e não precisam fazer login.
 
-Não implementar o MExplicAI durante a tarefa de tutorial, salvo instrução explícita.
+Mensagens usam `textContent` e links são construídos por DOM com slug validado. O modal explica palavras-chave, LocalStorage, busca no servidor e ausência de modelo externo. Usa `dialog`, contenção de foco por teclado, Escape e retorno ao acionador. O painel oferece controles rotulados, log anunciado, foco visível, modo escuro e redução de movimento. Os assets existentes `mexplicai-logo.png` e `mexplicai-logo-completa.png` foram preservados. O CSS isolado é importado depois de `profile.css`, mantendo a ordem anterior.
+
+Validação: 63 testes Node aprovados e conferência no Chrome local, com desktop, tablet/mobile emulados, tema escuro, redução de movimento, foco, Enter/Shift+Enter, sessão real para avatar, busca real de tutoriais, restauração do histórico, falha de rede e armazenamento bloqueado/corrompido. A interação com teclado virtual foi simulada reduzindo a viewport; a conferência em aparelho físico continua útil na revisão manual.
+
+As logos completas mantêm a transparência original também no tema escuro, sem fundo claro artificial ou filtros de cor. O VLibras é inicializado globalmente por `site.js`, com um único markup/script/widget por página e tratamento de falha externa. Home e cadastro não possuem mais integrações próprias. O posicionamento à esquerda fica em `base.css`, acima do painel mobile do MExplicAI para manter o botão acessível. Os testes dessa integração usam simulação local, sem requisições ao VLibras. A conferência no Chrome abrangeu as sete rotas principais em claro/escuro e larguras desktop/tablet/mobile; como o serviço externo estava inacessível, seu widget foi simulado para validar posicionamento e coexistência, sem validar tradução real.
+
+A próxima fase prevista é de entregáveis técnicos: banco, persistência, tokens e padrões descritos a seguir. Ela continua separada desta implementação.
 
 ---
 

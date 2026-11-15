@@ -31,7 +31,8 @@ const arquivosCss = [
     'community.css',
     'tutorial.css',
     'search.css',
-    'profile.css'
+    'profile.css',
+    'mexplicai.css'
 
 ];
 

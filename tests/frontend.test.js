@@ -44,6 +44,10 @@ const arquivos = [
 
     'public/js/home/search.js',
 
+    'public/js/home/mexplicai-engine.js',
+
+    'public/js/home/mexplicai.js',
+
     'public/js/perfil/ui.js',
 
     'public/js/perfil/account.js',

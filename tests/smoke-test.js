@@ -552,6 +552,12 @@ test(
 
             '/js/home/search.js',
 
+            '/js/home/mexplicai-engine.js',
+            '/js/home/mexplicai.js',
+            '/css/mexplicai.css',
+            '/icons/mexplicai-logo-completa.png',
+            '/icons/mexplicai-logo.png',
+
             '/js/perfil/ui.js',
             
             '/js/perfil/account.js',

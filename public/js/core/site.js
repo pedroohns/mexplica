@@ -1,3 +1,73 @@
+// Integração global independente dos demais controles da página.
+(() => {
+    if (window.MExplicaVLibras) return;
+    const origem = 'https://vlibras.gov.br/app';
+    let carregamento;
+
+    function inicializar() {
+        if (carregamento) return carregamento;
+        let root = document.querySelector('[vw]');
+        if (!root) {
+            root = document.createElement('div');
+            root.setAttribute('vw', '');
+            root.className = 'enabled';
+            const button = document.createElement('div');
+            button.setAttribute('vw-access-button', '');
+            button.className = 'active';
+            const wrapper = document.createElement('div');
+            wrapper.setAttribute('vw-plugin-wrapper', '');
+            const top = document.createElement('div');
+            top.className = 'vw-plugin-top-wrapper';
+            wrapper.appendChild(top);
+            root.append(button, wrapper);
+            document.body.appendChild(root);
+        }
+        root.id = 'mexplicaVLibras';
+        carregamento = new Promise(resolve => {
+            function ativar() {
+                try {
+                    if (!root.dataset.vlibrasInitialized) {
+                        if (typeof window.VLibras?.Widget !== 'function') return resolve(false);
+                        new window.VLibras.Widget({ rootPath: origem, position: 'L' });
+                        // O acesso atual vive em Shadow DOM, fora do host legado [vw].
+                        // Usar as referências oficiais sem alterar o app interno.
+                        const { access, initBtn } = window.VLibrasWidget || {};
+                        if (access && initBtn) {
+                            access.style.setProperty('left', 'max(20px, env(safe-area-inset-left))', 'important');
+                            access.style.setProperty('right', 'auto', 'important');
+                            access.style.setProperty('top', 'var(--mexplica-vlibras-top, calc(50vh - 20px))', 'important');
+                            access.style.setProperty('flex-direction', 'row-reverse');
+                            initBtn.style.setProperty('left', '0', 'important');
+                            initBtn.style.setProperty('right', 'auto', 'important');
+                        }
+                        root.dataset.vlibrasInitialized = 'true';
+                    }
+                    resolve(true);
+                } catch { resolve(false); } // Falha externa não interrompe o site.
+            }
+            if (root.dataset.vlibrasInitialized || typeof window.VLibras?.Widget === 'function') {
+                ativar();
+                return;
+            }
+            let script = document.querySelector(`script[src="${origem}/vlibras-plugin.js"]`);
+            const novo = !script;
+            if (novo) {
+                script = document.createElement('script');
+                script.src = `${origem}/vlibras-plugin.js`;
+                script.async = true;
+            }
+            script.addEventListener('load', ativar, { once: true });
+            script.addEventListener('error', () => resolve(false), { once: true });
+            if (novo) document.head.appendChild(script);
+        });
+        return carregamento;
+    }
+
+    window.MExplicaVLibras = { inicializar };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inicializar, { once: true });
+    else inicializar();
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // GREETING
