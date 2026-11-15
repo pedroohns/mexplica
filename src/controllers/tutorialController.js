@@ -432,7 +432,7 @@ function atualizar(
                 ??
                 tutorial.tags
 
-        });
+        }, { videoLegado: tutorial.videoUrl });
 
 
     if (

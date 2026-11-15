@@ -73,7 +73,7 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-35 testes
+50 testes
 ```
 
 Distribuição atual:
@@ -87,6 +87,7 @@ perfilService.test.js           3
 relacionamentoService.test.js   3
 smoke-test.js                  16
 tutorialService.test.js         4
+tutorialBlocos.test.js         15
 ```
 
 Antes de uma alteração relevante:
@@ -162,6 +163,7 @@ public/js/
 │   ├── ui.js
 │   └── account.js
 └── tutorial/
+        ├── contrato.js
     ├── view.js
     └── editor.js
 ```
@@ -334,7 +336,7 @@ em vez de usar `npm install` como rotina para reproduzir o ambiente.
 
 # 10. Fluxo atual de tutoriais
 
-A PRÓXIMA implementação importante deve considerar em conjunto:
+Criação, edição e publicação compartilham agora o mesmo contrato de blocos:
 
 ```text
 /tutoriais/novo
@@ -356,17 +358,43 @@ estrutura de dados produzida
 visualização do tutorial publicado
 ```
 
-Uma alteração significativa na forma de criação pode exigir adaptação correspondente na forma de leitura/renderização.
-
-Não tratar as duas páginas como implementações independentes se o novo protótipo alterar a estrutura conceitual do tutorial.
-
-Também preservar compatibilidade com:
+O editor compartilhado também atende:
 
 ```text
 /tutoriais/:slug/editar
 ```
 
-quando possível.
+Os novos passos possuem `ordem`, `titulo`, `descricao`, `imagem` opcional e
+`linkExterno` opcional. A criação inicia vazia; a edição recebe todos os dados.
+São obrigatórios de 1 a 9 passos, com título de 3–120 caracteres e descrição
+de 3–1000. O slug continua estável ao editar o título.
+
+`TutorialService` valida e enriquece essa estrutura. Na leitura do legado,
+a imagem separada é associada ao passo pela ordem, sem modificar os seeds.
+Uma imagem integrada tem precedência; `imagem: null` representa remoção
+explícita. O campo `imagens` continua disponível, derivado dos passos.
+
+Os limites e as funções de URL são compartilhados por backend e browser em
+`public/js/tutorial/contrato.js`, sem dependências. A validação binária de
+imagens usada pelo Service fica em `src/services/tutorialImagem.js`.
+
+Upload em memória: JPEG, PNG e WebP; arquivo de até 8 MB, mínimo de 120 × 120,
+entrada de até 8192 pixels por lado e 24 milhões de pixels. O editor usa
+FileReader/Canvas para preview e redução até 1600 pixels por lado e 72 KB
+por imagem. A API confere formato, bytes e dimensões do arquivo serializado.
+SVG não é aceito. O JSON global continua limitado a 1 MB, com erro 413 legível.
+Nenhum storage externo ou banco foi introduzido.
+
+Novos vídeos aceitam somente YouTube com ID validado. O player usa thumbnail
+e carrega iframe de `youtube-nocookie.com` apenas após clicar. Vídeos externos
+legados seguros permanecem editáveis e têm link de fallback.
+
+A publicação oferece quadros ou coluna simples sobre os mesmos elementos,
+sem request. Quatro passos usam 2×2; cinco a nove, até três colunas; tablet,
+até duas; mobile, sempre uma. A seleção de categoria usa radios. Exclusão de
+post usa dialog com Cancelar como foco inicial, Escape e retorno de foco.
+Comentários, avaliações, pontos, níveis, palavras-chave e visualizações
+permanecem integrados. O footer existente é reutilizado por um partial.
 
 ---
 
@@ -474,261 +502,50 @@ Ao editar o título, o slug NÃO muda, para preservar URLs compartilhadas.
 
 ---
 
-## 10.4 Editor atual — `/tutoriais/novo`
+## 10.4 Editor compartilhado
 
-View:
+A view é `src/views/editor-tutorial.ejs`, o comportamento fica em
+`public/js/tutorial/editor.js` e o visual em `public/css/tutorial.css`.
+Categoria usa seleção única por cards; passos usam um construtor dinâmico.
+O botão de adicionar ocupa a próxima posição do grid e some no limite de nove.
+Remover um bloco renumera os demais. Cada bloco permite upload, preview,
+substituição/remoção de imagem, título, descrição e link com confirmar/cancelar.
 
-```text
-src/views/editor-tutorial.ejs
-```
+Palavras-chave continuam separadas por vírgulas. Vídeo e palavras-chave ficam
+na área secundária. Publicar chama POST; salvar chama PUT. Ambos usam
+`MExplicaApi.requisicao` e redirecionam para `/tutoriais/:slug` após sucesso.
 
-JavaScript:
+## 10.5 Validação atual
 
-```text
-public/js/tutorial/editor.js
-```
+`TutorialService.validarCampos()` preserva os limites de título (8–160),
+resumo (15–320), introdução (30–6000), dez tags de até quarenta caracteres e
+categorias existentes. Limites adicionais de blocos e imagens estão na seção 10.
+Blocos inválidos ou excedentes são rejeitados, sem truncar silenciosamente.
+Links externos exigem http/https e texto de até 120 caracteres. Conteúdo é
+tratado como texto e escapado nas views; não se aceita HTML de embed.
 
-CSS relacionado:
+## 10.6 Publicação
 
-```text
-public/css/tutorial.css
-```
-
-Campos atuais:
-
-```text
-Título
-Categoria
-Resumo
-Introdução
-Passo a passo
-Imagens de apoio
-Vídeo tutorial
-Palavras-chave
-```
-
-### Passos
-
-A interface atual recebe os passos como texto:
-
-```text
-um passo por linha
-```
-
-O frontend converte cada linha para:
-
-```js
-{
-    titulo: `Passo N`,
-    descricao
-}
-```
-
-### Imagens
-
-A interface atual recebe:
-
-```text
-uma URL por linha
-```
-
-e converte para objetos de imagem com URL, alt e legenda gerados automaticamente.
-
-### Tags
-
-São digitadas separadas por vírgula e convertidas para array.
-
-### Envio
-
-Criação:
-
-```text
-POST /api/tutoriais
-```
-
-Edição:
-
-```text
-PUT /api/tutoriais/:id
-```
-
-Depois de salvar:
-
-```text
-/tutoriais/:slug
-```
+A view `src/views/tutorial.ejs` mostra autor, nível real, categoria, título,
+resumo, estrelas funcionais, métricas, introdução, cards, vídeo, tags e comentários.
+`public/js/tutorial/view.js` controla visualização, carregamento do player,
+modal de exclusão e as interações existentes de avaliações e comentários.
+Ações de autor permanecem protegidas no backend.
 
 ---
 
-## 10.5 Validação atual de tutorial
+# 11. Manutenção do fluxo integrado
 
-A regra de negócio fica em:
+As três rotas de tutorial devem evoluir juntas, preservando o contrato entre
+editor, validação, Model, API e publicação. Os dados de demonstração continuam
+na estrutura antiga para exercitar a compatibilidade. Não migrá-los ou remover
+campos sem pesquisar consumidores e executar os testes de regressão.
 
-```text
-TutorialService.validarCampos()
-```
-
-Limites atuais:
-
-```text
-Título:
-8 a 160 caracteres
-
-Resumo:
-15 a 320 caracteres
-
-Introdução:
-30 a 6000 caracteres
-
-Categoria:
-precisa existir
-
-Passos:
-pelo menos 1
-
-Máximo de passos normalizados:
-12
-
-Máximo de imagens:
-6
-
-Máximo de tags:
-10
-
-Tag:
-até 40 caracteres
-
-Vídeo:
-vazio ou URL permitida
-```
-
-URLs de imagem/vídeo atualmente são aceitas quando começam por:
-
-```text
-http://
-https://
-/
-```
-
-Se o próximo protótipo exigir nova estrutura de conteúdo, essas regras podem ser alteradas de forma deliberada, desde que:
-
-- a alteração seja coerente entre editor, API, Service, Model e página de leitura;
-- criação e edição continuem funcionais;
-- dados existentes não sejam quebrados sem tratamento;
-- testes sejam atualizados/adicionados.
-
----
-
-## 10.6 Visualização atual — `/tutoriais/:slug`
-
-View:
-
-```text
-src/views/tutorial.ejs
-```
-
-JavaScript:
-
-```text
-public/js/tutorial/view.js
-```
-
-CSS:
-
-```text
-public/css/tutorial.css
-```
-
-A página atual apresenta:
-
-- categoria;
-- título;
-- resumo;
-- autor;
-- visualizações;
-- quantidade de comentários;
-- resumo de avaliações;
-- ações de editar/excluir para o autor;
-- introdução;
-- passo a passo;
-- imagens;
-- vídeo;
-- tags;
-- avaliação;
-- comentários.
-
-O `view.js` atualmente controla:
-
-- exclusão do tutorial;
-- criar/atualizar/remover avaliação;
-- criar comentário;
-- editar comentário;
-- excluir comentário.
-
-Não remover essas funcionalidades por acidente durante redesign visual.
-
----
-
-# 11. Próxima implementação: editor + leitura de tutorial
-
-A próxima tarefa será uma implementação de maior impacto.
-
-Ela deve redesenhar e possivelmente alterar parte do funcionamento de:
-
-```text
-/tutoriais/novo
-/tutoriais/:slug
-```
-
-Essas duas páginas devem ser analisadas como uma única feature.
-
-O protótipo e a especificação enviados junto da tarefa serão a fonte de verdade para o novo comportamento.
-
-Antes de editar código, o agente deve analisar no mínimo:
-
-```text
-src/views/editor-tutorial.ejs
-src/views/tutorial.ejs
-public/js/tutorial/editor.js
-public/js/tutorial/view.js
-public/css/tutorial.css
-src/routes/paginaRoutes.js
-src/routes/tutorialRoutes.js
-src/controllers/paginaController.js
-src/controllers/tutorialController.js
-src/services/tutorialService.js
-src/models/tutorialModel.js
-src/data/tutorialData.js
-tests/tutorialService.test.js
-tests/smoke-test.js
-tests/frontend.test.js
-```
-
-Se o novo conceito exigir uma mudança de estrutura do tutorial, NÃO resolver apenas com CSS/EJS.
-
-Nesse caso, seguir o fluxo completo:
-
-```text
-protótipo
-  ↓
-modelo conceitual necessário
-  ↓
-validação/Service
-  ↓
-Model/Data
-  ↓
-API
-  ↓
-editor
-  ↓
-página publicada
-  ↓
-edição
-  ↓
-testes
-```
-
-Ao mesmo tempo, não fazer refatorações fora do escopo.
+A validação desta implementação inclui a suíte Node e conferência no Chrome
+de upload nos três formatos, adição/remoção, limite de blocos, links, criação,
+edição, exclusão, foco/Escape no dialog, responsividade e tema escuro. A construção
+do iframe foi verificada localmente; reprodução real depende do YouTube e da
+disponibilidade do vídeo.
 
 ---
 

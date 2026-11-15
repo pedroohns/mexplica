@@ -141,237 +141,99 @@
 </header>
 
 
-<main class="mexp-page">
-
-
-    <section class="container mexp-editor-wrap">
-
-
-        <a
-            href="<%= modo === 'editar'
-                ? `/tutoriais/${tutorial.slug}`
-                : `/perfil/${usuarioAtual.slug}`
-            %>"
-            class="mexp-back-link"
-        >
-            ← Voltar
-        </a>
-
-
-        <div class="mexp-section-heading">
-
-
-            <div>
-
-                <span class="mexp-eyebrow">
-                    COLABORADOR
-                </span>
-
-                <h1>
-
-                    <%= modo === 'criar'
-                        ? 'Publicar novo tutorial'
-                        : 'Editar tutorial'
-                    %>
-
-                </h1>
-
+<main class="mexp-page tutorial-workspace">
+    <section class="container tutorial-editor">
+        <a class="mexp-back-link" href="<%= tutorial ? '/tutoriais/' + tutorial.slug : '/perfil/' + usuarioAtual.slug %>">← Voltar</a>
+        <h1 class="tutorial-sr-only"><%= modo === 'criar' ? 'Publicar novo tutorial' : 'Editar tutorial' %></h1>
+        <form id="formTutorial" data-modo="<%= modo %>" data-id="<%= tutorial ? tutorial.id : '' %>">
+            <div class="tutorial-editor-heading">
+                <label class="tutorial-sr-only" for="tutorialTitulo">Título</label>
+                <textarea id="tutorialTitulo" name="titulo" rows="1" minlength="8" maxlength="160" required placeholder="Aqui será seu título, clique para editar."><%= tutorial ? tutorial.titulo : '' %></textarea>
+                <label class="tutorial-sr-only" for="tutorialResumo">Resumo</label>
+                <textarea id="tutorialResumo" name="resumo" rows="1" minlength="15" maxlength="320" required placeholder="Aqui será seu resumo. Clique para editar."><%= tutorial ? tutorial.resumo : '' %></textarea>
             </div>
-
-
-            <p>
-
-                Escreva para quem pode ter pouca
-                familiaridade com tecnologia:
-                use frases simples, passos objetivos
-                e, quando possível, imagens ou vídeo.
-
-            </p>
-
-
-        </div>
-
-
-        <form
-            id="formTutorial"
-            class="mexp-form mexp-editor-form"
-            data-modo="<%= modo %>"
-            data-id="<%= tutorial ? tutorial.id : '' %>"
-            data-slug="<%= tutorial ? tutorial.slug : '' %>"
-        >
-
-
-            <label for="tutorialTitulo">
-                Título
-            </label>
-
-
-            <input
-                id="tutorialTitulo"
-                maxlength="160"
-                required
-                value="<%= tutorial ? tutorial.titulo : '' %>"
-                placeholder="Ex.: Saiba como aumentar a fonte do celular!"
-            >
-
-
-            <label for="tutorialCategoria">
-                Categoria visual
-            </label>
-
-
-            <select
-                id="tutorialCategoria"
-                required
-            >
-
-
-                <%
-                    categorias.forEach(
-                        categoria => {
-                %>
-
-
-                    <option
-                        value="<%= categoria.id %>"
-                        <%= tutorial && tutorial.categoriaId === categoria.id ? 'selected' : '' %>
-                    >
-
-                        <%= categoria.nome %>
-
-                    </option>
-
-
-                <% }) %>
-
-
-            </select>
-
-
-            <label for="tutorialResumo">
-                Resumo
-            </label>
-
-
-            <textarea
-                id="tutorialResumo"
-                maxlength="320"
-                required
-                placeholder="Explique em poucas palavras o que a pessoa aprenderá."
-            ><%= tutorial ? tutorial.resumo : '' %></textarea>
-
-
-            <label for="tutorialConteudo">
-                Introdução
-            </label>
-
-
-            <textarea
-                id="tutorialConteudo"
-                maxlength="6000"
-                required
-                placeholder="Explique o contexto antes do passo a passo."
-            ><%= tutorial ? tutorial.conteudo : '' %></textarea>
-
-
-            <label for="tutorialPassos">
-                Passo a passo
-            </label>
-
-
-            <p class="mexp-field-help">
-
-                Escreva um passo por linha.
-                O sistema numerará automaticamente.
-
-            </p>
-
-
-            <textarea
-                id="tutorialPassos"
-                required
-                placeholder="Abra as Configurações do celular.&#10;Entre em Tela ou Visor.&#10;Procure Tamanho da fonte.&#10;Arraste o controle para aumentar."
-            ><%= tutorial ? tutorial.passos.map(passo => passo.descricao).join('\n') : '' %></textarea>
-
-
-            <label for="tutorialImagens">
-                Imagens de apoio (opcional)
-            </label>
-
-
-            <p class="mexp-field-help">
-
-                Uma URL por linha, na ordem
-                em que as imagens devem aparecer.
-
-            </p>
-
-
-            <textarea
-                id="tutorialImagens"
-                placeholder="https://exemplo.com/passo-1.png&#10;https://exemplo.com/passo-2.png"
-            ><%= tutorial ? tutorial.imagens.map(imagem => imagem.url).join('\n') : '' %></textarea>
-
-
-            <label for="tutorialVideo">
-                Vídeo tutorial (opcional)
-            </label>
-
-
-            <input
-                id="tutorialVideo"
-                type="url"
-                value="<%= tutorial ? tutorial.videoUrl : '' %>"
-                placeholder="https://..."
-            >
-
-
-            <label for="tutorialTags">
-                Palavras-chave
-            </label>
-
-
-            <input
-                id="tutorialTags"
-                value="<%= tutorial ? tutorial.tags.join(', ') : '' %>"
-                placeholder="fonte, celular, android, acessibilidade"
-            >
-
-
-            <p
-                id="tutorialMensagem"
-                class="mexp-form-message"
-                aria-live="polite"
-            ></p>
-
-
-            <button
-                type="submit"
-                class="mexp-primary-button"
-            >
-
-                <%= modo === 'criar'
-                    ? 'Publicar tutorial'
-                    : 'Salvar alterações'
-                %>
-
-            </button>
-
-
+            <fieldset class="tutorial-category-picker">
+                <legend>Selecione a categoria da sua postagem</legend>
+                <div class="tutorial-categories">
+                    <% const assuntos = {
+                        'sistemas-acessibilidade': 'Configurações e Acessibilidade.',
+                        'comunicacao-interacao': 'Comunicação e/ou Redes Sociais.',
+                        'seguranca-usabilidade': 'Segurança, Privacidade e Uso Seguro.'
+                    }; %>
+                    <% categorias.slice().reverse().forEach(categoria => { %>
+                        <label class="tutorial-category mexp-theme-<%= categoria.classe %>">
+                            <input type="radio" name="categoriaId" value="<%= categoria.id %>" required <%= tutorial && tutorial.categoriaId === categoria.id ? 'checked' : '' %>>
+                            <span class="tutorial-category-card">
+                                <span class="tutorial-category-title"><img src="<%= categoria.icone %>" alt="" aria-hidden="true"><%= categoria.nome %></span>
+                                <span>Se seu post for sobre <strong><%= assuntos[categoria.id] %></strong></span>
+                                <span class="tutorial-category-selected" aria-hidden="true">✓ Selecionada</span>
+                            </span>
+                        </label>
+                    <% }) %>
+                </div>
+            </fieldset>
+            <div class="tutorial-intro-editor">
+                <label for="tutorialConteudo">Crie uma introdução básica da sua postagem aqui.</label>
+                <textarea id="tutorialConteudo" name="conteudo" rows="2" minlength="30" maxlength="6000" required placeholder="Exemplo: Antes de começar, saiba que esse passo a passo foi criado para resolver problemas comuns..."><%= tutorial ? tutorial.conteudo : '' %></textarea>
+            </div>
+            <section class="tutorial-builder" aria-labelledby="blocosTitulo">
+                <h2 id="blocosTitulo" class="tutorial-editor-band">Crie seus blocos de passo a passo</h2>
+                <p class="tutorial-help" id="passosAjuda">Adicione de 1 a 9 blocos. Dê um título e descreva cada passo com clareza.</p>
+                <div id="editorPassos" class="tutorial-editor-grid" aria-describedby="passosAjuda">
+                    <div class="tutorial-add-slot"><button type="button" id="adicionarPasso" aria-label="Adicionar bloco de passo a passo">+</button></div>
+                </div>
+                <p id="passosMensagem" class="tutorial-feedback" role="status"></p>
+            </section>
+            <div class="tutorial-editor-extras">
+                <div>
+                    <label for="tutorialVideo">Vídeo do YouTube (opcional)</label>
+                    <input id="tutorialVideo" name="videoUrl" type="url" maxlength="2048" value="<%= tutorial ? tutorial.videoUrl : '' %>" placeholder="https://www.youtube.com/watch?v=..." aria-describedby="videoAjuda">
+                    <p id="videoAjuda" class="tutorial-help">Cole o endereço do vídeo. Também aceitamos links youtu.be.</p>
+                </div>
+                <div>
+                    <label for="tutorialTags">Palavras-chave (opcional)</label>
+                    <input id="tutorialTags" name="tags" maxlength="420" value="<%= tutorial ? tutorial.tags.join(', ') : '' %>" placeholder="celular, acessibilidade, configurações">
+                    <p class="tutorial-help">Separe por vírgulas. Elas ajudam outras pessoas a encontrar seu tutorial.</p>
+                </div>
+            </div>
+            <p id="tutorialMensagem" class="tutorial-feedback" role="status"></p>
+            <div class="tutorial-publish-actions">
+                <a class="mexp-secondary-button" href="<%= tutorial ? '/tutoriais/' + tutorial.slug : '/comunidade' %>">Cancelar</a>
+                <button type="submit" class="mexp-primary-button"><%= modo === 'criar' ? 'Publicar tutorial' : 'Salvar alterações' %></button>
+            </div>
         </form>
-
-
+        <noscript>Ative o JavaScript do navegador para criar e editar os blocos do tutorial.</noscript>
     </section>
-
-
 </main>
-
-
+<template id="modeloPasso">
+    <article class="tutorial-editor-step">
+        <div class="tutorial-step-top"><span class="tutorial-step-label"></span><button type="button" class="tutorial-remove-step tutorial-icon-button" aria-label="Remover bloco">×</button></div>
+        <label class="tutorial-image-upload">
+            <input type="file" accept="image/jpeg,image/png,image/webp" class="tutorial-file tutorial-sr-only">
+            <img class="tutorial-image-preview" alt="" hidden>
+            <span class="tutorial-upload-hint"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/><path d="m4 19 6-7 4 4 3-3 4 6" stroke="currentColor" stroke-width="1.5"/></svg><span>Anexar imagem (opcional)</span></span>
+        </label>
+        <button type="button" class="tutorial-remove-image mexp-text-button" hidden>Remover imagem</button>
+        <p class="tutorial-help">JPEG, PNG ou WebP, até 8 MB. Mínimo de 120 × 120 pixels.</p>
+        <label class="tutorial-sr-only tutorial-title-label">Título do bloco</label>
+        <input class="tutorial-step-title" type="text" minlength="3" maxlength="120" required placeholder="Título do bloco">
+        <label class="tutorial-sr-only tutorial-description-label">Descrição do bloco</label>
+        <textarea class="tutorial-step-description" rows="2" minlength="3" maxlength="1000" required placeholder="Descrição do bloco"></textarea>
+        <div class="tutorial-link-summary" hidden><span></span><button type="button" class="tutorial-remove-link tutorial-icon-button" aria-label="Remover link externo">×</button></div>
+        <button type="button" class="tutorial-add-link" aria-expanded="false">↗ Adicionar link externo</button>
+        <div class="tutorial-link-panel" hidden>
+            <label>URL do link<input class="tutorial-link-url" type="url" maxlength="2048" placeholder="https://..."></label>
+            <label>Texto do link<input class="tutorial-link-text" maxlength="120" placeholder="Veja mais sobre este passo"></label>
+            <div class="tutorial-link-actions"><button type="button" class="tutorial-confirm-link mexp-primary-button">Confirmar</button><button type="button" class="tutorial-cancel-link mexp-secondary-button">Cancelar</button></div>
+        </div>
+        <p class="tutorial-step-feedback tutorial-feedback" role="status"></p>
+    </article>
+</template>
+<script type="application/json" id="passosIniciais"><%- JSON.stringify(tutorial ? tutorial.passos : []).replace(/</g, '\u003c') %></script>
+<%- include('partials/footer') %>
 <script src="/js/core/site.js"></script>
 <script src="/js/core/api.js"></script>
+<script src="/js/tutorial/contrato.js"></script>
 <script src="/js/tutorial/editor.js"></script>
-
-
 </body>
-
 </html>

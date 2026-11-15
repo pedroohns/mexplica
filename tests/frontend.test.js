@@ -50,7 +50,9 @@ const arquivos = [
 
     'public/js/tutorial/view.js',
 
-    'public/js/tutorial/editor.js'
+    'public/js/tutorial/editor.js',
+
+    'public/js/tutorial/contrato.js'
 
 ];
 
