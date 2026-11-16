@@ -31,6 +31,7 @@ Stack atual:
 - bcryptjs
 - cookie-session
 - dotenv
+- pg (PostgreSQL/Neon)
 - Vercel
 - `node:test`
 
@@ -46,20 +47,17 @@ A branch estável de produção é:
 main
 ```
 
-A branch atualmente usada para as implementações visuais e funcionais desta fase é:
+A fase `implementacao-visual` foi encerrada e incorporada à `main`.
+
+A branch atual, criada diretamente da `main`, é:
 
 ```text
-implementacao-visual
+banco-persistencia
 ```
 
-Trabalhos desta fase na branch:
+Fase atual: migração incremental para Neon PostgreSQL. A primeira etapa estabelece somente a infraestrutura de conexão, sem migrar entidades. As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
 
-1. implementação visual e funcional da nova página `/comunidade`;
-2. atualização de dependências transitivas de segurança no `package-lock.json`;
-3. fluxo integrado de criação, edição e visualização de tutoriais por blocos;
-4. MExplicAI v1 local, concluindo as features visuais planejadas, disponível para revisão manual antes do merge.
-
-Consulte o Git para a contagem atual de commits. A implementação do MExplicAI não faz commit ou merge automaticamente.
+Consulte o Git para a contagem atual de commits. Não fazer commit ou merge automaticamente.
 
 Não fazer implementações desta fase diretamente na `main`.
 
@@ -70,15 +68,18 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-68 testes (50 anteriores + 13 do MExplicAI + 5 da integração global do VLibras)
+82 testes (69 anteriores + 13 da infraestrutura de banco, sem acesso ao Neon real)
 ```
 
 Distribuição atual:
 
 ```text
 comentarioService.test.js       3
+checkDatabase.test.js           3
 community.test.js               1
 css.test.js                     2
+databaseConnection.test.js      7
+databaseHealth.test.js          3
 frontend.test.js                3
 mexplicai.test.js              13
 perfilService.test.js           3
@@ -86,7 +87,7 @@ relacionamentoService.test.js   3
 smoke-test.js                  16
 tutorialService.test.js         4
 tutorialBlocos.test.js         15
-vlibras.test.js                 5
+vlibras.test.js                 6
 ```
 
 Antes de uma alteração relevante:
@@ -205,11 +206,25 @@ Isso significa:
 - CRUD funciona durante a execução;
 - mudanças não são persistência durável;
 - ambiente serverless pode reiniciar e perder alterações;
-- banco de dados real ainda NÃO foi implementado.
+- nenhuma entidade foi migrada para o banco; os arrays continuam temporariamente como fonte de dados.
 
-A migração para banco é uma fase futura e separada.
+A infraestrutura de conexão foi introduzida com `pg` em `src/database/databaseConnection.js`.
+`DatabaseConnection` aplica Singleton explicitamente: `getInstance()` entrega a mesma instância,
+e `getPool()` cria e reutiliza um único `pg.Pool` por processo, somente quando necessário.
+O limite inicial é de duas conexões por instância serverless, com timeout de conexão/consulta de
+3 segundos e descarte de conexões ociosas após 10 segundos. Não há conexão na inicialização.
 
-Não iniciar banco de dados incidentalmente durante implementações visuais.
+A configuração usa exclusivamente `process.env.DATABASE_URL`, preservando a URL e suas opções
+de SSL. O `.env` permanece local e ignorado pelo Git; segredos e exceções privadas não são
+impressos nos logs, nas respostas HTTP ou pelo comando manual.
+
+- `GET /api/health` continua independente do banco.
+- `GET /api/health/database` executa `SELECT 1 AS ok` e responde 200 ou 503 com JSON público.
+- `npm.cmd run db:check` carrega dotenv, usa o mesmo Singleton e encerra o Pool ao terminar.
+- Testes automatizados usam pools falsos; o comando manual foi validado no Neon real.
+
+Próximo passo: schema relacional, seguido de seed, repositories e migração das entidades.
+Nenhuma tabela, migration, Repository ou JWT foi criado nesta etapa.
 
 ---
 
@@ -249,7 +264,7 @@ A página:
 /comunidade
 ```
 
-foi redesenhada e sua implementação está concluída na branch `implementacao-visual`.
+foi redesenhada durante `implementacao-visual` e já foi incorporada à `main`.
 
 A nova comunidade preserva funcionalidades existentes e adiciona comportamento novo.
 
@@ -320,9 +335,9 @@ Esse fluxo já possui cobertura de teste.
 
 # 9. Atualização de dependências
 
-A branch atual também contém uma atualização de dependências transitivas de segurança gerada por `npm audit fix`.
+A fase visual incluiu uma atualização de dependências transitivas de segurança gerada por `npm audit fix`.
 
-O `package.json` não sofreu mudança estrutural de dependências principais.
+Na fase atual, `pg` foi adicionado ao `package.json` e ao `package-lock.json`.
 
 O `package-lock.json` foi atualizado para versões transitivas corrigidas.
 
@@ -385,7 +400,7 @@ entrada de até 8192 pixels por lado e 24 milhões de pixels. O editor usa
 FileReader/Canvas para preview e redução até 1600 pixels por lado e 72 KB
 por imagem. A API confere formato, bytes e dimensões do arquivo serializado.
 SVG não é aceito. O JSON global continua limitado a 1 MB, com erro 413 legível.
-Nenhum storage externo ou banco foi introduzido.
+O fluxo de tutoriais continua em memória, sem storage externo ou persistência no banco.
 
 Novos vídeos aceitam somente YouTube com ID validado. O player usa thumbnail
 e carrega iframe de `youtube-nocookie.com` apenas após clicar. Vídeos externos
@@ -553,7 +568,7 @@ disponibilidade do vídeo.
 
 # 12. MExplicAI v1 implementado
 
-O MExplicAI v1 conclui a última feature visual planejada desta branch. A entrega permanece local para revisão manual antes do fechamento e merge na `main`.
+O MExplicAI v1 concluiu a última feature visual planejada em `implementacao-visual`, fase já encerrada e incorporada à `main`.
 
 A seção abaixo dos resultados aparece sempre que `search-mode` está ativo, inclusive com busca vazia ou zero resultados. O renderer dos cards permanece independente. O painel fixo usa metade da viewport no desktop, 68% no tablet e toda a largura no mobile, com scroll próprio e composer acessível junto ao teclado virtual. Oferece abertura breve, minimizar em bolha, fechar sem apagar histórico e modal nativo de ajuda compartilhado pelo painel e pelo CTA.
 
@@ -569,18 +584,19 @@ Validação: 63 testes Node aprovados e conferência no Chrome local, com deskto
 
 As logos completas mantêm a transparência original também no tema escuro, sem fundo claro artificial ou filtros de cor. O VLibras é inicializado globalmente por `site.js`, com um único markup/script/widget por página e tratamento de falha externa. Home e cadastro não possuem mais integrações próprias. O posicionamento à esquerda fica em `base.css`, acima do painel mobile do MExplicAI para manter o botão acessível. Os testes dessa integração usam simulação local, sem requisições ao VLibras. A conferência no Chrome abrangeu as sete rotas principais em claro/escuro e larguras desktop/tablet/mobile; como o serviço externo estava inacessível, seu widget foi simulado para validar posicionamento e coexistência, sem validar tradução real.
 
-A próxima fase prevista é de entregáveis técnicos: banco, persistência, tokens e padrões descritos a seguir. Ela continua separada desta implementação.
+A fase atual é de entregáveis técnicos: conexão com banco primeiro, seguida das próximas etapas descritas a seguir.
 
 ---
 
-# 13. Fase técnica posterior ao fechamento funcional
+# 13. Fase técnica atual
 
-Quando as funcionalidades visuais e o MExplicAI v1 estiverem concluídos, será feita uma fase técnica separada para atender aos requisitos acadêmicos.
+As funcionalidades visuais e o MExplicAI v1 estão concluídos. A fase técnica começou em
+`banco-persistencia`, com conexão via `pg` e Singleton de `DatabaseConnection`/Pool implementados.
 
 Pendências previstas:
 
 ```text
-Banco de dados real
+Schema relacional
 Primary Keys
 Foreign Keys
 normalização
@@ -589,19 +605,16 @@ API → banco
 persistência real
 tokens
 Factory
-Singleton
 Observer
 ```
 
-Esses itens NÃO devem ser introduzidos incidentalmente na branch de implementação visual.
-
-A migração para banco será deliberada e incremental.
+A migração continua deliberada e incremental; o próximo passo é definir o schema relacional.
 
 ---
 
-# 14. Regras para agentes durante a branch implementacao-visual
+# 14. Regras para agentes durante a branch banco-persistencia
 
-1. Trabalhar sobre `implementacao-visual`, não sobre `main`.
+1. Trabalhar sobre `banco-persistencia`, não sobre `main` ou a antiga `implementacao-visual`.
 2. Ler `AGENTS.md`, `docs/ARQUITETURA.md` e este arquivo.
 3. Rodar testes antes de alterar.
 4. Entender a implementação existente antes de substituir código.
@@ -609,7 +622,7 @@ A migração para banco será deliberada e incremental.
 6. Não migrar para React/Vue/etc.
 7. Não adicionar biblioteca visual se CSS/JS atual resolver.
 8. Não criar nova camada arquitetural sem necessidade real.
-9. Não misturar banco de dados ou JWT com tarefa visual.
+9. Evoluir banco por etapas; não migrar entidades ou implementar JWT junto da infraestrutura de conexão.
 10. Não remover recursos funcionais simplesmente porque não aparecem no protótipo.
 11. Diferenciar claramente comportamento a preservar, comportamento a alterar e comportamento novo.
 12. Se uma alteração visual exigir mudança estrutural legítima, alterar todas as camadas afetadas de forma coerente.

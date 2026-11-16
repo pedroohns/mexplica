@@ -58,6 +58,12 @@ const paginaRoutes =
     );
 
 
+const healthController =
+    require(
+        './controllers/healthController'
+    );
+
+
 const {
     carregarUsuario
 } =
@@ -195,6 +201,12 @@ app.use(
 // =============================
 // HEALTH CHECK
 // =============================
+app.get(
+    '/api/health/database',
+    healthController.verificarBanco
+);
+
+
 app.get(
     '/api/health',
     (
