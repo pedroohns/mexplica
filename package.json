@@ -8,6 +8,9 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "db:check": "node scripts/checkDatabase.js",
+    "db:schema": "node scripts/applyDatabaseSchema.js",
+    "db:seed": "node scripts/seedDatabase.js",
+    "db:verify": "node scripts/verifyDatabase.js",
     "test": "node --test"
   },
   "dependencies": {

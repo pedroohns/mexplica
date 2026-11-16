@@ -55,7 +55,9 @@ A branch atual, criada diretamente da `main`, é:
 banco-persistencia
 ```
 
-Fase atual: migração incremental para Neon PostgreSQL. A primeira etapa estabelece somente a infraestrutura de conexão, sem migrar entidades. As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
+Fase atual: migração incremental para Neon PostgreSQL. A infraestrutura de conexão está concluída;
+a segunda etapa introduz schema relacional e seed demonstrativo, mantendo o runtime em arrays.
+As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
 
 Consulte o Git para a contagem atual de commits. Não fazer commit ou merge automaticamente.
 
@@ -68,7 +70,7 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-82 testes (69 anteriores + 13 da infraestrutura de banco, sem acesso ao Neon real)
+101 testes (82 anteriores + 19 de schema/seed/comandos, sem acesso ao Neon real)
 ```
 
 Distribuição atual:
@@ -80,10 +82,13 @@ community.test.js               1
 css.test.js                     2
 databaseConnection.test.js      7
 databaseHealth.test.js          3
+databaseSetup.test.js           9
+databaseTask.test.js            2
 frontend.test.js                3
 mexplicai.test.js              13
 perfilService.test.js           3
 relacionamentoService.test.js   3
+seedData.test.js                8
 smoke-test.js                  16
 tutorialService.test.js         4
 tutorialBlocos.test.js         15
@@ -223,8 +228,22 @@ impressos nos logs, nas respostas HTTP ou pelo comando manual.
 - `npm.cmd run db:check` carrega dotenv, usa o mesmo Singleton e encerra o Pool ao terminar.
 - Testes automatizados usam pools falsos; o comando manual foi validado no Neon real.
 
-Próximo passo: schema relacional, seguido de seed, repositories e migração das entidades.
-Nenhuma tabela, migration, Repository ou JWT foi criado nesta etapa.
+O schema PostgreSQL versionado em `src/database/schema.sql` já foi aplicado no Neon:
+`usuarios`, `usuario_especialidades`, `categorias`, `tutoriais`, `tutorial_passos`,
+`tutorial_tags`, `comentarios` e `avaliacoes`. São oito PKs e nove FKs, com cascata
+para dependentes e restrição à exclusão de categorias em uso. `tipo`/`nivel` permanecem
+derivados; listas e passos são normalizados. Detalhes em `docs/BANCO_DE_DADOS.md`.
+
+Os comandos `db:schema`, `db:seed` e `db:verify` reutilizam o mesmo Singleton.
+O seed parametrizado/transacional transforma os arrays atuais, preserva IDs/pontos/hashes,
+normaliza imagens legadas e ajusta as cinco identities. Reexecuções não sobrescrevem dados.
+A aplicação real do seed está pendente de autorização direta: a revisão automática bloqueou
+o envio dos contatos e hashes demonstrativos ao Neon. Os dados ainda não foram importados.
+O DDL foi aplicado duas vezes com sucesso; a inspeção confirmou oito PKs, nove FKs e
+38 CHECKs. As oito tabelas estão vazias, e `db:verify` retorna código 1 enquanto falta a carga.
+
+Após a carga e sua verificação, a próxima etapa será Repository + migração da persistência.
+Os Models continuam lendo os arrays; nenhum Repository ou JWT foi criado.
 
 ---
 
@@ -593,14 +612,10 @@ A fase atual é de entregáveis técnicos: conexão com banco primeiro, seguida 
 As funcionalidades visuais e o MExplicAI v1 estão concluídos. A fase técnica começou em
 `banco-persistencia`, com conexão via `pg` e Singleton de `DatabaseConnection`/Pool implementados.
 
-Pendências previstas:
+O schema relacional com PKs/FKs/constraints está criado no Neon. O seed está implementado,
+com aplicação real pendente de autorização. Pendências seguintes:
 
 ```text
-Schema relacional
-Primary Keys
-Foreign Keys
-normalização
-integridade no banco
 API → banco
 persistência real
 tokens
@@ -608,7 +623,8 @@ Factory
 Observer
 ```
 
-A migração continua deliberada e incremental; o próximo passo é definir o schema relacional.
+A migração continua deliberada e incremental; após concluir a carga demonstrativa,
+o próximo passo é Repository + migração da persistência.
 
 ---
 
