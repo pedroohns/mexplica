@@ -1,5 +1,11 @@
+const emTransacao = require('./transacaoMemory');
+
 class TutorialMemoryRepository {
-    constructor(tutoriais = require('../data/tutorialData')) { this.tutoriais = tutoriais; }
+    constructor(tutoriais = require('../data/tutorialData'), { comentarios = [], avaliacoes = [] } = {}) {
+        this.tutoriais = tutoriais;
+        this.comentarios = comentarios;
+        this.avaliacoes = avaliacoes;
+    }
 
     async findAll({ ordem = 'data' } = {}) {
         const lista = [...this.tutoriais];
@@ -38,11 +44,18 @@ class TutorialMemoryRepository {
     }
 
     async remove(id, { antesDeRemover } = {}) {
-        const tutorial = await this.findById(id);
-        if (!tutorial) return null;
-        if (antesDeRemover) await antesDeRemover(tutorial);
-        this.tutoriais.splice(this.tutoriais.indexOf(tutorial), 1);
-        return tutorial;
+        return emTransacao(async client => {
+            const tutorial = await this.findById(id);
+            if (!tutorial) return null;
+            if (antesDeRemover) await antesDeRemover(tutorial, client);
+            for (const colecao of [this.comentarios, this.avaliacoes]) {
+                for (let indice = colecao.length - 1; indice >= 0; indice--) {
+                    if (colecao[indice].tutorialId === tutorial.id) colecao.splice(indice, 1);
+                }
+            }
+            this.tutoriais.splice(this.tutoriais.indexOf(tutorial), 1);
+            return tutorial;
+        }, { colecoes: [this.tutoriais, this.comentarios, this.avaliacoes] });
     }
 }
 

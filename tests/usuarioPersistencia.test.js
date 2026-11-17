@@ -228,16 +228,16 @@ test('Controller descarta especialidades antes de chamar o Model e mantém ediç
     assert.equal(atualizado.localizacao, 'Brasil');
 });
 
-test('falha ao excluir usuário preserva todos os arrays do runtime', async t => {
+test('falha ao excluir usuário preserva todos os dados do adapter em memória', async t => {
     restaurarArrays(t);
     const usuario = await UsuarioModel.create(conta());
     const tutorial = (await TutorialModel.create({ autorId: usuario.id, titulo: 'Tutorial temporário', passos: [] }));
-    ComentarioModel.create({ tutorialId: tutorial.id, usuarioId: 1, texto: 'Comentário temporário' });
-    AvaliacaoModel.create({ tutorialId: tutorial.id, avaliadorId: 1, nota: 5 });
-    const anteriores = JSON.stringify([(await TutorialModel.findAll()), ComentarioModel.findAll(), AvaliacaoModel.findAll()]);
+    (await ComentarioModel.create({ tutorialId: tutorial.id, usuarioId: 1, texto: 'Comentário temporário' }));
+    (await AvaliacaoModel.create({ tutorialId: tutorial.id, avaliadorId: 1, nota: 5 }));
+    const anteriores = JSON.stringify([(await TutorialModel.findAll()), (await ComentarioModel.findAll()), (await AvaliacaoModel.findAll())]);
     t.mock.method(UsuarioModel, 'remove', async () => { throw new Error('Falha simulada no commit'); });
     await assert.rejects(RelacionamentoService.removerDadosDoUsuario(usuario.id), /Falha simulada/);
-    assert.equal(JSON.stringify([(await TutorialModel.findAll()), ComentarioModel.findAll(), AvaliacaoModel.findAll()]) === anteriores, true);
+    assert.equal(JSON.stringify([(await TutorialModel.findAll()), (await ComentarioModel.findAll()), (await AvaliacaoModel.findAll())]) === anteriores, true);
     assert.ok(await UsuarioModel.findById(usuario.id));
 });
 
@@ -245,10 +245,10 @@ test('falha no ajuste de pontos preserva avaliação e tutorial e não bloqueia 
     restaurarArrays(t);
     t.mock.method(UsuarioModel, 'adicionarPontos', async () => { throw new Error('Falha simulada nos pontos'); });
     await assert.rejects(RelacionamentoService.removerAvaliacaoComAjuste(1), /Falha simulada/);
-    assert.ok(AvaliacaoModel.findById(1));
+    assert.ok((await AvaliacaoModel.findById(1)));
     await assert.rejects(RelacionamentoService.removerTutorialCompleto(1), /Falha simulada/);
     assert.ok((await TutorialModel.findById(1)));
-    assert.ok(AvaliacaoModel.findById(1));
+    assert.ok((await AvaliacaoModel.findById(1)));
     assert.equal(await RelacionamentoService.removerTutorialCompleto(999999), null);
 });
 
@@ -257,16 +257,16 @@ test('falha persistente ao avaliar ou editar avaliação não modifica o array',
     t.mock.method(console, 'error', () => {});
     t.mock.method(UsuarioModel, 'adicionarPontos', async () => { throw new Error('Falha simulada nos pontos'); });
     const tutorial = (await TutorialModel.create({ autorId: 2, titulo: 'Tutorial temporário', passos: [] }));
-    const tamanho = AvaliacaoModel.findAll().length;
+    const tamanho = (await AvaliacaoModel.findAll()).length;
     const nova = await request(`/api/tutoriais/${tutorial.id}/avaliacoes`, 'POST', { nota: 5 }, true);
     assert.equal(nova.status, 500);
     await nova.json();
-    assert.equal(AvaliacaoModel.findAll().length, tamanho);
-    const nota = AvaliacaoModel.findById(1).nota;
+    assert.equal((await AvaliacaoModel.findAll()).length, tamanho);
+    const nota = (await AvaliacaoModel.findById(1)).nota;
     const edicao = await request('/api/avaliacoes/1', 'PUT', { nota: 3 }, true);
     assert.equal(edicao.status, 500);
     await edicao.json();
-    assert.equal(AvaliacaoModel.findById(1).nota, nota);
+    assert.equal((await AvaliacaoModel.findById(1)).nota, nota);
 });
 
 test('avaliações concorrentes no mesmo processo não duplicam avaliação nem pontos', async t => {
@@ -279,6 +279,6 @@ test('avaliações concorrentes no mesmo processo não duplicam avaliação nem 
     ]);
     assert.deepEqual(respostas.map(resposta => resposta.status).sort(), [201, 409]);
     await Promise.all(respostas.map(resposta => resposta.json()));
-    assert.equal(AvaliacaoModel.findByTutorialId(tutorial.id).length, 1);
+    assert.equal((await AvaliacaoModel.findByTutorialId(tutorial.id)).length, 1);
     assert.equal((await UsuarioModel.findById(2)).pontos, pontosAnteriores + 50);
 });

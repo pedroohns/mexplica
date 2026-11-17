@@ -100,7 +100,7 @@ function validarCampos(dados, { videoLegado } = {}) {
 
 async function enriquecerTutorial(tutorial, usuarioAtualId = null) {
     const minhaAvaliacao = usuarioAtualId
-        ? AvaliacaoModel.findByTutorialEAvaliador(tutorial.id, usuarioAtualId) : null;
+        ? (await AvaliacaoModel.findByTutorialEAvaliador(tutorial.id, usuarioAtualId)) : null;
     const passos = passosCompativeis(tutorial);
     const videoId = youtubeId(tutorial.videoUrl);
     return {
@@ -111,8 +111,8 @@ async function enriquecerTutorial(tutorial, usuarioAtualId = null) {
         videoUrl: urlImagem(tutorial.videoUrl) || '',
         autor: UsuarioModel.toPublic((await UsuarioModel.findById(tutorial.autorId))),
         categoria: getCategoria(tutorial.categoriaId),
-        avaliacao: AvaliacaoModel.resumoDoTutorial(tutorial.id),
-        quantidadeComentarios: ComentarioModel.findByTutorialId(tutorial.id).length,
+        avaliacao: (await AvaliacaoModel.resumoDoTutorial(tutorial.id)),
+        quantidadeComentarios: (await ComentarioModel.findByTutorialId(tutorial.id)).length,
         minhaAvaliacao: minhaAvaliacao ? { id: minhaAvaliacao.id, nota: minhaAvaliacao.nota } : null
     };
 }

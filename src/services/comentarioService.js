@@ -14,7 +14,8 @@ const ComentarioModel =
 // ENRIQUECER COMENTARIO
 // =============================
 async function enriquecerComentario(
-    comentario
+    comentario,
+    autores = null
 ) {
 
     if (!comentario) {
@@ -32,7 +33,7 @@ async function enriquecerComentario(
             UsuarioModel
                 .toPublic(
 
-                    (await UsuarioModel
+                    (autores ? autores.get(comentario.usuarioId) : await UsuarioModel
                         .findById(
                             comentario.usuarioId
                         ))
@@ -51,15 +52,10 @@ async function listarPorTutorial(
     tutorialId
 ) {
 
-    return Promise.all(ComentarioModel
-
-        .findByTutorialId(
-            tutorialId
-        )
-
-        .map(
-            enriquecerComentario
-        ));
+    const comentarios = await ComentarioModel.findByTutorialId(tutorialId);
+    const ids = [...new Set(comentarios.map(comentario => comentario.usuarioId))];
+    const autores = new Map(await Promise.all(ids.map(async id => [id, await UsuarioModel.findById(id)])));
+    return Promise.all(comentarios.map(comentario => enriquecerComentario(comentario, autores)));
 
 }
 

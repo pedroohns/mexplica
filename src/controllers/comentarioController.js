@@ -10,7 +10,7 @@ const TutorialModel =
     );
 
 
-const { enriquecerComentario } = require('../services/comentarioService');
+const { enriquecerComentario, listarPorTutorial: listarComentarios } = require('../services/comentarioService');
 
 
 function validarTexto(
@@ -68,14 +68,7 @@ async function listarPorTutorial(
 
     return res.json(
 
-        (await Promise.all(ComentarioModel
-            .findByTutorialId(
-                tutorial.id
-            )
-
-            .map(
-                enriquecerComentario
-            )))
+        await listarComentarios(tutorial.id)
 
     );
 
@@ -129,7 +122,7 @@ async function criar(
 
 
     const comentario =
-        ComentarioModel
+        (await ComentarioModel
             .create({
 
                 tutorialId:
@@ -140,7 +133,7 @@ async function criar(
 
                 texto
 
-            });
+            }));
 
 
     return res
@@ -166,10 +159,10 @@ async function atualizar(
 ) {
 
     const comentario =
-        ComentarioModel
+        (await ComentarioModel
             .findById(
                 req.params.id
-            );
+            ));
 
 
     if (!comentario) {
@@ -224,14 +217,14 @@ async function atualizar(
 
 
     const atualizado =
-        ComentarioModel
+        (await ComentarioModel
             .update(
 
                 comentario.id,
 
                 texto
 
-            );
+            ));
 
 
     return res.json({
@@ -249,16 +242,16 @@ async function atualizar(
 }
 
 
-function excluir(
+async function excluir(
     req,
     res
 ) {
 
     const comentario =
-        ComentarioModel
+        (await ComentarioModel
             .findById(
                 req.params.id
-            );
+            ));
 
 
     if (!comentario) {
@@ -292,10 +285,10 @@ function excluir(
     }
 
 
-    ComentarioModel
+    (await ComentarioModel
         .remove(
             comentario.id
-        );
+        ));
 
 
     return res.json({

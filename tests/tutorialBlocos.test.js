@@ -179,8 +179,8 @@ test('avaliações, comentários e exclusão em cascata continuam funcionando pe
     assert.equal((await request(caminho, cookieLeitor, 'DELETE')).status, 403);
     assert.equal((await request(caminho, cookieAutor, 'DELETE')).status, 200);
     assert.equal((await request(caminho)).status, 404);
-    assert.equal(require('../src/models/comentarioModel').findByTutorialId(tutorialCriado.id).length, 0);
-    assert.equal(require('../src/models/avaliacaoModel').resumoDoTutorial(tutorialCriado.id).quantidade, 0);
+    assert.equal((await require('../src/models/comentarioModel').findByTutorialId(tutorialCriado.id)).length, 0);
+    assert.equal((await require('../src/models/avaliacaoModel').resumoDoTutorial(tutorialCriado.id)).quantidade, 0);
 });
 test('API mantém limite de 1 MB e informa erro JSON 413', async () => {
     const resposta = await request('/api/tutoriais', cookieAutor, 'POST', { ...dados(), extra: 'x'.repeat(limites.payloadBytes) });

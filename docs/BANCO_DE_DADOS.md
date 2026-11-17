@@ -1,8 +1,9 @@
 # Banco de dados do MExplica
 
-O schema inicial está em `src/database/schema.sql`. Usuários e tutoriais agora usam PostgreSQL
-no runtime real; somente comentários e avaliações continuam nos arrays de `src/data/`.
-Os comandos de infraestrutura e o Repository reutilizam o Singleton `DatabaseConnection`.
+O schema inicial está em `src/database/schema.sql`. Usuários, tutoriais, passos, tags,
+comentários e avaliações usam PostgreSQL no runtime real. O estado híbrido foi encerrado.
+Os quatro Repositories e os comandos de infraestrutura reutilizam o Singleton `DatabaseConnection`.
+Os arquivos de `src/data/` ficam restritos ao seed e aos MemoryRepositories dos testes offline.
 O frontend e a autenticação com cookie-session permanecem preservados.
 
 ## Persistência de usuários no runtime
@@ -84,31 +85,84 @@ pelo update. Abrir `/tutoriais/:slug` executa `visualizacoes = visualizacoes + 1
 atômico e usa o tutorial retornado, sem nova consulta redundante do metadado. Esse GET escreve
 no banco. `GET /api/tutoriais/:id` é uma alternativa de leitura sem incremento.
 
-## Consistência temporária entre PostgreSQL e arrays
+## Persistência de comentários e avaliações
 
-`relacionamentoService` serializa as mutações híbridas por processo. Uma avaliação só é
-criada/editada/removida no array depois de confirmar o ajuste de pontos no PostgreSQL.
-Excluir tutorial compartilha um único client entre TutorialPostgresRepository e o ajuste
-de pontos do UsuarioPostgresRepository. O DELETE e o desconto de pontos são confirmados ou
-desfeitos juntos; as cascatas removem passos/tags e dependentes persistidos. Somente após
-o commit os comentários e avaliações correspondentes são removidos dos arrays.
+RepositoryFactory agora fornece as quatro entidades. `criarComentarioRepository()` e
+`criarAvaliacaoRepository()` escolhem MemoryRepository somente em `NODE_ENV=test`; nos demais
+ambientes escolhem ComentarioPostgresRepository e AvaliacaoPostgresRepository, sem fallback.
+Ambos aceitam Pool falso injetável nos testes e reutilizam DatabaseConnection no runtime.
 
-Excluir usuário calcula os ajustes das avaliações em memória e executa ajustes de pontos
-mais DELETE de usuário em uma única transação do Repository. As cascatas cuidam dos dados
-persistidos, incluindo tutoriais do autor. IDs dos tutoriais e dependentes dos arrays são
-capturados antes da exclusão. Uma carga em lote fornece os autores dos tutoriais avaliados,
-evitando consulta por avaliação. Após o commit, comentários e avaliações são limpos de forma
-síncrona. O adapter Memory simula a cascata de tutoriais para manter equivalência nos testes.
-Se o PostgreSQL falhar, esses arrays permanecem.
+As sete operações de ComentarioModel são async: findAll, findById, findByTutorialId,
+findByUserId, create, update e remove. O Repository centraliza tutorialId/usuarioId e datas
+ISO; listagem por tutorial é crescente por criado_em e id. Criação usa identity e RETURNING;
+edição altera apenas texto/atualizado_em; exclusão usa DELETE RETURNING. As instruções são
+parametrizadas. Controller mantém validação de texto, autoria da sessão e autorização.
+ComentarioService aguarda a lista e consulta cada autor distinto uma única vez por listagem,
+preservando a projeção pública sem hash.
 
-Esses arrays são locais ao processo e reiniciam com ele. Não há transação distribuída ou
-atomicidade durável entre memória e banco em caso de término do processo, nem compartilhamento
-das coleções entre instâncias serverless. A migração das próximas entidades eliminará essa
-condição temporária; Comentario e Avaliacao são a próxima etapa.
+As nove operações persistentes de AvaliacaoModel são async: findAll, findById,
+findByTutorialId, findByAvaliadorId, findByTutorialEAvaliador, resumoDoTutorial, create,
+update e remove. O Repository centraliza tutorialId/avaliadorId e datas ISO. O Model mantém
+`pontosPorNota(nota) = nota * 10` síncrono e calcula resumo com média numérica de uma casa
+decimal e quantidade, ambos zero quando não há avaliações. POST duplicado continua retornando
+409; PUT atualiza a avaliação existente. A UNIQUE tutorial/avaliador é a garantia final;
+o conflito conhecido é traduzido sem expor constraint ou detalhes privados.
+
+Controllers e Services de comentários, avaliação, tutorial e perfil aguardam os Models.
+Perfil mantém totais e média ponderada pelas avaliações recebidas. Enriquecimento de tutorial
+mantém avaliacao.media/quantidade, quantidadeComentarios e minhaAvaliacao.
+
+## Transações de relacionamentos e pontos
+
+`relacionamentoService` compõe as entidades. AvaliacaoModel.emTransacao entrega o client do
+Repository à operação; consultas, mutação da avaliação e ajuste de pontos reutilizam esse
+mesmo client através de `{ client }`. BEGIN/COMMIT/ROLLBACK ficam no Repository. Falha em
+qualquer etapa desfaz avaliação e pontos juntos e descarta a conexão.
+
+Criação soma pontosPorNota; edição bloqueia e relê a avaliação antes de calcular somente o
+delta entre notas; exclusão desconta o valor removido. O usuário mantém incremento atômico,
+piso zero e as regras atuais de nível/disponibilidade. A linha do tutorial é bloqueada com
+FOR UPDATE antes de alterar avaliações, coordenando requisições também entre instâncias.
+Autoria e duplicidade são conferidas novamente dentro da transação.
+
+Excluir tutorial bloqueia a linha, carrega avaliações sob bloqueio, soma os pontos no Service,
+ajusta o autor no mesmo client e executa DELETE. CASCADE remove passos, tags, comentários e
+avaliações, sem DELETEs manuais dos dependentes.
+
+Excluir usuário bloqueia a conta e suas avaliações. O Service agrupa os descontos por autor
+dos tutoriais de terceiros avaliados por esse usuário. Executa um ajuste por autor afetado,
+em ordem de ID, antes do DELETE de usuário na mesma transação. Avaliações recebidas nos seus
+próprios tutoriais não ajustam a conta que será removida. CASCADE remove tutoriais e demais
+dependentes. Uma carga em lote dos tutoriais evita consultas por avaliação.
+
+`executarOperacaoHibrida`, `operacaoAtual` e a limpeza de arrays no Service foram removidos.
+O runtime não possui fila local para integridade de domínio. Os MemoryRepositories usam
+`transacaoMemory.js` exclusivamente nos testes para simular isolamento, rollback e cascatas;
+nenhuma leitura/escrita do runtime PostgreSQL passa por esse mecanismo.
+
+## Validação da migração de comentários e avaliações
+
+`npm.cmd test`: 208 aprovados (172 anteriores + 36 novos), com driver real bloqueado pelo
+preload. Os novos testes usam clientes falsos para SQL, compartilhamento do client, bloqueios,
+UNIQUE, rollback de avaliação/pontos e exclusões. CRUD/autorização e estatísticas também
+foram exercitados em memória via HTTP, preservando a cobertura anterior.
+
+`npm.cmd run db:verify`: aprovado no Neon em transação somente leitura. PKs/FKs,
+integridade referencial sem órfãos e identities alinhadas. Contagens observadas: 3 categorias,
+13 usuários, 19 tutoriais, 74 passos, 96 tags, 10 comentários e 20 avaliações. Os dados
+sintéticos já existentes foram preservados; não houve schema/seed/migration nesta etapa.
+
+As rotas `/api/tutoriais/1/comentarios`, `/api/tutoriais/1/avaliacoes`, `/api/tutoriais/1`,
+`/api/tutoriais`, `/api/tutoriais/buscar?q=fonte`, `/comunidade`, `/perfil/lucas-mendes` e
+`/api/health` retornaram HTTP 200 com PostgreSQL real. Resumos, projeção pública de autores,
+totais do perfil e contrato camelCase foram conferidos. O processo executou 137 SELECTs e
+zero escritas, com qualquer comando diferente de SELECT bloqueado. Nenhum dos quatro
+arquivos Data foi carregado pela aplicação. Não foi aberta a página que incrementa views.
+Escritas reais desta migração permanecem para os roteiros manuais abaixo.
 
 ## Prova manual de persistência de tutoriais
 
-Validação automática desta etapa: 172 testes offline aprovados. No Neon real, retornaram
+Na etapa anterior, 172 testes offline foram aprovados. No Neon real, retornaram
 HTTP 200: `/api/tutoriais` (18 tutoriais hidratados), `/api/tutoriais/buscar?q=fonte`,
 `/comunidade`, `/perfil/lucas-mendes` e `/api/tutoriais/:id`. O processo usou os Repositories
 PostgreSQL sem carregar usuarioData/tutorialData. Foram executados 49 SELECTs nessas rotas,
@@ -134,11 +188,11 @@ Neon usa apenas SELECT e evita a página de tutorial que incrementa visualizaç�
 11. Conferir no Neon que o contador anterior foi preservado; abrir e conferir a edição
     persistida. Essa nova abertura deve acrescentar mais uma visualização.
 12. Buscar o novo conteúdo e testar o encaminhamento do MExplicAI quando houver relevância.
-13. Para validar o tratamento híbrido, entrar com outra conta e criar comentário/avaliação
+13. Para validar os relacionamentos, entrar com outra conta e criar comentário/avaliação
     no tutorial. Anotar os pontos concedidos ao autor, voltar à conta autora e excluir o
-    tutorial pelo MExplica, sem reiniciar o processo entre essas operações.
+    tutorial pelo MExplica.
 14. Confirmar a remoção do tutorial e a cascata de passos/tags no Neon.
-15. Confirmar que não restaram comentários/avaliações do runtime para esse tutorial e que
+15. Confirmar no Neon que não restaram comentários/avaliações para esse tutorial e que
     os pontos concedidos por suas avaliações foram descontados.
 
 ## Validação manual de escrita
@@ -154,7 +208,59 @@ Para provar persistência de escrita, executar posteriormente com uma conta sint
 3. Editar bio/localização; reiniciar e conferir as alterações.
 4. Conferir restrições de edição e unicidade por email/telefone.
 5. Validar pontos/nível/disponibilidade com contas de teste adequadas.
-6. Excluir a conta e confirmar a remoção no Neon e dos dependentes em memória.
+6. Excluir a conta e confirmar a remoção no Neon e dos dependentes persistidos.
+
+## Roteiro manual de escrita: comentários
+
+Estas escritas não são executadas automaticamente. Usar registros sintéticos e conferir
+diretamente no Neon, sem scripts novos ou exposição de credenciais.
+
+1. Iniciar com `npm.cmd run dev` e entrar com um usuário.
+2. Comentar em um tutorial existente e anotar o ID do comentário.
+3. Conferir a linha em comentarios, texto, tutorial_id, usuario_id e criado_em.
+4. Parar o servidor e iniciar novamente.
+5. Entrar novamente e confirmar o comentário presente.
+6. Editar o comentário com a mesma conta.
+7. Conferir texto e atualizado_em no Neon; ID, vínculos e criado_em devem permanecer.
+8. Reiniciar novamente o servidor.
+9. Confirmar a edição persistida.
+10. Excluir o comentário com a conta autora.
+11. Confirmar a remoção da linha no Neon e da listagem do tutorial.
+
+## Roteiro manual de escrita: avaliações
+
+1. Usar um tutorial sintético de outro autor, ainda não avaliado pela conta; anotar pontos
+   atuais do autor e ID do tutorial.
+2. Avaliar com 3 estrelas e anotar o ID da avaliação.
+3. Conferir a linha em avaliacoes e nota = 3.
+4. Conferir que pontos do autor aumentaram em 30.
+5. Reiniciar o servidor e entrar novamente.
+6. Confirmar avaliação, média/quantidade, seleção da própria nota e pontos persistidos.
+7. Alterar a nota de 3 para 5 estrelas.
+8. Conferir o mesmo ID e apenas uma linha para tutorial_id/avaliador_id, com atualizado_em.
+9. Confirmar delta de +20 pontos, totalizando +50 sobre o saldo inicial.
+10. Remover a avaliação.
+11. Confirmar ausência da linha e atualização de média/quantidade.
+12. Confirmar desconto de 50 pontos e retorno ao saldo inicial, se não houve outras ações.
+
+## Roteiro manual de escrita: exclusão de tutorial
+
+1. Criar tutorial sintético com passos/tags e, com outra conta, adicionar comentário e
+   avaliação. Anotar IDs e pontos concedidos ao autor.
+2. Voltar à conta autora e excluir o tutorial pelo MExplica.
+3. Confirmar ausência do tutorial no Neon.
+4. Confirmar CASCADE: nenhuma linha do tutorial em tutorial_passos, tutorial_tags,
+   comentarios e avaliacoes.
+5. Confirmar desconto dos pontos concedidos por todas as avaliações removidas.
+
+## Roteiro manual de escrita: exclusão de usuário
+
+1. Criar uma conta sintética exclusiva para este teste; preservar a conta sintética anterior.
+2. Com ela, avaliar dois tutoriais do mesmo autor e um de outro autor; anotar pontos concedidos.
+3. Se a conta for colaboradora, criar tutorial e receber comentário/avaliação de outra conta.
+4. Excluir a conta sintética de teste pelo MExplica.
+5. Confirmar a cascata de seus tutoriais, comentários e avaliações no Neon.
+6. Confirmar reversão agrupada dos pontos dos outros autores, sem alterar avaliações alheias.
 
 ## Comandos
 

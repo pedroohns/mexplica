@@ -32,8 +32,8 @@ test(
     async () => {
 
         const comentario =
-            ComentarioModel
-                .findAll()[0];
+            (await ComentarioModel
+                .findAll())[0];
 
 
         assert.ok(
@@ -82,8 +82,8 @@ test(
     async () => {
 
         const comentario =
-            ComentarioModel
-                .findAll()[0];
+            (await ComentarioModel
+                .findAll())[0];
 
 
         assert.ok(

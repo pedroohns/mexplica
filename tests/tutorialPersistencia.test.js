@@ -123,14 +123,14 @@ test('API usa autor da sessão, encontra novos tutoriais e página incrementa vi
 test('falha na exclusão persistente preserva tutorial, pontos e arrays dependentes', async t => {
     restaurar(t);
     const tutorial = await TutorialModel.create(dados());
-    const comentario = ComentarioModel.create({ tutorialId: tutorial.id, usuarioId: 1, texto: 'Comentário sintético' });
-    const avaliacao = AvaliacaoModel.create({ tutorialId: tutorial.id, avaliadorId: 1, nota: 5 });
+    const comentario = (await ComentarioModel.create({ tutorialId: tutorial.id, usuarioId: 1, texto: 'Comentário sintético' }));
+    const avaliacao = (await AvaliacaoModel.create({ tutorialId: tutorial.id, avaliadorId: 1, nota: 5 }));
     await UsuarioModel.adicionarPontos(2, 50);
     const pontos = (await UsuarioModel.findById(2)).pontos;
     t.mock.method(TutorialModel, 'remove', async () => { throw new Error('Falha simulada no DELETE'); });
     await assert.rejects(removerTutorialCompleto(tutorial.id), /Falha simulada/);
     assert.ok(await TutorialModel.findById(tutorial.id));
-    assert.ok(ComentarioModel.findById(comentario.id));
-    assert.ok(AvaliacaoModel.findById(avaliacao.id));
+    assert.ok((await ComentarioModel.findById(comentario.id)));
+    assert.ok((await AvaliacaoModel.findById(avaliacao.id)));
     assert.equal((await UsuarioModel.findById(2)).pontos, pontos);
 });

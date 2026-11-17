@@ -7,6 +7,10 @@ const UsuarioPostgresRepository = require('../src/repositories/usuarioPostgresRe
 const DatabaseConnection = require('../src/database/databaseConnection');
 const TutorialMemoryRepository = require('../src/repositories/tutorialMemoryRepository');
 const TutorialPostgresRepository = require('../src/repositories/tutorialPostgresRepository');
+const ComentarioMemoryRepository = require('../src/repositories/comentarioMemoryRepository');
+const ComentarioPostgresRepository = require('../src/repositories/comentarioPostgresRepository');
+const AvaliacaoMemoryRepository = require('../src/repositories/avaliacaoMemoryRepository');
+const AvaliacaoPostgresRepository = require('../src/repositories/avaliacaoPostgresRepository');
 
 test('Factory escolhe memória pelo ambiente de teste explícito e PostgreSQL no runtime normal', () => {
     assert.equal(process.env.NODE_ENV, 'test');
@@ -32,6 +36,30 @@ test('Repositories PostgreSQL distintos reutilizam o Pool do DatabaseConnection 
     assert.equal(primeiro.getPool(), pool);
     assert.equal(segundo.getPool(), pool);
     assert.equal(new TutorialPostgresRepository().getPool(), pool);
+    assert.equal(new ComentarioPostgresRepository().getPool(), pool);
+    assert.equal(new AvaliacaoPostgresRepository().getPool(), pool);
+});
+
+test('Factory fornece ComentarioRepository em memória nos testes e PostgreSQL no runtime', () => {
+    assert.ok(RepositoryFactory.criarComentarioRepository() instanceof ComentarioMemoryRepository);
+    for (const ambiente of ['development', 'production']) {
+        const repo = RepositoryFactory.criarComentarioRepository({ ambiente });
+        assert.ok(repo instanceof ComentarioPostgresRepository);
+        for (const metodo of ['findAll', 'findById', 'findByTutorialId', 'findByUserId', 'create', 'update', 'remove']) {
+            assert.equal(typeof repo[metodo], 'function', metodo);
+        }
+    }
+});
+
+test('Factory fornece AvaliacaoRepository em memória nos testes e PostgreSQL no runtime', () => {
+    assert.ok(RepositoryFactory.criarAvaliacaoRepository() instanceof AvaliacaoMemoryRepository);
+    for (const ambiente of ['development', 'production']) {
+        const repo = RepositoryFactory.criarAvaliacaoRepository({ ambiente });
+        assert.ok(repo instanceof AvaliacaoPostgresRepository);
+        for (const metodo of ['findAll', 'findById', 'findByTutorialId', 'findByAvaliadorId', 'findByTutorialEAvaliador', 'create', 'update', 'remove', 'emTransacao']) {
+            assert.equal(typeof repo[metodo], 'function', metodo);
+        }
+    }
 });
 
 test('Factory fornece TutorialRepository em memória para testes e PostgreSQL no runtime', () => {

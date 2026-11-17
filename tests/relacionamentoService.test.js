@@ -144,7 +144,7 @@ test(
 
 
         const avaliacao =
-            AvaliacaoModel.create({
+            (await AvaliacaoModel.create({
 
                 tutorialId:
                     tutorial.id,
@@ -155,7 +155,7 @@ test(
                 nota:
                     5
 
-            });
+            }));
 
 
         const pontos =
@@ -175,9 +175,9 @@ test(
         t.after(
             async () => {
 
-                AvaliacaoModel.remove(
+                (await AvaliacaoModel.remove(
                     avaliacao.id
-                );
+                ));
 
                 (await TutorialModel.remove(
                     tutorial.id
@@ -219,9 +219,9 @@ test(
 
 
         assert.equal(
-            AvaliacaoModel.findById(
+            (await AvaliacaoModel.findById(
                 avaliacao.id
-            ),
+            )),
             null
         );
 
@@ -273,7 +273,7 @@ test(
 
 
         const comentario =
-            ComentarioModel.create({
+            (await ComentarioModel.create({
 
                 tutorialId:
                     tutorial.id,
@@ -284,11 +284,11 @@ test(
                 texto:
                     'Comentário temporário.'
 
-            });
+            }));
 
 
         const avaliacao =
-            AvaliacaoModel.create({
+            (await AvaliacaoModel.create({
 
                 tutorialId:
                     tutorial.id,
@@ -299,7 +299,7 @@ test(
                 nota:
                     4
 
-            });
+            }));
 
 
         (await UsuarioModel.adicionarPontos(
@@ -317,13 +317,13 @@ test(
         t.after(
             async () => {
 
-                ComentarioModel.remove(
+                (await ComentarioModel.remove(
                     comentario.id
-                );
+                ));
 
-                AvaliacaoModel.remove(
+                (await AvaliacaoModel.remove(
                     avaliacao.id
-                );
+                ));
 
                 (await TutorialModel.remove(
                     tutorial.id
@@ -377,20 +377,20 @@ test(
 
 
         assert.equal(
-            ComentarioModel
+            (await ComentarioModel
                 .findByTutorialId(
                     tutorial.id
-                )
+                ))
                 .length,
             0
         );
 
 
         assert.equal(
-            AvaliacaoModel
+            (await AvaliacaoModel
                 .findByTutorialId(
                     tutorial.id
-                )
+                ))
                 .length,
             0
         );
@@ -457,7 +457,7 @@ test(
 
 
         const comentarioNoTutorialDoUsuario =
-            ComentarioModel.create({
+            (await ComentarioModel.create({
 
                 tutorialId:
                     tutorialDoUsuario.id,
@@ -468,11 +468,11 @@ test(
                 texto:
                     'Comentário que deve ser removido junto do tutorial.'
 
-            });
+            }));
 
 
         const avaliacaoNoTutorialDoUsuario =
-            AvaliacaoModel.create({
+            (await AvaliacaoModel.create({
 
                 tutorialId:
                     tutorialDoUsuario.id,
@@ -483,7 +483,7 @@ test(
                 nota:
                     3
 
-            });
+            }));
 
 
         (await UsuarioModel.adicionarPontos(
@@ -499,7 +499,7 @@ test(
 
 
         const comentarioDoUsuario =
-            ComentarioModel.create({
+            (await ComentarioModel.create({
 
                 tutorialId:
                     tutorialDoOutroAutor.id,
@@ -510,11 +510,11 @@ test(
                 texto:
                     'Comentário feito pelo usuário que será removido.'
 
-            });
+            }));
 
 
         const avaliacaoDoUsuario =
-            AvaliacaoModel.create({
+            (await AvaliacaoModel.create({
 
                 tutorialId:
                     tutorialDoOutroAutor.id,
@@ -525,7 +525,7 @@ test(
                 nota:
                     5
 
-            });
+            }));
 
 
         (await UsuarioModel.adicionarPontos(
@@ -543,21 +543,21 @@ test(
         t.after(
             async () => {
 
-                ComentarioModel.remove(
+                (await ComentarioModel.remove(
                     comentarioNoTutorialDoUsuario.id
-                );
+                ));
 
-                ComentarioModel.remove(
+                (await ComentarioModel.remove(
                     comentarioDoUsuario.id
-                );
+                ));
 
-                AvaliacaoModel.remove(
+                (await AvaliacaoModel.remove(
                     avaliacaoNoTutorialDoUsuario.id
-                );
+                ));
 
-                AvaliacaoModel.remove(
+                (await AvaliacaoModel.remove(
                     avaliacaoDoUsuario.id
-                );
+                ));
 
                 (await TutorialModel.remove(
                     tutorialDoUsuario.id
@@ -626,20 +626,20 @@ test(
 
         // DEPENDÊNCIAS DO TUTORIAL REMOVIDO
         assert.equal(
-            ComentarioModel
+            (await ComentarioModel
                 .findByTutorialId(
                     tutorialDoUsuario.id
-                )
+                ))
                 .length,
             0
         );
 
 
         assert.equal(
-            AvaliacaoModel
+            (await AvaliacaoModel
                 .findByTutorialId(
                     tutorialDoUsuario.id
-                )
+                ))
                 .length,
             0
         );
@@ -647,10 +647,10 @@ test(
 
         // COMENTÁRIOS FEITOS PELO USUÁRIO
         assert.equal(
-            ComentarioModel
+            (await ComentarioModel
                 .findByUserId(
                     usuarioRemovido.id
-                )
+                ))
                 .length,
             0
         );
@@ -658,10 +658,10 @@ test(
 
         // AVALIAÇÕES FEITAS PELO USUÁRIO
         assert.equal(
-            AvaliacaoModel
+            (await AvaliacaoModel
                 .findByAvaliadorId(
                     usuarioRemovido.id
-                )
+                ))
                 .length,
             0
         );

@@ -216,7 +216,7 @@ app.get(
                 'MExplica',
 
             arquitetura:
-                'Persistência híbrida: usuários e tutoriais PostgreSQL; comentários e avaliações temporariamente em memória',
+                'Persistência do domínio em PostgreSQL',
 
             dominio:
                 'tutoriais, comentários, avaliações e ranking'
@@ -333,6 +333,19 @@ app.use(
         }
         if (err.code === 'TUTORIAL_SLUG_CONFLITO') {
             return res.status(409).json({ erro: 'Não foi possível reservar o endereço do tutorial. Tente novamente.' });
+        }
+
+        const errosRelacionamento = {
+            AVALIACAO_DUPLICADA: [409, 'Você já avaliou este tutorial. Edite sua avaliação existente.'],
+            AVALIACAO_NAO_ENCONTRADA: [404, 'Avaliação não encontrada.'],
+            TUTORIAL_NAO_ENCONTRADO: [404, 'Tutorial não encontrado.'],
+            AVALIACAO_PROPRIO_TUTORIAL: [403, 'Você não pode avaliar o próprio tutorial.'],
+            AVALIACAO_EDICAO_PROIBIDA: [403, 'Você só pode editar a própria avaliação.'],
+            AVALIACAO_EXCLUSAO_PROIBIDA: [403, 'Você só pode excluir a própria avaliação.']
+        };
+        if (Object.hasOwn(errosRelacionamento, err.code)) {
+            const [status, erro] = errosRelacionamento[err.code];
+            return res.status(status).json({ erro });
         }
 
         // Erros do driver podem conter query, contatos e credenciais. Não registrar a exceção.

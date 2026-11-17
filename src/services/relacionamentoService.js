@@ -1,76 +1,99 @@
 const UsuarioModel = require('../models/usuarioModel');
 const TutorialModel = require('../models/tutorialModel');
-const ComentarioModel = require('../models/comentarioModel');
 const AvaliacaoModel = require('../models/avaliacaoModel');
 
-// Temporário: serializa mutações entre arrays deste processo e dados persistidos.
-// Não representa uma transação distribuída entre instâncias serverless.
-let operacaoAtual = Promise.resolve();
-function executarOperacaoHibrida(tarefa) {
-    const resultado = operacaoAtual.then(tarefa);
-    operacaoAtual = resultado.catch(() => {});
-    return resultado;
+function falha(code) { throw Object.assign(new Error('Operação de relacionamento recusada.'), { code }); }
+
+function conferirAvaliador(avaliacao, avaliadorId, acao) {
+    if (avaliadorId !== undefined && avaliacao.avaliadorId !== Number(avaliadorId)) {
+        falha(acao === 'editar' ? 'AVALIACAO_EDICAO_PROIBIDA' : 'AVALIACAO_EXCLUSAO_PROIBIDA');
+    }
 }
 
-function removerAvaliacaoComAjuste(avaliacaoId) {
-    return executarOperacaoHibrida(async () => {
-        const avaliacao = AvaliacaoModel.findById(avaliacaoId);
+async function resultadoDaAvaliacao(avaliacao, tutorial, colaboradorAnterior, delta, client) {
+    const colaborador = await UsuarioModel.adicionarPontos(tutorial.autorId, delta, { client });
+    const nivelAnterior = colaboradorAnterior?.nivel || null;
+    return {
+        avaliacao, resumo: await AvaliacaoModel.resumoDoTutorial(tutorial.id, { client }),
+        colaborador: UsuarioModel.toPublic(colaborador),
+        mudouNivel: Boolean(colaborador && nivelAnterior !== colaborador.nivel),
+        nivelAnterior, nivelAtual: colaborador?.nivel || null
+    };
+}
+
+async function criarAvaliacaoComPontos(tutorialId, avaliadorId, nota) {
+    return AvaliacaoModel.emTransacao(async client => {
+        // O mesmo bloqueio de tutorial coordena notas concorrentes e sua exclusão no banco.
+        const tutorial = await TutorialModel.findById(tutorialId, { client, bloquear: true });
+        if (!tutorial) falha('TUTORIAL_NAO_ENCONTRADO');
+        if (tutorial.autorId === Number(avaliadorId)) falha('AVALIACAO_PROPRIO_TUTORIAL');
+        if (await AvaliacaoModel.findByTutorialEAvaliador(tutorial.id, avaliadorId, { client })) falha('AVALIACAO_DUPLICADA');
+        const colaborador = await UsuarioModel.findById(tutorial.autorId, { client });
+        const avaliacao = await AvaliacaoModel.create({ tutorialId: tutorial.id, avaliadorId, nota }, { client });
+        return resultadoDaAvaliacao(avaliacao, tutorial, colaborador, AvaliacaoModel.pontosPorNota(nota), client);
+    });
+}
+
+async function atualizarAvaliacaoComPontos(id, nota, { avaliadorId } = {}) {
+    return AvaliacaoModel.emTransacao(async client => {
+        const referencia = await AvaliacaoModel.findById(id, { client });
+        if (!referencia) falha('AVALIACAO_NAO_ENCONTRADA');
+        const tutorial = await TutorialModel.findById(referencia.tutorialId, { client, bloquear: true });
+        if (!tutorial) falha('TUTORIAL_NAO_ENCONTRADO');
+        const anterior = await AvaliacaoModel.findById(id, { client, bloquear: true });
+        if (!anterior) falha('AVALIACAO_NAO_ENCONTRADA');
+        conferirAvaliador(anterior, avaliadorId, 'editar');
+        const delta = AvaliacaoModel.pontosPorNota(nota) - AvaliacaoModel.pontosPorNota(anterior.nota);
+        const colaborador = await UsuarioModel.findById(tutorial.autorId, { client });
+        const avaliacao = await AvaliacaoModel.update(id, nota, { client });
+        return resultadoDaAvaliacao(avaliacao, tutorial, colaborador, delta, client);
+    });
+}
+
+async function removerAvaliacaoComAjuste(id, { avaliadorId } = {}) {
+    return AvaliacaoModel.emTransacao(async client => {
+        const referencia = await AvaliacaoModel.findById(id, { client });
+        if (!referencia) return null;
+        const tutorial = await TutorialModel.findById(referencia.tutorialId, { client, bloquear: true });
+        const avaliacao = await AvaliacaoModel.findById(id, { client, bloquear: true });
         if (!avaliacao) return null;
-        const tutorial = await TutorialModel.findById(avaliacao.tutorialId);
-        if (tutorial) await UsuarioModel.adicionarPontos(tutorial.autorId, -AvaliacaoModel.pontosPorNota(avaliacao.nota));
-        // Só altera o array depois que a alteração persistente foi confirmada.
-        return AvaliacaoModel.remove(avaliacao.id);
+        conferirAvaliador(avaliacao, avaliadorId, 'excluir');
+        const removida = await AvaliacaoModel.remove(id, { client });
+        if (tutorial) await UsuarioModel.adicionarPontos(tutorial.autorId, -AvaliacaoModel.pontosPorNota(avaliacao.nota), { client });
+        return removida;
     });
 }
 
-function removerTutorialCompleto(tutorialId) {
-    return executarOperacaoHibrida(async () => {
-        const tutorial = await TutorialModel.findById(tutorialId);
-        if (!tutorial) return null;
-        const avaliacoes = AvaliacaoModel.findByTutorialId(tutorial.id);
-        const pontos = avaliacoes.reduce((total, avaliacao) => total + AvaliacaoModel.pontosPorNota(avaliacao.nota), 0);
-        const removido = await TutorialModel.remove(tutorial.id, {
-            antesDeRemover: async (atual, client) => {
-                if (pontos) await UsuarioModel.adicionarPontos(atual.autorId, -pontos, { client });
-            }
-        });
-        if (!removido) return null;
-        avaliacoes.forEach(avaliacao => AvaliacaoModel.remove(avaliacao.id));
-        ComentarioModel.findByTutorialId(tutorial.id).forEach(comentario => ComentarioModel.remove(comentario.id));
-        return removido;
-    });
-}
-
-function removerDadosDoUsuario(usuarioId) {
-    return executarOperacaoHibrida(async () => {
-        const id = Number(usuarioId);
-        // Uma carga em lote evita uma busca PostgreSQL para cada avaliação do runtime.
-        const todosTutoriais = await TutorialModel.findAll();
-        const tutoriais = todosTutoriais.filter(tutorial => tutorial.autorId === id);
-        const porId = new Map(todosTutoriais.map(tutorial => [tutorial.id, tutorial]));
-        const idsTutoriais = new Set(tutoriais.map(tutorial => tutorial.id));
-        const avaliacoes = AvaliacaoModel.findAll().filter(avaliacao =>
-            avaliacao.avaliadorId === id || idsTutoriais.has(avaliacao.tutorialId));
-        const comentarios = ComentarioModel.findAll().filter(comentario =>
-            comentario.usuarioId === id || idsTutoriais.has(comentario.tutorialId));
-        const pontosPorAutor = new Map();
-        for (const avaliacao of avaliacoes) {
-            const tutorial = porId.get(avaliacao.tutorialId);
-            if (tutorial) pontosPorAutor.set(tutorial.autorId,
-                (pontosPorAutor.get(tutorial.autorId) || 0) - AvaliacaoModel.pontosPorNota(avaliacao.nota));
+async function removerTutorialCompleto(id) {
+    return TutorialModel.remove(id, {
+        antesDeRemover: async (tutorial, client) => {
+            const avaliacoes = await AvaliacaoModel.findByTutorialId(tutorial.id, { client, bloquear: true });
+            const pontos = avaliacoes.reduce((soma, item) => soma + AvaliacaoModel.pontosPorNota(item.nota), 0);
+            if (pontos) await UsuarioModel.adicionarPontos(tutorial.autorId, -pontos, { client });
         }
-
-        // Uma transação PG cobre pontos e usuário; a FK remove os tutoriais persistidos.
-        const removido = await UsuarioModel.remove(id, {
-            ajustesPontos: [...pontosPorAutor].map(([autorId, delta]) => ({ id: autorId, delta }))
-        });
-        if (!removido) return null;
-
-        // Sem await: os arrays restantes só são limpos após o commit, sem estado parcial.
-        avaliacoes.forEach(avaliacao => AvaliacaoModel.remove(avaliacao.id));
-        comentarios.forEach(comentario => ComentarioModel.remove(comentario.id));
-        return removido;
     });
 }
 
-module.exports = { removerAvaliacaoComAjuste, removerTutorialCompleto, removerDadosDoUsuario, executarOperacaoHibrida };
+async function removerDadosDoUsuario(id) {
+    return UsuarioModel.remove(id, {
+        antesDeRemover: async (usuario, client) => {
+            const avaliacoes = await AvaliacaoModel.findByAvaliadorId(usuario.id, { client, bloquear: true });
+            if (!avaliacoes.length) return;
+            const tutoriais = new Map((await TutorialModel.findAll({ client })).map(item => [item.id, item]));
+            const pontosPorAutor = new Map();
+            for (const avaliacao of avaliacoes) {
+                const tutorial = tutoriais.get(avaliacao.tutorialId);
+                if (tutorial && tutorial.autorId !== usuario.id) {
+                    pontosPorAutor.set(tutorial.autorId,
+                        (pontosPorAutor.get(tutorial.autorId) || 0) - AvaliacaoModel.pontosPorNota(avaliacao.nota));
+                }
+            }
+            for (const [autorId, delta] of [...pontosPorAutor].sort((a, b) => a[0] - b[0])) {
+                await UsuarioModel.adicionarPontos(autorId, delta, { client });
+            }
+        }
+    });
+}
+
+module.exports = { criarAvaliacaoComPontos, atualizarAvaliacaoComPontos,
+    removerAvaliacaoComAjuste, removerTutorialCompleto, removerDadosDoUsuario };

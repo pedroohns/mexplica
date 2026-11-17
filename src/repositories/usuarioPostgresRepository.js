@@ -37,7 +37,7 @@ class UsuarioPostgresRepository {
     }
 
     async findAll() { return this.#buscar('ORDER BY u.id', []); }
-    async findById(id) { return (await this.#buscar('WHERE u.id = $1', [id]))[0] || null; }
+    async findById(id, { client } = {}) { return (await this.#buscar('WHERE u.id = $1', [id], client))[0] || null; }
     async findBySlug(slug) { return (await this.#buscar('WHERE u.slug = $1', [slug]))[0] || null; }
 
     async findByIdentifier(identificador) {
@@ -122,14 +122,15 @@ class UsuarioPostgresRepository {
         });
     }
 
-    async remove(id, { ajustesPontos = [], pontosPlatina } = {}) {
+    async remove(id, { ajustesPontos = [], pontosPlatina, antesDeRemover } = {}) {
         return this.#emTransacao(async client => {
             const bloqueado = await client.query('SELECT id FROM public.usuarios WHERE id = $1 FOR UPDATE', [id]);
             if (!bloqueado.rows[0]) return null;
+            const usuario = (await this.#buscar('WHERE u.id = $1', [id], client))[0];
+            if (antesDeRemover) await antesDeRemover(usuario, client);
             for (const ajuste of [...ajustesPontos].sort((a, b) => a.id - b.id)) {
                 await this.#ajustarPontos(client, ajuste.id, ajuste.delta, pontosPlatina);
             }
-            const usuario = (await this.#buscar('WHERE u.id = $1', [id], client))[0];
             await client.query('DELETE FROM public.usuarios WHERE id = $1', [id]);
             return usuario;
         });

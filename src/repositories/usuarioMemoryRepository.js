@@ -1,3 +1,5 @@
+const emTransacao = require('./transacaoMemory');
+
 function conflito(codigo) {
     const erro = new Error('Conflito de usuário.');
     erro.code = codigo;
@@ -5,9 +7,11 @@ function conflito(codigo) {
 }
 
 class UsuarioMemoryRepository {
-    constructor(usuarios = require('../data/usuarioData'), tutoriais = []) {
+    constructor(usuarios = require('../data/usuarioData'), tutoriais = [], { comentarios = [], avaliacoes = [] } = {}) {
         this.usuarios = usuarios;
         this.tutoriais = tutoriais;
+        this.comentarios = comentarios;
+        this.avaliacoes = avaliacoes;
     }
 
     async findAll() { return this.usuarios; }
@@ -73,16 +77,24 @@ class UsuarioMemoryRepository {
         return usuario;
     }
 
-    async remove(id, { ajustesPontos = [], pontosPlatina } = {}) {
-        const usuario = await this.findById(id);
-        if (!usuario) return null;
-        for (const ajuste of ajustesPontos) await this.adicionarPontos(ajuste.id, ajuste.delta, pontosPlatina);
-        // Simula a FK usuarios → tutoriais dos Repositories PostgreSQL nos testes.
-        for (let indice = this.tutoriais.length - 1; indice >= 0; indice--) {
-            if (this.tutoriais[indice].autorId === usuario.id) this.tutoriais.splice(indice, 1);
-        }
-        this.usuarios.splice(this.usuarios.indexOf(usuario), 1);
-        return usuario;
+    async remove(id, { ajustesPontos = [], pontosPlatina, antesDeRemover } = {}) {
+        return emTransacao(async client => {
+            const usuario = await this.findById(id);
+            if (!usuario) return null;
+            if (antesDeRemover) await antesDeRemover(usuario, client);
+            for (const ajuste of ajustesPontos) await this.adicionarPontos(ajuste.id, ajuste.delta, pontosPlatina);
+            const ids = new Set(this.tutoriais.filter(item => item.autorId === usuario.id).map(item => item.id));
+            for (const [colecao, campo] of [[this.comentarios, 'usuarioId'], [this.avaliacoes, 'avaliadorId']]) {
+                for (let indice = colecao.length - 1; indice >= 0; indice--) {
+                    if (colecao[indice][campo] === usuario.id || ids.has(colecao[indice].tutorialId)) colecao.splice(indice, 1);
+                }
+            }
+            for (let indice = this.tutoriais.length - 1; indice >= 0; indice--) {
+                if (ids.has(this.tutoriais[indice].id)) this.tutoriais.splice(indice, 1);
+            }
+            this.usuarios.splice(this.usuarios.indexOf(usuario), 1);
+            return usuario;
+        }, { colecoes: [this.usuarios, this.tutoriais, this.comentarios, this.avaliacoes] });
     }
 }
 

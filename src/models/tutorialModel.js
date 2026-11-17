@@ -33,11 +33,11 @@ function criarSlugBase(
 }
 
 
-async function findAll() { return repository.findAll(); }
+async function findAll(opcoes) { return repository.findAll(opcoes); }
 
-async function findById(id) {
+async function findById(id, opcoes) {
     const numero = Number(id);
-    return Number.isSafeInteger(numero) && numero > 0 ? repository.findById(numero) : null;
+    return Number.isSafeInteger(numero) && numero > 0 ? repository.findById(numero, opcoes) : null;
 }
 
 async function findBySlug(slug) { return repository.findBySlug(String(slug)); }

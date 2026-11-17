@@ -53,26 +53,26 @@ async function montarPerfil(
             )));
 
     const comentariosFeitos =
-        ComentarioModel
+        (await ComentarioModel
             .findByUserId(
                 usuario.id
-            );
+            ));
 
     const avaliacoesFeitas =
-        AvaliacaoModel
+        (await AvaliacaoModel
             .findByAvaliadorId(
                 usuario.id
-            );
+            ));
 
     const avaliacoesRecebidas =
-        tutoriais.flatMap(
+        (await Promise.all(tutoriais.map(
             tutorial =>
 
                 AvaliacaoModel
                     .findByTutorialId(
                         tutorial.id
                     )
-        );
+        ))).flat();
 
     const mediaGeral =
         avaliacoesRecebidas.length

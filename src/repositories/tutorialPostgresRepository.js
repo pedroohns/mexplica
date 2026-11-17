@@ -56,10 +56,12 @@ class TutorialPostgresRepository {
         return this.#hidratar(resultado.rows, executor);
     }
 
-    async findAll({ ordem = 'data' } = {}) {
-        return this.#buscar(ordem === 'id' ? 'ORDER BY t.id' : 'ORDER BY t.criado_em DESC, t.id', []);
+    async findAll({ ordem = 'data', client } = {}) {
+        return this.#buscar(ordem === 'id' ? 'ORDER BY t.id' : 'ORDER BY t.criado_em DESC, t.id', [], client);
     }
-    async findById(id) { return (await this.#buscar('WHERE t.id = $1', [id]))[0] || null; }
+    async findById(id, { client, bloquear = false } = {}) {
+        return (await this.#buscar(`WHERE t.id = $1${bloquear ? ' FOR UPDATE' : ''}`, [id], client))[0] || null;
+    }
     async findBySlug(slug) { return (await this.#buscar('WHERE t.slug = $1', [slug]))[0] || null; }
     async findByAutorId(autorId) { return this.#buscar('WHERE t.autor_id = $1 ORDER BY t.criado_em DESC, t.id', [autorId]); }
 
