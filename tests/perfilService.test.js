@@ -29,13 +29,13 @@ const UsuarioModel =
 // =============================
 test(
     'montarPerfil retorna dados completos de um usuário existente',
-    () => {
+    async () => {
 
         const resultado =
-            PerfilService
+            (await PerfilService
                 .montarPerfil(
                     'lucas-mendes'
-                );
+                ));
 
 
         assert.ok(
@@ -110,13 +110,13 @@ test(
 // =============================
 test(
     'montarPerfil retorna null para usuário inexistente',
-    () => {
+    async () => {
 
         const resultado =
-            PerfilService
+            (await PerfilService
                 .montarPerfil(
                     'usuario-que-nao-existe'
-                );
+                ));
 
 
         assert.equal(
@@ -133,13 +133,13 @@ test(
 // =============================
 test(
     'montarPerfil identifica quando o usuário acessa o próprio perfil',
-    () => {
+    async () => {
 
         const usuario =
-            UsuarioModel
+            (await UsuarioModel
                 .findBySlug(
                     'lucas-mendes'
-                );
+                ));
 
 
         assert.ok(
@@ -148,14 +148,14 @@ test(
 
 
         const proprioPerfil =
-            PerfilService
+            (await PerfilService
                 .montarPerfil(
 
                     usuario.slug,
 
                     usuario.id
 
-                );
+                ));
 
 
         assert.equal(
@@ -166,10 +166,10 @@ test(
 
 
         const outroAcesso =
-            PerfilService
+            (await PerfilService
                 .montarPerfil(
                     usuario.slug
-                );
+                ));
 
 
         assert.equal(

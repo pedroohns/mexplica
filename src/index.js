@@ -174,13 +174,6 @@ app.use(
 );
 
 // =============================
-// USUARIO DA SESSAO
-// =============================
-app.use(
-    carregarUsuario
-);
-
-// =============================
 // ARQUIVOS PUBLICOS
 // =============================
 app.use(
@@ -223,7 +216,7 @@ app.get(
                 'MExplica',
 
             arquitetura:
-                'MVC com arrays de objetos',
+                'Persistência híbrida: usuários PostgreSQL; demais entidades temporariamente em memória',
 
             dominio:
                 'tutoriais, comentários, avaliações e ranking'
@@ -237,6 +230,9 @@ app.get(
 // =============================
 // API
 // =============================
+// Arquivos estáticos e health checks não precisam consultar o usuário da sessão.
+app.use(carregarUsuario);
+
 app.use(
     '/api/auth',
     authRoutes
@@ -329,9 +325,17 @@ app.use(
             return res.status(413).json({ erro: 'O tutorial excede o limite total de 1 MB. Reduza as imagens.' });
         }
 
-        console.error(
-            err
-        );
+        if (err.code === 'USUARIO_IDENTIFICADOR_CONFLITO') {
+            return res.status(409).json({ erro: 'Este email ou telefone já está cadastrado.' });
+        }
+        if (err.code === 'USUARIO_SLUG_CONFLITO') {
+            return res.status(409).json({ erro: 'Não foi possível reservar um nome de perfil. Tente novamente.' });
+        }
+
+        // Erros do driver podem conter query, contatos e credenciais. Não registrar a exceção.
+        console.error(err.code === 'DATABASE_URL_AUSENTE'
+            ? 'DATABASE_URL não configurada para conexão com PostgreSQL.'
+            : 'Erro interno ao processar a requisição.');
 
 
         if (

@@ -77,17 +77,17 @@ test('limite de payload mantém nove imagens dentro do JSON de 1 MB', () => {
     assert.equal(TutorialService.validarCampos(normalizado).dados.passos.length, 9, 'revalidação não conta a coleção derivada duas vezes');
     assert.match(validar({ extra: 'x'.repeat(limites.payloadBytes) }).erro, /1 MB/);
 });
-test('compatibilidade associa imagens antigas por ordem sem mutar dados demo', () => {
+test('compatibilidade associa imagens antigas por ordem sem mutar dados demo', async () => {
     const original = { ...TutorialModel.findById(1), passos: [{ ordem: 2, titulo: 'Título antigo', descricao: 'Descrição antiga' }], imagens: [{ ordem: 2, url: '/images/tutorials/pix-seguranca.jpg', alt: 'Imagem antiga', legenda: 'Legenda preservada' }] };
     const copia = JSON.stringify(original);
-    const resultado = TutorialService.enriquecerTutorial(original);
+    const resultado = (await TutorialService.enriquecerTutorial(original));
     assert.equal(resultado.passos[0].imagem.alt, 'Imagem antiga');
     assert.equal(resultado.passos[0].imagem.legenda, 'Legenda preservada');
     assert.equal(JSON.stringify(original), copia);
     original.passos[0].imagem = null;
-    assert.equal(TutorialService.enriquecerTutorial(original).passos[0].imagem, null);
+    assert.equal((await TutorialService.enriquecerTutorial(original)).passos[0].imagem, null);
     original.passos[0].imagem = { url: 'https://example.com/nova.png' };
-    assert.equal(TutorialService.enriquecerTutorial(original).passos[0].imagem.url, 'https://example.com/nova.png');
+    assert.equal((await TutorialService.enriquecerTutorial(original)).passos[0].imagem.url, 'https://example.com/nova.png');
 });
 test('validação de passos antigos não associa uma imagem de outra ordem', () => {
     const resultado = validar({ passos: [{ titulo: 'Primeiro bloco', descricao: 'Faça a primeira etapa.' }, { titulo: 'Segundo bloco', descricao: 'Faça a segunda etapa.' }], imagens: [{ ordem: 2, url: '/images/tutorials/pix-seguranca.jpg' }] }).dados;
@@ -101,11 +101,11 @@ test('vídeo aceita URLs comuns do YouTube e rejeita domínios e IDs inválidos'
     }
     for (const url of ['https://youtube.com.evil.test/watch?v=t1qdmK12qZ0', 'https://youtube.com/watch?v=curto', '<iframe src="https://youtube.com">', 'https://example.com/video']) assert.ok(validar({ videoUrl: url }).erro);
 });
-test('vídeo externo legado tem fallback seguro e pode ser preservado em edição', () => {
+test('vídeo externo legado tem fallback seguro e pode ser preservado em edição', async () => {
     const videoUrl = 'https://example.com/video-antigo';
     assert.equal(TutorialService.validarCampos({ ...dados(), videoUrl }, { videoLegado: videoUrl }).dados.videoUrl, videoUrl);
-    assert.equal(TutorialService.enriquecerTutorial({ ...TutorialModel.findById(1), videoUrl }).videoId, null);
-    assert.equal(TutorialService.enriquecerTutorial({ ...TutorialModel.findById(1), videoUrl: 'javascript:alert(1)' }).videoUrl, '');
+    assert.equal((await TutorialService.enriquecerTutorial({ ...TutorialModel.findById(1), videoUrl })).videoId, null);
+    assert.equal((await TutorialService.enriquecerTutorial({ ...TutorialModel.findById(1), videoUrl: 'javascript:alert(1)' })).videoUrl, '');
 });
 
 let servidor, base, cookieAutor, cookieLeitor, tutorialCriado;
@@ -119,7 +119,7 @@ before(async () => {
         return resposta.headers.getSetCookie().map(c => c.split(';')[0]).join('; ');
     }
     cookieAutor = await login('lucas@mexplica.com');
-    cookieLeitor = await login(UsuarioModel.findAll().find(usuario => !usuario.colaborador).email);
+    cookieLeitor = await login((await UsuarioModel.findAll()).find(usuario => !usuario.colaborador).email);
 });
 after(async () => { await new Promise(resolve => servidor.close(resolve)); });
 const request = (caminho, cookie, method = 'GET', body) => fetch(base + caminho, { method, headers: { 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, body: body === undefined ? undefined : JSON.stringify(body), redirect: 'manual' });

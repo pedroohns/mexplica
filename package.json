@@ -9,9 +9,10 @@
     "start": "node src/index.js",
     "db:check": "node scripts/checkDatabase.js",
     "db:schema": "node scripts/applyDatabaseSchema.js",
+    "db:migrate": "node scripts/runMigrations.js",
     "db:seed": "node scripts/seedDatabase.js",
     "db:verify": "node scripts/verifyDatabase.js",
-    "test": "node --test"
+    "test": "node --require ./scripts/testSetup.js --test"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

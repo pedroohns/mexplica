@@ -10,34 +10,7 @@ const TutorialModel =
     );
 
 
-const UsuarioModel =
-    require(
-        '../models/usuarioModel'
-    );
-
-
-function enriquecerComentario(
-    comentario
-) {
-
-    return {
-
-        ...comentario,
-
-        autor:
-            UsuarioModel
-                .toPublic(
-
-                    UsuarioModel
-                        .findById(
-                            comentario.usuarioId
-                        )
-
-                )
-
-    };
-
-}
+const { enriquecerComentario } = require('../services/comentarioService');
 
 
 function validarTexto(
@@ -67,7 +40,7 @@ function validarTexto(
 }
 
 
-function listarPorTutorial(
+async function listarPorTutorial(
     req,
     res
 ) {
@@ -95,21 +68,21 @@ function listarPorTutorial(
 
     return res.json(
 
-        ComentarioModel
+        (await Promise.all(ComentarioModel
             .findByTutorialId(
                 tutorial.id
             )
 
             .map(
                 enriquecerComentario
-            )
+            )))
 
     );
 
 }
 
 
-function criar(
+async function criar(
     req,
     res
 ) {
@@ -178,16 +151,16 @@ function criar(
                 'Comentário publicado com sucesso.',
 
             comentario:
-                enriquecerComentario(
+                (await enriquecerComentario(
                     comentario
-                )
+                ))
 
         });
 
 }
 
 
-function atualizar(
+async function atualizar(
     req,
     res
 ) {
@@ -267,9 +240,9 @@ function atualizar(
             'Comentário atualizado com sucesso.',
 
         comentario:
-            enriquecerComentario(
+            (await enriquecerComentario(
                 atualizado
-            )
+            ))
 
     });
 

@@ -23,7 +23,7 @@ const {
     );
 
 
-function listar(
+async function listar(
     req,
     res
 ) {
@@ -35,7 +35,7 @@ function listar(
 
     return res.json(
 
-        TutorialModel
+        (await Promise.all(TutorialModel
             .findAll()
 
             .map(
@@ -45,14 +45,14 @@ function listar(
                         tutorial,
                         usuarioAtualId
                     )
-            )
+            )))
 
     );
 
 }
 
 
-function buscar(
+async function buscar(
     req,
     res
 ) {
@@ -166,14 +166,14 @@ function buscar(
 
 
     const resultados =
-        encontrados.map(
+        (await Promise.all(encontrados.map(
             tutorial =>
 
                 TutorialService.enriquecerTutorial(
                     tutorial,
                     usuarioAtualId
                 )
-        );
+        )));
 
 
     return res.json({
@@ -194,7 +194,7 @@ function buscar(
 }
 
 
-function populares(
+async function populares(
     req,
     res
 ) {
@@ -227,7 +227,7 @@ function populares(
 
     return res.json(
 
-        TutorialModel
+        (await Promise.all(TutorialModel
             .maisAcessadosDaSemana(
                 limite
             )
@@ -237,14 +237,14 @@ function populares(
                     TutorialService.enriquecerTutorial(
                         tutorial
                     )
-            )
+            )))
 
     );
 
 }
 
 
-function buscarPorId(
+async function buscarPorId(
     req,
     res
 ) {
@@ -272,21 +272,21 @@ function buscarPorId(
 
     return res.json(
 
-        TutorialService.enriquecerTutorial(
+        (await TutorialService.enriquecerTutorial(
 
             tutorial,
 
             req.usuario?.id
             || null
 
-        )
+        ))
 
     );
 
 }
 
 
-function criar(
+async function criar(
     req,
     res
 ) {
@@ -333,20 +333,20 @@ function criar(
                 'Tutorial publicado com sucesso.',
 
             tutorial:
-                TutorialService.enriquecerTutorial(
+                (await TutorialService.enriquecerTutorial(
 
                     tutorial,
 
                     req.usuario.id
 
-                )
+                ))
 
         });
 
 }
 
 
-function atualizar(
+async function atualizar(
     req,
     res
 ) {
@@ -468,20 +468,20 @@ function atualizar(
             'Tutorial atualizado com sucesso.',
 
         tutorial:
-            TutorialService.enriquecerTutorial(
+            (await TutorialService.enriquecerTutorial(
 
                 atualizado,
 
                 req.usuario.id
 
-            )
+            ))
 
     });
 
 }
 
 
-function excluir(
+async function excluir(
     req,
     res
 ) {
@@ -524,7 +524,7 @@ function excluir(
     }
 
 
-    removerTutorialCompleto(
+    await removerTutorialCompleto(
         tutorial.id
     );
 

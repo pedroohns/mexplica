@@ -46,9 +46,6 @@ function prepararDadosSeed({ usuarios, tutoriais, comentarios, avaliacoes, categ
             senha_hash: usuario.senhaHash,
             criado_em: usuario.criadoEm
         })),
-        usuario_especialidades: usuarios.flatMap(usuario =>
-            [...new Set((usuario.especialidades || []).map(opcional).filter(Boolean))]
-                .map(especialidade => ({ usuario_id: usuario.id, especialidade }))),
         tutoriais: tutoriais.map(tutorial => ({
             id: tutorial.id,
             slug: tutorial.slug,

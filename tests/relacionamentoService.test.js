@@ -44,12 +44,12 @@ const RelacionamentoService =
 // =============================
 // HELPERS DE TESTE
 // =============================
-function criarUsuarioTeste(
+async function criarUsuarioTeste(
     nome,
     colaborador = false
 ) {
 
-    return UsuarioModel.create({
+    return (await UsuarioModel.create({
 
         nome,
 
@@ -73,7 +73,7 @@ function criarUsuarioTeste(
         senhaHash:
             'hash-apenas-para-teste'
 
-    });
+    }));
 
 }
 
@@ -121,19 +121,19 @@ function criarTutorialTeste(
 // =============================
 test(
     'removerAvaliacaoComAjuste remove avaliação e devolve os pontos do autor',
-    t => {
+    async t => {
 
         const autor =
-            criarUsuarioTeste(
+            (await criarUsuarioTeste(
                 'AutorAvaliacao',
                 true
-            );
+            ));
 
 
         const avaliador =
-            criarUsuarioTeste(
+            (await criarUsuarioTeste(
                 'AvaliadorAvaliacao'
-            );
+            ));
 
 
         const tutorial =
@@ -165,15 +165,15 @@ test(
                 );
 
 
-        UsuarioModel.adicionarPontos(
+        (await UsuarioModel.adicionarPontos(
             autor.id,
             pontos
-        );
+        ));
 
 
         // LIMPEZA, MESMO SE O TESTE FALHAR
         t.after(
-            () => {
+            async () => {
 
                 AvaliacaoModel.remove(
                     avaliacao.id
@@ -183,33 +183,33 @@ test(
                     tutorial.id
                 );
 
-                UsuarioModel.remove(
+                (await UsuarioModel.remove(
                     avaliador.id
-                );
+                ));
 
-                UsuarioModel.remove(
+                (await UsuarioModel.remove(
                     autor.id
-                );
+                ));
 
             }
         );
 
 
         assert.equal(
-            UsuarioModel
+            (await UsuarioModel
                 .findById(
                     autor.id
-                )
+                ))
                 .pontos,
             50
         );
 
 
         const removida =
-            RelacionamentoService
+            (await RelacionamentoService
                 .removerAvaliacaoComAjuste(
                     avaliacao.id
-                );
+                ));
 
 
         assert.equal(
@@ -227,10 +227,10 @@ test(
 
 
         assert.equal(
-            UsuarioModel
+            (await UsuarioModel
                 .findById(
                     autor.id
-                )
+                ))
                 .pontos,
             0
         );
@@ -244,25 +244,25 @@ test(
 // =============================
 test(
     'removerTutorialCompleto remove tutorial e seus dados relacionados',
-    t => {
+    async t => {
 
         const autor =
-            criarUsuarioTeste(
+            (await criarUsuarioTeste(
                 'AutorTutorial',
                 true
-            );
+            ));
 
 
         const avaliador =
-            criarUsuarioTeste(
+            (await criarUsuarioTeste(
                 'AvaliadorTutorial'
-            );
+            ));
 
 
         const comentarista =
-            criarUsuarioTeste(
+            (await criarUsuarioTeste(
                 'ComentaristaTutorial'
-            );
+            ));
 
 
         const tutorial =
@@ -302,7 +302,7 @@ test(
             });
 
 
-        UsuarioModel.adicionarPontos(
+        (await UsuarioModel.adicionarPontos(
 
             autor.id,
 
@@ -311,11 +311,11 @@ test(
                     avaliacao.nota
                 )
 
-        );
+        ));
 
 
         t.after(
-            () => {
+            async () => {
 
                 ComentarioModel.remove(
                     comentario.id
@@ -329,37 +329,37 @@ test(
                     tutorial.id
                 );
 
-                UsuarioModel.remove(
+                (await UsuarioModel.remove(
                     comentarista.id
-                );
+                ));
 
-                UsuarioModel.remove(
+                (await UsuarioModel.remove(
                     avaliador.id
-                );
+                ));
 
-                UsuarioModel.remove(
+                (await UsuarioModel.remove(
                     autor.id
-                );
+                ));
 
             }
         );
 
 
         assert.equal(
-            UsuarioModel
+            (await UsuarioModel
                 .findById(
                     autor.id
-                )
+                ))
                 .pontos,
             40
         );
 
 
         const removido =
-            RelacionamentoService
+            (await RelacionamentoService
                 .removerTutorialCompleto(
                     tutorial.id
-                );
+                ));
 
 
         assert.equal(
@@ -397,10 +397,10 @@ test(
 
 
         assert.equal(
-            UsuarioModel
+            (await UsuarioModel
                 .findById(
                     autor.id
-                )
+                ))
                 .pontos,
             0
         );
@@ -414,26 +414,26 @@ test(
 // =============================
 test(
     'removerDadosDoUsuario remove conta e relacionamentos sem afetar outros usuários',
-    t => {
+    async t => {
 
         const usuarioRemovido =
-            criarUsuarioTeste(
+            (await criarUsuarioTeste(
                 'UsuarioRemovido',
                 true
-            );
+            ));
 
 
         const outroAutor =
-            criarUsuarioTeste(
+            (await criarUsuarioTeste(
                 'OutroAutor',
                 true
-            );
+            ));
 
 
         const usuarioApoio =
-            criarUsuarioTeste(
+            (await criarUsuarioTeste(
                 'UsuarioApoio'
-            );
+            ));
 
 
         const tutorialDoUsuario =
@@ -486,7 +486,7 @@ test(
             });
 
 
-        UsuarioModel.adicionarPontos(
+        (await UsuarioModel.adicionarPontos(
 
             usuarioRemovido.id,
 
@@ -495,7 +495,7 @@ test(
                     3
                 )
 
-        );
+        ));
 
 
         const comentarioDoUsuario =
@@ -528,7 +528,7 @@ test(
             });
 
 
-        UsuarioModel.adicionarPontos(
+        (await UsuarioModel.adicionarPontos(
 
             outroAutor.id,
 
@@ -537,11 +537,11 @@ test(
                     5
                 )
 
-        );
+        ));
 
 
         t.after(
-            () => {
+            async () => {
 
                 ComentarioModel.remove(
                     comentarioNoTutorialDoUsuario.id
@@ -567,37 +567,37 @@ test(
                     tutorialDoOutroAutor.id
                 );
 
-                UsuarioModel.remove(
+                (await UsuarioModel.remove(
                     usuarioRemovido.id
-                );
+                ));
 
-                UsuarioModel.remove(
+                (await UsuarioModel.remove(
                     usuarioApoio.id
-                );
+                ));
 
-                UsuarioModel.remove(
+                (await UsuarioModel.remove(
                     outroAutor.id
-                );
+                ));
 
             }
         );
 
 
         assert.equal(
-            UsuarioModel
+            (await UsuarioModel
                 .findById(
                     outroAutor.id
-                )
+                ))
                 .pontos,
             50
         );
 
 
         const removido =
-            RelacionamentoService
+            (await RelacionamentoService
                 .removerDadosDoUsuario(
                     usuarioRemovido.id
-                );
+                ));
 
 
         // CONTA REMOVIDA
@@ -608,9 +608,9 @@ test(
 
 
         assert.equal(
-            UsuarioModel.findById(
+            (await UsuarioModel.findById(
                 usuarioRemovido.id
-            ),
+            )),
             null
         );
 
@@ -678,10 +678,10 @@ test(
         // PONTOS DA AVALIAÇÃO REMOVIDA
         // FORAM DEVOLVIDOS
         assert.equal(
-            UsuarioModel
+            (await UsuarioModel
                 .findById(
                     outroAutor.id
-                )
+                ))
                 .pontos,
             0
         );
@@ -689,16 +689,16 @@ test(
 
         // OUTROS USUÁRIOS CONTINUAM EXISTINDO
         assert.ok(
-            UsuarioModel.findById(
+            (await UsuarioModel.findById(
                 outroAutor.id
-            )
+            ))
         );
 
 
         assert.ok(
-            UsuarioModel.findById(
+            (await UsuarioModel.findById(
                 usuarioApoio.id
-            )
+            ))
         );
 
     }

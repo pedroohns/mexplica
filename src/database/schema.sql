@@ -22,12 +22,6 @@ CREATE TABLE IF NOT EXISTS public.usuarios (
 
 CREATE UNIQUE INDEX IF NOT EXISTS usuarios_email_lower_unique ON public.usuarios (lower(email));
 
-CREATE TABLE IF NOT EXISTS public.usuario_especialidades (
-    usuario_id INTEGER NOT NULL REFERENCES public.usuarios(id) ON DELETE CASCADE,
-    especialidade TEXT NOT NULL CHECK (btrim(especialidade) <> ''),
-    PRIMARY KEY (usuario_id, especialidade)
-);
-
 CREATE TABLE IF NOT EXISTS public.categorias (
     id TEXT PRIMARY KEY CHECK (btrim(id) <> ''),
     nome TEXT NOT NULL CHECK (btrim(nome) <> '')
@@ -91,7 +85,7 @@ CREATE TABLE IF NOT EXISTS public.avaliacoes (
     UNIQUE (tutorial_id, avaliador_id)
 );
 
--- PKs/UNIQUE compostas já cobrem o primeiro campo: especialidades, passos,
+-- PKs/UNIQUE compostas já cobrem o primeiro campo: passos,
 -- tags e avaliações dispensam índices adicionais pelo mesmo tutorial/usuário.
 CREATE INDEX IF NOT EXISTS idx_tutoriais_autor_id ON public.tutoriais (autor_id);
 CREATE INDEX IF NOT EXISTS idx_tutoriais_categoria_id ON public.tutoriais (categoria_id);

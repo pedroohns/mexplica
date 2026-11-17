@@ -29,7 +29,7 @@ const ComentarioModel =
 // =============================
 test(
     'enriquecerComentario adiciona os dados públicos do autor',
-    () => {
+    async () => {
 
         const comentario =
             ComentarioModel
@@ -42,10 +42,10 @@ test(
 
 
         const resultado =
-            ComentarioService
+            (await ComentarioService
                 .enriquecerComentario(
                     comentario
-                );
+                ));
 
 
         assert.equal(
@@ -79,7 +79,7 @@ test(
 // =============================
 test(
     'listarPorTutorial retorna comentários enriquecidos',
-    () => {
+    async () => {
 
         const comentario =
             ComentarioModel
@@ -92,10 +92,10 @@ test(
 
 
         const resultado =
-            ComentarioService
+            (await ComentarioService
                 .listarPorTutorial(
                     comentario.tutorialId
-                );
+                ));
 
 
         assert.ok(
@@ -135,13 +135,13 @@ test(
 // =============================
 test(
     'listarPorTutorial retorna lista vazia quando não existem comentários',
-    () => {
+    async () => {
 
         const resultado =
-            ComentarioService
+            (await ComentarioService
                 .listarPorTutorial(
                     999999
-                );
+                ));
 
 
         assert.deepEqual(

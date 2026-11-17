@@ -10,7 +10,7 @@ function main() {
         console.log('PKs/FKs e integridade referencial: OK');
         console.log('Identities: OK (próximos IDs)');
         for (const [tabela, id] of Object.entries(resultado.proximosIds)) console.log(`${tabela}: ${id}`);
-    }, 'Falha na verificação do banco MExplica. Confira schema, seed, integridade e identities.');
+    }, 'Falha na verificação do banco MExplica. Confira schema, migrations, seed, integridade e identities.');
 }
 
 if (require.main === module) main();

@@ -52,9 +52,6 @@ const usuarios = [
         bio:
             'Uso o MExplica para aprender com calma sobre celular, internet e aplicativos.',
 
-        especialidades:
-            [],
-
         disponivelAtendimento:
             false,
 
@@ -104,11 +101,6 @@ const usuarios = [
 
         bio:
             'Publico tutoriais sobre segurança digital, smartphones e configurações do dia a dia.',
-
-        especialidades: [
-            'Segurança',
-            'Smartphones'
-        ],
 
         disponivelAtendimento:
             false,
@@ -160,12 +152,6 @@ const usuarios = [
         bio:
             'Crio guias simples sobre acessibilidade, serviços digitais e comunicação.',
 
-        especialidades: [
-            'Acessibilidade',
-            'Comunicação',
-            'Serviços digitais'
-        ],
-
         disponivelAtendimento:
             true,
 
@@ -215,11 +201,6 @@ const usuarios = [
 
         bio:
             'Gosto de transformar configurações complicadas em passos simples.',
-
-        especialidades: [
-            'Smartphones',
-            'Comunicação'
-        ],
 
         disponivelAtendimento:
             false,
@@ -271,9 +252,6 @@ const usuarios = [
         bio:
             'Aprendendo a usar aplicativos e serviços online com mais segurança.',
 
-        especialidades:
-            [],
-
         disponivelAtendimento:
             false,
 
@@ -323,9 +301,6 @@ const usuarios = [
 
         bio:
             'Uso os tutoriais para resolver dúvidas do computador e do telefone.',
-
-        especialidades:
-            [],
 
         disponivelAtendimento:
             false,
@@ -377,12 +352,6 @@ const usuarios = [
         bio:
             'Ajudo com redes sociais, mensagens, videochamadas e recursos de interação.',
 
-        especialidades: [
-            'WhatsApp',
-            'Redes sociais',
-            'Comunicação'
-        ],
-
         disponivelAtendimento:
             false,
 
@@ -432,11 +401,6 @@ const usuarios = [
 
         bio:
             'Publico tutoriais sobre Android, aplicativos e manutenção básica.',
-
-        especialidades: [
-            'Android',
-            'Aplicativos'
-        ],
 
         disponivelAtendimento:
             false,
@@ -488,11 +452,6 @@ const usuarios = [
         bio:
             'Escrevo sobre privacidade, golpes digitais e uso seguro de serviços online.',
 
-        especialidades: [
-            'Privacidade',
-            'Segurança digital'
-        ],
-
         disponivelAtendimento:
             true,
 
@@ -542,9 +501,6 @@ const usuarios = [
 
         bio:
             'Quero usar a tecnologia com mais autonomia no dia a dia.',
-
-        especialidades:
-            [],
 
         disponivelAtendimento:
             false,
@@ -596,11 +552,6 @@ const usuarios = [
         bio:
             'Crio guias sobre acessibilidade, Windows e recursos de leitura.',
 
-        especialidades: [
-            'Windows',
-            'Acessibilidade'
-        ],
-
         disponivelAtendimento:
             false,
 
@@ -650,9 +601,6 @@ const usuarios = [
 
         bio:
             'Gosto de aprender por exemplos simples e imagens.',
-
-        especialidades:
-            [],
 
         disponivelAtendimento:
             false,

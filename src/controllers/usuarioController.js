@@ -12,15 +12,15 @@ const {
     );
 
 
-function listar(
+async function listar(
     req,
     res
 ) {
 
     return res.json(
 
-        UsuarioModel
-            .findAll()
+        (await UsuarioModel
+            .findAll())
 
             .map(
                 UsuarioModel.toPublic
@@ -31,7 +31,7 @@ function listar(
 }
 
 
-function ranking(
+async function ranking(
     req,
     res
 ) {
@@ -64,10 +64,10 @@ function ranking(
 
     return res.json(
 
-        UsuarioModel
+        (await UsuarioModel
             .getRanking(
                 limite
-            )
+            ))
 
             .map(
                 UsuarioModel.toPublic
@@ -78,15 +78,15 @@ function ranking(
 }
 
 
-function platinaDisponiveis(
+async function platinaDisponiveis(
     req,
     res
 ) {
 
     return res.json(
 
-        UsuarioModel
-            .getPlatinaDisponiveis()
+        (await UsuarioModel
+            .getPlatinaDisponiveis())
 
             .map(
                 UsuarioModel.toPublic
@@ -97,16 +97,16 @@ function platinaDisponiveis(
 }
 
 
-function buscarPorId(
+async function buscarPorId(
     req,
     res
 ) {
 
     const usuario =
-        UsuarioModel
+        (await UsuarioModel
             .findById(
                 req.params.id
-            );
+            ));
 
 
     if (!usuario) {
@@ -135,7 +135,7 @@ function buscarPorId(
 }
 
 
-function atualizar(
+async function atualizar(
     req,
     res
 ) {
@@ -310,46 +310,15 @@ function atualizar(
     }
 
 
-    if (
-        req.usuario.colaborador
-
-        &&
-
-        Array.isArray(
-            req.body.especialidades
-        )
-    ) {
-
-        alteracoes.especialidades =
-            req.body.especialidades
-
-                .map(
-                    item =>
-                        String(item)
-                            .trim()
-                )
-
-                .filter(
-                    Boolean
-                )
-
-                .slice(
-                    0,
-                    5
-                );
-
-    }
-
-
     const usuarioAtualizado =
-        UsuarioModel
+        (await UsuarioModel
             .update(
 
                 id,
 
                 alteracoes
 
-            );
+            ));
 
 
     return res.json({
@@ -368,7 +337,7 @@ function atualizar(
 }
 
 
-function atualizarDisponibilidade(
+async function atualizarDisponibilidade(
     req,
     res
 ) {
@@ -384,14 +353,14 @@ function atualizarDisponibilidade(
 
 
     const usuario =
-        UsuarioModel
+        (await UsuarioModel
             .definirDisponibilidade(
 
                 req.usuario.id,
 
                 disponivel
 
-            );
+            ));
 
 
     return res.json({
@@ -414,7 +383,7 @@ function atualizarDisponibilidade(
 }
 
 
-function excluir(
+async function excluir(
     req,
     res
 ) {
@@ -442,7 +411,7 @@ function excluir(
     }
 
 
-    removerDadosDoUsuario(
+    await removerDadosDoUsuario(
         id
     );
 

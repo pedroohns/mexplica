@@ -218,7 +218,7 @@ test(
 // =============================
 test(
     'enriquecerTutorial adiciona informações relacionadas ao tutorial',
-    () => {
+    async () => {
 
         const tutorial =
             TutorialModel
@@ -231,10 +231,10 @@ test(
 
 
         const enriquecido =
-            TutorialService
+            (await TutorialService
                 .enriquecerTutorial(
                     tutorial
-                );
+                ));
 
 
         assert.equal(

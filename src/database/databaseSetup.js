@@ -9,7 +9,6 @@ const tabelas = [
         colunas: ['id', 'slug', 'nome', 'sobrenome', 'email', 'telefone', 'idade', 'genero',
             'colaborador', 'pontos', 'bio', 'localizacao', 'disponivel_atendimento', 'senha_hash', 'criado_em']
     },
-    { nome: 'usuario_especialidades', colunas: ['usuario_id', 'especialidade'], chave: ['usuario_id', 'especialidade'], pai: 'usuarios', campoPai: 'usuario_id' },
     {
         nome: 'tutoriais', chave: ['id'], identidade: ['slug'],
         colunas: ['id', 'slug', 'autor_id', 'categoria_id', 'titulo', 'resumo', 'conteudo',
@@ -118,6 +117,9 @@ async function verificarBanco(pool, dadosEsperados) {
         );
         if (existentes.rows.length !== nomes.length) throw new Error('Schema incompleto. Execute db:schema.');
 
+        const legado = await client.query('SELECT to_regclass($1) IS NULL AS removida', ['public.usuario_especialidades']);
+        if (!legado.rows[0].removida) throw new Error('Migration de remoção pendente. Execute db:migrate.');
+
         const contagens = {};
         for (const tabela of tabelas) {
             const resultado = await client.query(`SELECT COUNT(*)::integer AS total FROM public.${tabela.nome}`);
@@ -143,7 +145,7 @@ async function verificarBanco(pool, dadosEsperados) {
              JOIN pg_namespace n ON n.oid = t.relnamespace
              WHERE n.nspname = 'public' AND t.relname = ANY($1::text[])`, [nomes]
         );
-        if (chaves.rows[0].pks !== 8 || chaves.rows[0].fks < 9) throw new Error('PKs/FKs esperadas não encontradas.');
+        if (chaves.rows[0].pks !== 7 || chaves.rows[0].fks < 8) throw new Error('PKs/FKs esperadas não encontradas.');
 
         const orfaos = await client.query(`
             SELECT COUNT(*)::integer AS total FROM (
@@ -155,7 +157,6 @@ async function verificarBanco(pool, dadosEsperados) {
                     LEFT JOIN public.tutoriais t ON t.id = a.tutorial_id WHERE u.id IS NULL OR t.id IS NULL
                 UNION ALL SELECT 1 FROM public.tutorial_passos p LEFT JOIN public.tutoriais t ON t.id = p.tutorial_id WHERE t.id IS NULL
                 UNION ALL SELECT 1 FROM public.tutorial_tags g LEFT JOIN public.tutoriais t ON t.id = g.tutorial_id WHERE t.id IS NULL
-                UNION ALL SELECT 1 FROM public.usuario_especialidades e LEFT JOIN public.usuarios u ON u.id = e.usuario_id WHERE u.id IS NULL
             ) AS dependencias_orfas`);
         if (orfaos.rows[0].total !== 0) throw new Error('Integridade referencial inválida.');
 

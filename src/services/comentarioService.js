@@ -13,7 +13,7 @@ const ComentarioModel =
 // =============================
 // ENRIQUECER COMENTARIO
 // =============================
-function enriquecerComentario(
+async function enriquecerComentario(
     comentario
 ) {
 
@@ -32,10 +32,10 @@ function enriquecerComentario(
             UsuarioModel
                 .toPublic(
 
-                    UsuarioModel
+                    (await UsuarioModel
                         .findById(
                             comentario.usuarioId
-                        )
+                        ))
 
                 )
 
@@ -47,11 +47,11 @@ function enriquecerComentario(
 // =============================
 // LISTAR COMENTÁRIOS DO TUTORIAL
 // =============================
-function listarPorTutorial(
+async function listarPorTutorial(
     tutorialId
 ) {
 
-    return ComentarioModel
+    return Promise.all(ComentarioModel
 
         .findByTutorialId(
             tutorialId
@@ -59,7 +59,7 @@ function listarPorTutorial(
 
         .map(
             enriquecerComentario
-        );
+        ));
 
 }
 

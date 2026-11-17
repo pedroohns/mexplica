@@ -98,7 +98,7 @@ function validarCampos(dados, { videoLegado } = {}) {
     }
 }
 
-function enriquecerTutorial(tutorial, usuarioAtualId = null) {
+async function enriquecerTutorial(tutorial, usuarioAtualId = null) {
     const minhaAvaliacao = usuarioAtualId
         ? AvaliacaoModel.findByTutorialEAvaliador(tutorial.id, usuarioAtualId) : null;
     const passos = passosCompativeis(tutorial);
@@ -109,7 +109,7 @@ function enriquecerTutorial(tutorial, usuarioAtualId = null) {
         imagens: passos.filter(passo => passo.imagem).map(passo => ({ ordem: passo.ordem, ...passo.imagem })),
         videoId,
         videoUrl: urlImagem(tutorial.videoUrl) || '',
-        autor: UsuarioModel.toPublic(UsuarioModel.findById(tutorial.autorId)),
+        autor: UsuarioModel.toPublic((await UsuarioModel.findById(tutorial.autorId))),
         categoria: getCategoria(tutorial.categoriaId),
         avaliacao: AvaliacaoModel.resumoDoTutorial(tutorial.id),
         quantidadeComentarios: ComentarioModel.findByTutorialId(tutorial.id).length,
@@ -119,7 +119,7 @@ function enriquecerTutorial(tutorial, usuarioAtualId = null) {
 
 // A semana acompanha a janela móvel de sete dias usada na comunidade.
 // Sem publicações recentes, não substituímos o período por dados antigos.
-function rankingDeRespostas(limite = 10, agora = Date.now()) {
+async function rankingDeRespostas(limite = 10, agora = Date.now()) {
     const inicio = agora - 7 * 24 * 60 * 60 * 1000;
     const publicacoesPorAutor = new Map();
 
@@ -135,15 +135,15 @@ function rankingDeRespostas(limite = 10, agora = Date.now()) {
         );
     });
 
-    return [...publicacoesPorAutor].map(([autorId, quantidadeTutoriais]) => {
-        const autor = UsuarioModel.findById(autorId);
+    return (await Promise.all([...publicacoesPorAutor].map(async ([autorId, quantidadeTutoriais]) => {
+        const autor = (await UsuarioModel.findById(autorId));
         if (!autor?.colaborador) return null;
 
         return {
             ...UsuarioModel.toPublic(autor),
             quantidadeTutoriais
         };
-    }).filter(Boolean).sort((a, b) =>
+    }))).filter(Boolean).sort((a, b) =>
         b.quantidadeTutoriais - a.quantidadeTutoriais
         || a.nomeCompleto.localeCompare(b.nomeCompleto, 'pt-BR')
         || a.id - b.id

@@ -6,7 +6,7 @@ const { prepararDadosSeed } = require('../src/database/seedData');
 function dadosTeste() {
     return prepararDadosSeed({
         categorias: [{ id: 'teste', nome: 'Categoria teste' }],
-        usuarios: [{ id: 3, slug: 'pessoa-teste', nome: "Nome ' de teste", especialidades: ['Acessibilidade'], pontos: 100 }],
+        usuarios: [{ id: 3, slug: 'pessoa-teste', nome: "Nome ' de teste", pontos: 100 }],
         tutoriais: [{ id: 5, slug: 'tutorial-teste', autorId: 3, categoriaId: 'teste', tags: ['teste'], passos: [{ titulo: 'Abra o aplicativo', descricao: 'Toque no ícone do aplicativo.' }] }],
         comentarios: [{ id: 7, tutorialId: 5, usuarioId: 3, texto: 'Comentário original' }],
         avaliacoes: [{ id: 9, tutorialId: 5, avaliadorId: 3, nota: 5 }]
@@ -95,7 +95,7 @@ test('reexecução ignora IDs históricos legítimos sem atualizar campos ou res
     const inseridos = await inserirSeed(pool, dados);
     assert.equal(Object.values(inseridos).every(total => total === 0), true);
     assert.equal(pool.chamadas.some(item => /^UPDATE|^DELETE/.test(item.sql)), false);
-    assert.equal(pool.chamadas.some(item => /^INSERT INTO public\.(usuario_especialidades|tutorial_tags|tutorial_passos)\b/.test(item.sql)), false);
+    assert.equal(pool.chamadas.some(item => /^INSERT INTO public\.(tutorial_tags|tutorial_passos)\b/.test(item.sql)), false);
     assert.equal(pool.chamadas.at(-1).sql, 'COMMIT');
 });
 
@@ -106,18 +106,19 @@ test('ID histórico ocupado por outro usuário cancela o seed sem associar depen
     });
     await assert.rejects(inserirSeed(pool, dadosTeste()), /Conflito de identidade histórica em usuarios/);
     assert.equal(pool.chamadas.at(-1).sql, 'ROLLBACK');
-    assert.equal(pool.chamadas.some(item => item.sql.startsWith('INSERT INTO public.usuario_especialidades')), false);
+    assert.equal(pool.chamadas.some(item => item.sql.startsWith('INSERT INTO public.tutoriais')), false);
 });
 
-function verificadorFalso({ orfaos = 0, tabelasAusentes = false, sequenceInvalida = false } = {}) {
+function verificadorFalso({ orfaos = 0, tabelasAusentes = false, sequenceInvalida = false, migrationPendente = false, contagemUsuarios = 1 } = {}) {
     const dados = dadosTeste();
     return poolFalso((sql, valores) => {
         if (sql.includes('information_schema.tables')) return { rows: tabelasAusentes ? [] : Object.keys(dados).map(table_name => ({ table_name })) };
-        if (sql.includes('FROM pg_constraint')) return { rows: [{ pks: 8, fks: 9 }] };
+        if (sql.includes('to_regclass')) return { rows: [{ removida: !migrationPendente }] };
+        if (sql.includes('FROM pg_constraint')) return { rows: [{ pks: 7, fks: 8 }] };
         if (sql.includes('AS dependencias_orfas')) return { rows: [{ total: orfaos }] };
         if (sql.includes('pg_get_serial_sequence')) return { rows: [{ sequencia: valores[0] + '_id_seq' }] };
         if (sql.includes('last_value::text')) return { rows: [{ last_value: '20', is_called: true, max_id: sequenceInvalida ? '21' : '20' }] };
-        if (sql.startsWith('SELECT COUNT(*)')) return { rows: [{ total: 1 }] };
+        if (sql.startsWith('SELECT COUNT(*)')) return { rows: [{ total: sql.endsWith('FROM public.usuarios') ? contagemUsuarios : 1 }] };
     });
 }
 
@@ -125,7 +126,7 @@ test('verificação consulta tabelas, dados, PK/FK, órfãos e identities em tra
     const pool = verificadorFalso();
     const resultado = await verificarBanco(pool, dadosTeste());
     assert.equal(resultado.integridade, true);
-    assert.equal(Object.keys(resultado.contagens).length, 8);
+    assert.equal(Object.keys(resultado.contagens).length, 7);
     assert.equal(Object.values(resultado.proximosIds).every(id => id === '21'), true);
     assert.equal(pool.chamadas[0].sql, 'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
     assert.equal(pool.chamadas.some(item => /\b(nextval|setval|INSERT|UPDATE|DELETE)\b/i.test(item.sql)), false);
@@ -141,4 +142,18 @@ test('verificação rejeita registros órfãos em vez de informar sucesso', asyn
 test('verificação rejeita schema incompleto e identities que reutilizariam IDs', async () => {
     await assert.rejects(verificarBanco(verificadorFalso({ tabelasAusentes: true }), dadosTeste()), /Schema incompleto/);
     await assert.rejects(verificarBanco(verificadorFalso({ sequenceInvalida: true }), dadosTeste()), /Identity desalinhada/);
+});
+
+test('verificação aceita usuários adicionais e conta somente as sete tabelas de domínio', async () => {
+    const pool = verificadorFalso({ contagemUsuarios: 13 });
+    const resultado = await verificarBanco(pool, dadosTeste());
+    assert.equal(resultado.contagens.usuarios, 13);
+    assert.equal(Object.hasOwn(resultado.contagens, 'schema_migrations'), false);
+    assert.equal(Object.keys(resultado.contagens).length, 7);
+});
+
+test('verificação informa migration pendente quando a tabela legada ainda existe', async () => {
+    const pool = verificadorFalso({ migrationPendente: true });
+    await assert.rejects(verificarBanco(pool, dadosTeste()), /Execute db:migrate/);
+    assert.equal(pool.chamadas.at(-1).sql, 'ROLLBACK');
 });

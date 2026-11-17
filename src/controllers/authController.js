@@ -60,7 +60,7 @@ function validarIdentificador(
 
 
 // VERIFICA EMAIL / TELEFONE
-function verificar(
+async function verificar(
     req,
     res
 ) {
@@ -89,10 +89,10 @@ function verificar(
 
 
     const usuario =
-        UsuarioModel
+        (await UsuarioModel
             .findByIdentifier(
                 identificador
-            );
+            ));
 
 
     if (!usuario) {
@@ -166,10 +166,10 @@ async function login(
 
 
     const usuario =
-        UsuarioModel
+        (await UsuarioModel
             .findByIdentifier(
                 identificador
-            );
+            ));
 
 
     if (!usuario) {
@@ -276,10 +276,10 @@ async function cadastro(
 
 
     if (
-        UsuarioModel
+        (await UsuarioModel
             .findByIdentifier(
                 identificador
-            )
+            ))
     ) {
 
         return res
@@ -386,7 +386,7 @@ async function cadastro(
 
 
     const usuario =
-        UsuarioModel.create({
+        (await UsuarioModel.create({
 
             nome:
                 nome.trim(),
@@ -433,7 +433,7 @@ async function cadastro(
 
             senhaHash
 
-        });
+        }));
 
 
     // Depois do cadastro,

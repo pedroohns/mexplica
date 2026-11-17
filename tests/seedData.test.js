@@ -9,7 +9,7 @@ const passo = alteracoes => ({ ordem: 1, titulo: 'Abra as configurações', desc
 test('seed transforma os dados atuais sem perder IDs, vínculos, textos ou datas', () => {
     const dados = carregarDadosSeed();
     assert.deepEqual(Object.fromEntries(Object.entries(dados).map(([tabela, linhas]) => [tabela, linhas.length])), {
-        categorias: 3, usuarios: 12, usuario_especialidades: 16, tutoriais: 18,
+        categorias: 3, usuarios: 12, tutoriais: 18,
         tutorial_passos: 72, tutorial_tags: 94, comentarios: 10, avaliacoes: 20
     });
 
@@ -48,8 +48,8 @@ test('usuários preservam hash e pontos e descartam tipo/nivel/senha', () => {
 
 test('contatos vazios viram NULL, email é lowercase e telefone mantém somente dígitos', () => {
     const dados = prepararDadosSeed({ ...vazio(), usuarios: [
-        { id: 1, email: '  EXEMPLO@EXAMPLE.COM  ', telefone: ' ', especialidades: [] },
-        { id: 2, email: '', telefone: '(24) 99999-0000', especialidades: [] }
+        { id: 1, email: '  EXEMPLO@EXAMPLE.COM  ', telefone: ' ' },
+        { id: 2, email: '', telefone: '(24) 99999-0000' }
     ] });
     assert.equal(dados.usuarios[0].email, 'exemplo@example.com');
     assert.equal(dados.usuarios[0].telefone, null);
@@ -70,13 +70,13 @@ test('transformação é pura e não modifica os arrays demonstrativos', () => {
     assert.equal(JSON.stringify(entrada) === anterior, true, 'A origem deve permanecer intacta.');
 });
 
-test('imagens legadas usam a ordem original e imagens integradas têm precedência como no Service', () => {
+test('imagens legadas usam a ordem original e imagens integradas têm precedência como no Service', async () => {
     const tutorial = {
         id: 100, passos: [passo({ ordem: 4 }), passo({ ordem: 8, imagem: { url: '/integrada.jpg', alt: 'Integrada', legenda: 'Legenda' } })],
         imagens: [{ ordem: 8, url: '/antiga.jpg' }, { ordem: 4, url: '/legada.jpg', alt: 'Legada', legenda: 'Legenda legada' }]
     };
     const normalizados = normalizarPassos(tutorial);
-    const compativeis = TutorialService.enriquecerTutorial(tutorial).passos;
+    const compativeis = (await TutorialService.enriquecerTutorial(tutorial)).passos;
     assert.deepEqual(normalizados.map(item => item.ordem), [1, 2]);
     assert.deepEqual(normalizados.map(item => item.imagem_url), ['/legada.jpg', '/integrada.jpg']);
     for (const [index, item] of normalizados.entries()) {
@@ -109,11 +109,20 @@ test('passos preservam data URLs grandes e achatam links em atributos opcionais'
     assert.equal(semLink.link_texto, null);
 });
 
-test('tags e especialidades viram linhas associativas sem vazios ou duplicações', () => {
+test('tags viram linhas associativas sem vazios ou duplicações', () => {
     const dados = prepararDadosSeed({ ...vazio(),
-        usuarios: [{ id: 1, especialidades: ['Segurança', ' Segurança ', ''] }],
         tutoriais: [{ id: 2, tags: ['Pix', ' pix ', '', 'SEGURANÇA'] }]
     });
-    assert.deepEqual(dados.usuario_especialidades, [{ usuario_id: 1, especialidade: 'Segurança' }]);
     assert.deepEqual(dados.tutorial_tags, [{ tutorial_id: 2, tag: 'pix' }, { tutorial_id: 2, tag: 'segurança' }]);
+});
+
+test('seed e dados demonstrativos não dependem de especialidades', () => {
+    const usuario = { id: 1, nome: 'Pessoa', pontos: 123, senhaHash: 'hash-ficticio' };
+    Object.defineProperty(usuario, 'especialidades', { get() { throw new Error('Campo abandonado não deve ser lido.'); } });
+    const dados = prepararDadosSeed({ ...vazio(), usuarios: [usuario] });
+    assert.equal(Object.hasOwn(dados, 'usuario_especialidades'), false);
+    assert.equal(Object.hasOwn(dados.usuarios[0], 'especialidades'), false);
+    assert.equal(dados.usuarios[0].pontos, 123);
+    assert.equal(dados.usuarios[0].senha_hash === usuario.senhaHash, true);
+    assert.equal(require('../src/data/usuarioData').some(item => Object.hasOwn(item, 'especialidades')), false);
 });

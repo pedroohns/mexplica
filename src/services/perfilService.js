@@ -23,23 +23,23 @@ const TutorialService =
         './tutorialService'
     );
 
-function montarPerfil(
+async function montarPerfil(
     slug,
     usuarioAtualId = null
 ) {
 
     const usuario =
-        UsuarioModel
+        (await UsuarioModel
             .findBySlug(
                 slug
-            );
+            ));
 
     if (!usuario) {
         return null;
     }
 
     const tutoriais =
-        TutorialModel
+        (await Promise.all(TutorialModel
             .findByAutorId(
                 usuario.id
             )
@@ -50,7 +50,7 @@ function montarPerfil(
                             tutorial,
                             usuarioAtualId
                         )
-            );
+            )));
 
     const comentariosFeitos =
         ComentarioModel
@@ -105,10 +105,10 @@ function montarPerfil(
             : 0;
 
     const rankingCompleto =
-        UsuarioModel
+        (await UsuarioModel
             .getRanking(
                 Number.MAX_SAFE_INTEGER
-            );
+            ));
 
     const indiceRanking =
         rankingCompleto

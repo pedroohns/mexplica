@@ -31,15 +31,15 @@ const {
         '../utils/categorias'
     );
 
-function comunidade(
+async function comunidade(
     req,
     res
 ) {
 
     const ranking =
-        UsuarioModel
+        (await UsuarioModel
 
-            .getRanking(10)
+            .getRanking(10))
 
             .map(
                 UsuarioModel.toPublic
@@ -47,7 +47,7 @@ function comunidade(
 
 
     const tutoriaisEmAlta =
-        TutorialModel
+        (await Promise.all(TutorialModel
 
             .maisAcessadosDaSemana(
                 6
@@ -58,7 +58,7 @@ function comunidade(
                     TutorialService.enriquecerTutorial(
                         tutorial
                     )
-            );
+            )));
 
 
     return res.render(
@@ -67,7 +67,7 @@ function comunidade(
 
             ranking,
 
-            rankingRespostas: TutorialService.rankingDeRespostas(),
+            rankingRespostas: await TutorialService.rankingDeRespostas(),
 
             tutoriaisEmAlta
 
@@ -77,13 +77,13 @@ function comunidade(
 }
 
 
-function perfil(
+async function perfil(
     req,
     res
 ) {
 
     const dadosPerfil =
-        PerfilService
+        (await PerfilService
             .montarPerfil(
 
                 req.params.slug,
@@ -91,7 +91,7 @@ function perfil(
                 req.usuario?.id
                 || null
 
-            );
+            ));
 
 
     if (!dadosPerfil) {
@@ -113,7 +113,7 @@ function perfil(
 }
 
 
-function tutorial(
+async function tutorial(
     req,
     res
 ) {
@@ -155,19 +155,19 @@ function tutorial(
 
 
     const tutorialCompleto =
-        TutorialService.enriquecerTutorial(
+        (await TutorialService.enriquecerTutorial(
 
             tutorialAtualizado,
 
             usuarioAtualId
 
-        );
+        ));
 
 
     const comentarios =
-        ComentarioService.listarPorTutorial(
+        (await ComentarioService.listarPorTutorial(
                 tutorialAtualizado.id
-            );
+            ));
 
 
     return res.render(
@@ -237,7 +237,7 @@ function novoTutorial(
 }
 
 
-function editarTutorial(
+async function editarTutorial(
     req,
     res
 ) {
@@ -305,13 +305,13 @@ function editarTutorial(
                 'editar',
 
             tutorial:
-                TutorialService.enriquecerTutorial(
+                (await TutorialService.enriquecerTutorial(
 
                     tutorial,
 
                     req.usuario.id
 
-                ),
+                )),
 
             categorias:
                 listarCategorias()

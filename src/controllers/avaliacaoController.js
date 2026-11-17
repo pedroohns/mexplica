@@ -17,7 +17,8 @@ const UsuarioModel =
 
 
 const {
-    removerAvaliacaoComAjuste
+    removerAvaliacaoComAjuste,
+    executarOperacaoHibrida
 } =
     require(
         '../services/relacionamentoService'
@@ -96,7 +97,7 @@ function listarPorTutorial(
 }
 
 
-function criar(
+async function criar(
     req,
     res
 ) {
@@ -185,7 +186,7 @@ function criar(
 
 
     const colaborador =
-        UsuarioModel
+        await UsuarioModel
             .findById(
                 tutorial.autorId
             );
@@ -195,6 +196,19 @@ function criar(
         colaborador?.nivel
         || null;
 
+
+    const atualizado =
+        await UsuarioModel
+            .adicionarPontos(
+
+                tutorial.autorId,
+
+                AvaliacaoModel
+                    .pontosPorNota(
+                        nota
+                    )
+
+            );
 
     const avaliacao =
         AvaliacaoModel
@@ -209,20 +223,6 @@ function criar(
                 nota
 
             });
-
-
-    const atualizado =
-        UsuarioModel
-            .adicionarPontos(
-
-                tutorial.autorId,
-
-                AvaliacaoModel
-                    .pontosPorNota(
-                        nota
-                    )
-
-            );
 
 
     return res
@@ -269,7 +269,7 @@ function criar(
 }
 
 
-function atualizar(
+async function atualizar(
     req,
     res
 ) {
@@ -354,7 +354,7 @@ function atualizar(
 
 
     const colaborador =
-        UsuarioModel
+        await UsuarioModel
             .findById(
                 tutorial.autorId
             );
@@ -389,6 +389,16 @@ function atualizar(
             );
 
 
+    const usuarioAtualizado =
+        await UsuarioModel
+            .adicionarPontos(
+
+                tutorial.autorId,
+
+                diferenca
+
+            );
+
     const atualizada =
         AvaliacaoModel
             .update(
@@ -396,17 +406,6 @@ function atualizar(
                 avaliacao.id,
 
                 nota
-
-            );
-
-
-    const usuarioAtualizado =
-        UsuarioModel
-            .adicionarPontos(
-
-                tutorial.autorId,
-
-                diferenca
 
             );
 
@@ -454,7 +453,7 @@ function atualizar(
 }
 
 
-function excluir(
+async function excluir(
     req,
     res
 ) {
@@ -497,7 +496,7 @@ function excluir(
     }
 
 
-    removerAvaliacaoComAjuste(
+    await removerAvaliacaoComAjuste(
         avaliacao.id
     );
 
@@ -516,9 +515,9 @@ module.exports = {
 
     listarPorTutorial,
 
-    criar,
+    criar: (req, res) => executarOperacaoHibrida(() => criar(req, res)),
 
-    atualizar,
+    atualizar: (req, res) => executarOperacaoHibrida(() => atualizar(req, res)),
 
     excluir
 

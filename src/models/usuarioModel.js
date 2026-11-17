@@ -1,7 +1,5 @@
-const usuarios =
-    require(
-        '../data/usuarioData'
-    );
+const RepositoryFactory = require('../repositories/repositoryFactory');
+const repository = RepositoryFactory.criarUsuarioRepository();
 
 const NIVEL_DIAMANTE =
     1000;
@@ -40,56 +38,6 @@ function criarSlugBase(
             /^-+|-+$/g,
             ''
         );
-}
-
-function criarSlugUnico(
-    nomeCompleto
-) {
-    const base =
-        criarSlugBase(
-            nomeCompleto
-        )
-        || 'usuario';
-
-    let slug =
-        base;
-
-    let sufixo =
-        2;
-
-    while (
-        usuarios.some(
-            usuario =>
-                usuario.slug
-                === slug
-        )
-    ) {
-        slug =
-            `${base}-${sufixo}`;
-
-        sufixo +=
-            1;
-    }
-    return slug;
-}
-
-function proximoId() {
-    if (
-        usuarios.length === 0
-    ) {
-        return 1;
-    }
-
-    return (
-        Math.max(
-            ...usuarios.map(
-                usuario =>
-                    usuario.id
-            )
-        )
-        +
-        1
-    );
 }
 
 function calcularNivel(
@@ -230,14 +178,6 @@ function toPublic(
         bio:
             usuario.bio,
 
-        especialidades:
-            [
-                ...(
-                    usuario.especialidades
-                    || []
-                )
-            ],
-
         disponivelAtendimento:
             Boolean(
                 usuario
@@ -280,374 +220,88 @@ function toPrivate(
     };
 }
 
-function findAll() {
-    return usuarios;
+async function findAll() {
+    return (await repository.findAll()).map(sincronizarNivel);
 }
 
-function findById(id) {
-    const numero =
-        Number(id);
-
-    return (
-        usuarios.find(
-            usuario =>
-                usuario.id
-                === numero
-        )
-        ||
-        null
-    );
+async function findById(id) {
+    const numero = Number(id);
+    if (!Number.isSafeInteger(numero) || numero <= 0) return null;
+    return sincronizarNivel(await repository.findById(numero));
 }
 
-function findBySlug(
-    slug
-) {
-    return (
-        usuarios.find(
-            usuario =>
-                usuario.slug
-                === String(slug)
-        )
-        ||
-        null
-    );
+async function findBySlug(slug) {
+    return sincronizarNivel(await repository.findBySlug(String(slug)));
 }
 
-function findByIdentifier(
-    identificador
-) {
-
-    const valor =
-        String(
-            identificador
-            || ''
-        )
-            .trim();
-
-    if (!valor) {
-        return null;
-    }
-
-    if (
-        valor.includes('@')
-    ) {
-        const email =
-            valor.toLowerCase();
-
-        return (
-            usuarios.find(
-                usuario =>
-                    usuario.email
-                        .toLowerCase()
-                    === email
-            )
-            ||
-            null
-        );
-    }
-
-    const telefone =
-        normalizarTelefone(
-            valor
-        );
-
-    return (
-        usuarios.find(
-            usuario =>
-                normalizarTelefone(
-                    usuario.telefone
-                )
-                === telefone
-        )
-        ||
-        null
-    );
+async function findByIdentifier(identificador) {
+    return sincronizarNivel(await repository.findByIdentifier(identificador));
 }
 
-function getRanking(
-    limite = 10
-) {
-    return usuarios
-
-        .filter(
-            usuario =>
-
-                usuario.colaborador
-
-                &&
-
-                [
-                    'Diamante',
-                    'Platina'
-                ]
-                    .includes(
-                        usuario.nivel
-                    )
-        )
-        .sort(
-            (a, b) =>
-                b.pontos
-                -
-                a.pontos
-        )
-        .slice(
-            0,
-            limite
-        );
+async function getRanking(limite = 10) {
+    return (await repository.getRanking(limite, NIVEL_DIAMANTE)).map(sincronizarNivel);
 }
 
-function getPlatinaDisponiveis() {
-    return usuarios.filter(
-        usuario =>
-
-            usuario.colaborador
-
-            &&
-
-            usuario.nivel
-            === 'Platina'
-
-            &&
-
-            usuario
-                .disponivelAtendimento
-    );
+async function getPlatinaDisponiveis() {
+    return (await repository.getPlatinaDisponiveis(NIVEL_PLATINA)).map(sincronizarNivel);
 }
 
-function create(
-    dados
-) {
-
-    const colaborador =
-        Boolean(
-            dados.colaborador
-        );
-
-    const novoUsuario = {
-
-        id:
-            proximoId(),
-
-        slug:
-            criarSlugUnico(
-                `${dados.nome} ${dados.sobrenome}`
-            ),
-
-        nome:
-            dados.nome,
-
-        sobrenome:
-            dados.sobrenome,
-
-        email:
-            dados.email
-            || '',
-
-        telefone:
-            dados.telefone
-            || '',
-
-        idade:
-            Number(
-                dados.idade
-            ),
-
-        genero:
-            dados.genero,
-
-        tipo:
-            colaborador
-                ? 'colaborador'
-                : 'usuario',
-
-        colaborador,
-
-        nivel:
-            colaborador
-                ? 'Comum'
-                : null,
-
-        pontos:
-            0,
-
-        bio:
-            dados.bio
-            || '',
-
-        localizacao:
-            dados.localizacao
-            || 'Brasil',
-
-        especialidades:
-            Array.isArray(
-                dados.especialidades
-            )
-
-                ? dados.especialidades
-
-                : [],
-
-        disponivelAtendimento:
-            false,
-
-        senhaHash:
-            dados.senhaHash,
-
-        criadoEm:
-            new Date()
-                .toISOString()
-
+async function create(dados) {
+    const colaborador = Boolean(dados.colaborador);
+    const base = criarSlugBase(dados.nome + ' ' + dados.sobrenome) || 'usuario';
+    const usuario = {
+        nome: dados.nome, sobrenome: dados.sobrenome,
+        email: String(dados.email || '').trim().toLowerCase(),
+        telefone: normalizarTelefone(dados.telefone),
+        idade: Number(dados.idade), genero: dados.genero, colaborador,
+        pontos: 0, bio: dados.bio || '', localizacao: dados.localizacao || 'Brasil',
+        disponivelAtendimento: false, senhaHash: dados.senhaHash, criadoEm: new Date().toISOString()
     };
 
-    usuarios.push(
-        novoUsuario
-    );
-
-    return novoUsuario;
+    // A consulta evita colis?es comuns; UNIQUE ? a garantia final para concorr?ncia.
+    for (let tentativa = 1; tentativa <= 50; tentativa++) {
+        const slug = tentativa === 1 ? base : base + '-' + tentativa;
+        if (await repository.findBySlug(slug)) continue;
+        try {
+            return sincronizarNivel(await repository.create({ ...usuario, slug }));
+        } catch (erro) {
+            if (erro.code !== 'USUARIO_SLUG_CONFLITO') throw erro;
+        }
+    }
+    const erro = new Error('N?o foi poss?vel reservar um nome de perfil. Tente novamente.');
+    erro.code = 'USUARIO_SLUG_CONFLITO';
+    throw erro;
 }
 
-function update(
-    id,
-    alteracoes
-) {
-    const usuario =
-        findById(id);
-
-    if (!usuario) {
-        return null;
+async function update(id, alteracoes) {
+    const usuario = await findById(id);
+    if (!usuario) return null;
+    const permitidas = {};
+    for (const campo of ['nome', 'sobrenome', 'bio', 'localizacao', 'idade', 'genero']) {
+        if (Object.hasOwn(alteracoes, campo)) permitidas[campo] = alteracoes[campo];
     }
-
-    Object.assign(
-        usuario,
-        alteracoes
-    );
-
-    sincronizarNivel(
-        usuario
-    );
-
-    return usuario;
+    return sincronizarNivel(await repository.update(usuario.id, permitidas));
 }
 
-function adicionarPontos(
-    id,
-    quantidade
-) {
-    const usuario =
-        findById(id);
-
-    if (
-        !usuario
-        ||
-        !usuario.colaborador
-    ) {
-        return null;
-    }
-
-    const valor =
-        Number(
-            quantidade
-        );
-
-    if (
-        !Number.isFinite(
-            valor
-        )
-    ) {
-        return usuario;
-    }
-
-    usuario.pontos =
-        Math.max(
-
-            0,
-
-            usuario.pontos
-            +
-            valor
-
-        );
-
-    sincronizarNivel(
-        usuario
-    );
-
-    return usuario;
+async function adicionarPontos(id, quantidade) {
+    const valor = Number(quantidade);
+    if (!Number.isFinite(valor)) return findById(id);
+    return sincronizarNivel(await repository.adicionarPontos(Number(id), valor, NIVEL_PLATINA));
 }
 
-function definirDisponibilidade(
-    id,
-    disponivel
-) {
-
-    const usuario =
-        findById(id);
-
-    if (
-        !usuario
-        ||
-        usuario.nivel
-        !== 'Platina'
-    ) {
-        return null;
-
-    }
-
-    usuario.disponivelAtendimento =
-        Boolean(
-            disponivel
-        );
-
-    return usuario;
+async function definirDisponibilidade(id, disponivel) {
+    const usuario = await findById(id);
+    if (!usuario || usuario.nivel !== 'Platina') return null;
+    return sincronizarNivel(await repository.definirDisponibilidade(usuario.id, Boolean(disponivel), NIVEL_PLATINA));
 }
 
-function remove(id) {
-
-    const numero =
-        Number(id);
-
-    const indice =
-        usuarios.findIndex(
-            usuario =>
-                usuario.id
-                === numero
-        );
-
-    if (
-        indice === -1
-    ) {
-        return null;
-    }
-
-    const [
-        removido
-    ] =
-        usuarios.splice(
-            indice,
-            1
-        );
-
-    return removido;
+async function remove(id, { ajustesPontos = [] } = {}) {
+    return sincronizarNivel(await repository.remove(Number(id), { ajustesPontos, pontosPlatina: NIVEL_PLATINA }));
 }
 
 module.exports = {
-    NIVEL_DIAMANTE,
-    NIVEL_PLATINA,
-    normalizarTelefone,
-    criarSlugBase,
-    calcularNivel,
-    sincronizarNivel,
-    toPublic,
-    toPrivate,
-    findAll,
-    findById,
-    findBySlug,
-    findByIdentifier,
-    getRanking,
-    getPlatinaDisponiveis,
-    create,
-    update,
-    adicionarPontos,
-    definirDisponibilidade,
-    remove
+    NIVEL_DIAMANTE, NIVEL_PLATINA, normalizarTelefone, criarSlugBase,
+    calcularNivel, sincronizarNivel, toPublic, toPrivate,
+    findAll, findById, findBySlug, findByIdentifier, getRanking, getPlatinaDisponiveis,
+    create, update, adicionarPontos, definirDisponibilidade, remove
 };

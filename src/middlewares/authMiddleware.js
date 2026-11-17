@@ -4,7 +4,7 @@ const UsuarioModel =
     );
 
 
-function carregarUsuario(
+async function carregarUsuario(
     req,
     res,
     next
@@ -18,10 +18,10 @@ function carregarUsuario(
     const usuario =
         usuarioId
 
-            ? UsuarioModel
+            ? (await UsuarioModel
                 .findById(
                     usuarioId
-                )
+                ))
 
             : null;
 

@@ -55,8 +55,8 @@ A branch atual, criada diretamente da `main`, é:
 banco-persistencia
 ```
 
-Fase atual: migração incremental para Neon PostgreSQL. A infraestrutura de conexão está concluída;
-a segunda etapa introduz schema relacional e seed demonstrativo, mantendo o runtime em arrays.
+Fase atual: migração incremental para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
+usuários agora usam PostgreSQL no runtime, com RepositoryFactory e testes em memória.
 As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
 
 Consulte o Git para a contagem atual de commits. Não fazer commit ou merge automaticamente.
@@ -70,7 +70,7 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-101 testes (82 anteriores + 19 de schema/seed/comandos, sem acesso ao Neon real)
+147 testes (134 anteriores + 13 da limpeza/migrations, sem acesso ao Neon real)
 ```
 
 Distribuição atual:
@@ -82,16 +82,20 @@ community.test.js               1
 css.test.js                     2
 databaseConnection.test.js      7
 databaseHealth.test.js          3
-databaseSetup.test.js           9
+databaseMigrations.test.js      8
+databaseSetup.test.js          11
 databaseTask.test.js            2
 frontend.test.js                3
 mexplicai.test.js              13
 perfilService.test.js           3
 relacionamentoService.test.js   3
-seedData.test.js                8
+repositoryFactory.test.js       5
+seedData.test.js                9
 smoke-test.js                  16
 tutorialService.test.js         4
 tutorialBlocos.test.js         15
+usuarioPersistencia.test.js    16
+usuarioPostgresRepository.test.js 14
 vlibras.test.js                 6
 ```
 
@@ -127,7 +131,7 @@ Service, quando existe regra/composição
   ↓
 Model
   ↓
-Data
+Repository (usuários) / Data (demais entidades)
 ```
 
 Regras importantes:
@@ -135,7 +139,7 @@ Regras importantes:
 - Controllers devem continuar focados em HTTP.
 - Services só devem existir quando houver responsabilidade real de negócio/composição.
 - Models concentram operações das entidades.
-- Os dados atuais vivem em `src/data/`.
+- Usuários usam Repository/PostgreSQL; tutoriais, comentários e avaliações permanecem em `src/data/`.
 - Não devolver regras de relacionamento para `utils`.
 - Não espalhar `fetch` pelo frontend; usar `public/js/core/api.js`.
 - Não alterar a arquitetura apenas para implementar visual.
@@ -196,22 +200,25 @@ public/css/
 
 ## 6. Persistência atual
 
-O projeto ainda usa dados em memória:
+O runtime possui persistência híbrida:
 
 ```text
-src/data/
-├── usuarioData.js
-├── tutorialData.js
-├── comentarioData.js
-└── avaliacaoData.js
+Usuario → PostgreSQL (usuarios)
+Tutorial → src/data/tutorialData.js
+Comentario → src/data/comentarioData.js
+Avaliacao → src/data/avaliacaoData.js
 ```
 
 Isso significa:
 
-- CRUD funciona durante a execução;
-- mudanças não são persistência durável;
-- ambiente serverless pode reiniciar e perder alterações;
-- nenhuma entidade foi migrada para o banco; os arrays continuam temporariamente como fonte de dados.
+- cadastro, login, sessão, perfil, ranking, pontos e disponibilidade de usuários usam PostgreSQL;
+- as outras três entidades ainda perdem alterações ao reiniciar o processo/serverless;
+- `usuarioData.js` permanece como fixture de testes/seed, sem fallback no runtime normal.
+
+Factory: `src/repositories/repositoryFactory.js` cria UsuarioMemoryRepository em `NODE_ENV=test`
+e UsuarioPostgresRepository nos demais ambientes. O Model usa essa seleção; suas onze operações
+de persistência são async. Regras de nível/tipo e projeções continuam no UsuarioModel.
+`npm.cmd test` usa preload explícito em `scripts/testSetup.js`, com driver real bloqueado.
 
 A infraestrutura de conexão foi introduzida com `pg` em `src/database/databaseConnection.js`.
 `DatabaseConnection` aplica Singleton explicitamente: `getInstance()` entrega a mesma instância,
@@ -228,22 +235,33 @@ impressos nos logs, nas respostas HTTP ou pelo comando manual.
 - `npm.cmd run db:check` carrega dotenv, usa o mesmo Singleton e encerra o Pool ao terminar.
 - Testes automatizados usam pools falsos; o comando manual foi validado no Neon real.
 
-O schema PostgreSQL versionado em `src/database/schema.sql` já foi aplicado no Neon:
-`usuarios`, `usuario_especialidades`, `categorias`, `tutoriais`, `tutorial_passos`,
-`tutorial_tags`, `comentarios` e `avaliacoes`. São oito PKs e nove FKs, com cascata
+O schema PostgreSQL versionado em `src/database/schema.sql` define sete tabelas de domínio:
+`usuarios`, `categorias`, `tutoriais`, `tutorial_passos`, `tutorial_tags`, `comentarios` e
+`avaliacoes`. São sete PKs e oito FKs, com cascata
 para dependentes e restrição à exclusão de categorias em uso. `tipo`/`nivel` permanecem
 derivados; listas e passos são normalizados. Detalhes em `docs/BANCO_DE_DADOS.md`.
 
-Os comandos `db:schema`, `db:seed` e `db:verify` reutilizam o mesmo Singleton.
+Os comandos `db:schema`, `db:migrate`, `db:seed` e `db:verify` reutilizam o mesmo Singleton.
 O seed parametrizado/transacional transforma os arrays atuais, preserva IDs/pontos/hashes,
 normaliza imagens legadas e ajusta as cinco identities. Reexecuções não sobrescrevem dados.
-A aplicação real do seed está pendente de autorização direta: a revisão automática bloqueou
-o envio dos contatos e hashes demonstrativos ao Neon. Os dados ainda não foram importados.
-O DDL foi aplicado duas vezes com sucesso; a inspeção confirmou oito PKs, nove FKs e
-38 CHECKs. As oito tabelas estão vazias, e `db:verify` retorna código 1 enquanto falta a carga.
+O seed real e sua idempotência foram concluídos na etapa anterior; Neon contém os dados
+demonstrativos (12 usuários e 18 tutoriais), além da conta sintética para validação de CRUD.
 
-Após a carga e sua verificação, a próxima etapa será Repository + migração da persistência.
-Os Models continuam lendo os arrays; nenhum Repository ou JWT foi criado.
+Especialidades foram removidas por não fazerem parte do produto atual. A migration
+`001_remove_usuario_especialidades.sql` está pronta, com aplicação manual no Neon pendente:
+`npm.cmd run db:migrate`, seguido de `npm.cmd run db:verify`. O controle `schema_migrations`
+é técnico e não integra as sete entidades. O verificador exige ausência da tabela legada
+e aceita contas adicionais; a conta sintética existente permanece para validação de CRUD.
+
+Perfil usa UPDATE único e parametrizado; pontos usam incremento atômico.
+Exclusões/avaliações têm tratamento híbrido em relacionamentoService: confirmam alterações
+de usuários no banco antes de modificar os arrays. As coleções permanecem locais ao processo,
+sem transação distribuída. Assets/health são atendidos antes da consulta de sessão.
+Detalhes, limites e roteiro manual de escrita em `docs/BANCO_DE_DADOS.md`.
+
+Login seed, rotas de leitura e persistência de cadastro após reinício foram validados com
+PostgreSQL real. Esta limpeza não executou escritas externas.
+Próximo passo: migrar Tutorial para PostgreSQL. JWT continua pendente.
 
 ---
 
@@ -612,19 +630,17 @@ A fase atual é de entregáveis técnicos: conexão com banco primeiro, seguida 
 As funcionalidades visuais e o MExplicAI v1 estão concluídos. A fase técnica começou em
 `banco-persistencia`, com conexão via `pg` e Singleton de `DatabaseConnection`/Pool implementados.
 
-O schema relacional com PKs/FKs/constraints está criado no Neon. O seed está implementado,
-com aplicação real pendente de autorização. Pendências seguintes:
+Conexão/Singleton, schema, seed e RepositoryFactory estão implementados. Usuários já usam
+persistência real; pendências seguintes:
 
 ```text
-API → banco
-persistência real
+migrar Tutorial para PostgreSQL
+migrar Comentario e Avaliacao para PostgreSQL
 tokens
-Factory
 Observer
 ```
 
-A migração continua deliberada e incremental; após concluir a carga demonstrativa,
-o próximo passo é Repository + migração da persistência.
+A migração continua deliberada e incremental; a próxima entidade é Tutorial.
 
 ---
 
@@ -638,7 +654,7 @@ o próximo passo é Repository + migração da persistência.
 6. Não migrar para React/Vue/etc.
 7. Não adicionar biblioteca visual se CSS/JS atual resolver.
 8. Não criar nova camada arquitetural sem necessidade real.
-9. Evoluir banco por etapas; não migrar entidades ou implementar JWT junto da infraestrutura de conexão.
+9. Evoluir banco por etapas, migrando somente a entidade autorizada; JWT continua em fase separada.
 10. Não remover recursos funcionais simplesmente porque não aparecem no protótipo.
 11. Diferenciar claramente comportamento a preservar, comportamento a alterar e comportamento novo.
 12. Se uma alteração visual exigir mudança estrutural legítima, alterar todas as camadas afetadas de forma coerente.
