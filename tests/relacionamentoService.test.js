@@ -78,12 +78,12 @@ async function criarUsuarioTeste(
 }
 
 
-function criarTutorialTeste(
+async function criarTutorialTeste(
     autorId,
     titulo
 ) {
 
-    return TutorialModel.create({
+    return (await TutorialModel.create({
 
         autorId,
 
@@ -111,7 +111,7 @@ function criarTutorialTeste(
             'teste'
         ]
 
-    });
+    }));
 
 }
 
@@ -137,10 +137,10 @@ test(
 
 
         const tutorial =
-            criarTutorialTeste(
+            (await criarTutorialTeste(
                 autor.id,
                 'Tutorial teste de avaliação'
-            );
+            ));
 
 
         const avaliacao =
@@ -179,9 +179,9 @@ test(
                     avaliacao.id
                 );
 
-                TutorialModel.remove(
+                (await TutorialModel.remove(
                     tutorial.id
-                );
+                ));
 
                 (await UsuarioModel.remove(
                     avaliador.id
@@ -266,10 +266,10 @@ test(
 
 
         const tutorial =
-            criarTutorialTeste(
+            (await criarTutorialTeste(
                 autor.id,
                 'Tutorial teste de exclusão completa'
-            );
+            ));
 
 
         const comentario =
@@ -325,9 +325,9 @@ test(
                     avaliacao.id
                 );
 
-                TutorialModel.remove(
+                (await TutorialModel.remove(
                     tutorial.id
-                );
+                ));
 
                 (await UsuarioModel.remove(
                     comentarista.id
@@ -369,9 +369,9 @@ test(
 
 
         assert.equal(
-            TutorialModel.findById(
+            (await TutorialModel.findById(
                 tutorial.id
-            ),
+            )),
             null
         );
 
@@ -437,23 +437,23 @@ test(
 
 
         const tutorialDoUsuario =
-            criarTutorialTeste(
+            (await criarTutorialTeste(
 
                 usuarioRemovido.id,
 
                 'Tutorial do usuário removido'
 
-            );
+            ));
 
 
         const tutorialDoOutroAutor =
-            criarTutorialTeste(
+            (await criarTutorialTeste(
 
                 outroAutor.id,
 
                 'Tutorial que deve permanecer'
 
-            );
+            ));
 
 
         const comentarioNoTutorialDoUsuario =
@@ -559,13 +559,13 @@ test(
                     avaliacaoDoUsuario.id
                 );
 
-                TutorialModel.remove(
+                (await TutorialModel.remove(
                     tutorialDoUsuario.id
-                );
+                ));
 
-                TutorialModel.remove(
+                (await TutorialModel.remove(
                     tutorialDoOutroAutor.id
-                );
+                ));
 
                 (await UsuarioModel.remove(
                     usuarioRemovido.id
@@ -617,9 +617,9 @@ test(
 
         // TUTORIAL DO USUÁRIO REMOVIDO
         assert.equal(
-            TutorialModel.findById(
+            (await TutorialModel.findById(
                 tutorialDoUsuario.id
-            ),
+            )),
             null
         );
 
@@ -669,9 +669,9 @@ test(
 
         // TUTORIAL DO OUTRO AUTOR CONTINUA
         assert.ok(
-            TutorialModel.findById(
+            (await TutorialModel.findById(
                 tutorialDoOutroAutor.id
-            )
+            ))
         );
 
 

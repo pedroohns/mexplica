@@ -123,7 +123,7 @@ async function rankingDeRespostas(limite = 10, agora = Date.now()) {
     const inicio = agora - 7 * 24 * 60 * 60 * 1000;
     const publicacoesPorAutor = new Map();
 
-    TutorialModel.findAll().forEach(tutorial => {
+    (await TutorialModel.findAll()).forEach(tutorial => {
         const data = new Date(tutorial.criadoEm).getTime();
         if (!Number.isFinite(data) || data < inicio || data > agora) {
             return;

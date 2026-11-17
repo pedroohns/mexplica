@@ -5,6 +5,8 @@ const RepositoryFactory = require('../src/repositories/repositoryFactory');
 const UsuarioMemoryRepository = require('../src/repositories/usuarioMemoryRepository');
 const UsuarioPostgresRepository = require('../src/repositories/usuarioPostgresRepository');
 const DatabaseConnection = require('../src/database/databaseConnection');
+const TutorialMemoryRepository = require('../src/repositories/tutorialMemoryRepository');
+const TutorialPostgresRepository = require('../src/repositories/tutorialPostgresRepository');
 
 test('Factory escolhe memória pelo ambiente de teste explícito e PostgreSQL no runtime normal', () => {
     assert.equal(process.env.NODE_ENV, 'test');
@@ -29,6 +31,25 @@ test('Repositories PostgreSQL distintos reutilizam o Pool do DatabaseConnection 
     const segundo = new UsuarioPostgresRepository();
     assert.equal(primeiro.getPool(), pool);
     assert.equal(segundo.getPool(), pool);
+    assert.equal(new TutorialPostgresRepository().getPool(), pool);
+});
+
+test('Factory fornece TutorialRepository em memória para testes e PostgreSQL no runtime', () => {
+    const memoria = RepositoryFactory.criarTutorialRepository();
+    const postgres = RepositoryFactory.criarTutorialRepository({ ambiente: 'production' });
+    assert.ok(memoria instanceof TutorialMemoryRepository);
+    assert.ok(postgres instanceof TutorialPostgresRepository);
+    for (const metodo of ['findAll', 'findById', 'findBySlug', 'findByAutorId', 'create', 'update', 'incrementarVisualizacao', 'remove']) {
+        assert.equal(typeof memoria[metodo], 'function', metodo);
+        assert.equal(typeof postgres[metodo], 'function', metodo);
+    }
+});
+
+test('MemoryRepository de usuário simula a cascata de tutoriais sem afetar outros autores', async () => {
+    const tutoriais = [{ id: 1, autorId: 3 }, { id: 2, autorId: 4 }];
+    const memoria = new UsuarioMemoryRepository([{ id: 3, colaborador: true, pontos: 0 }], tutoriais);
+    await memoria.remove(3);
+    assert.deepEqual(tutoriais, [{ id: 2, autorId: 4 }]);
 });
 
 test('preload de npm test bloqueia o driver real antes de qualquer conexão de rede', () => {

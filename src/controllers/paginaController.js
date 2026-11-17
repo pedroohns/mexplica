@@ -47,11 +47,11 @@ async function comunidade(
 
 
     const tutoriaisEmAlta =
-        (await Promise.all(TutorialModel
+        (await Promise.all((await TutorialModel
 
             .maisAcessadosDaSemana(
                 6
-            )
+            ))
 
             .map(
                 tutorial =>
@@ -119,10 +119,10 @@ async function tutorial(
 ) {
 
     const encontrado =
-        TutorialModel
+        (await TutorialModel
             .findBySlug(
                 req.params.slug
-            );
+            ));
 
 
     if (!encontrado) {
@@ -136,17 +136,10 @@ async function tutorial(
     }
 
 
-    TutorialModel
-        .incrementarVisualizacao(
-            encontrado.id
-        );
-
-
     const tutorialAtualizado =
-        TutorialModel
-            .findById(
-                encontrado.id
-            );
+        await TutorialModel.incrementarVisualizacao(encontrado.id);
+
+    if (!tutorialAtualizado) return res.status(404).send('Tutorial não encontrado.');
 
 
     const usuarioAtualId =
@@ -262,10 +255,10 @@ async function editarTutorial(
 
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findBySlug(
                 req.params.slug
-            );
+            ));
 
 
     if (!tutorial) {

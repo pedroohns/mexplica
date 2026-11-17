@@ -78,7 +78,7 @@ test('limite de payload mantém nove imagens dentro do JSON de 1 MB', () => {
     assert.match(validar({ extra: 'x'.repeat(limites.payloadBytes) }).erro, /1 MB/);
 });
 test('compatibilidade associa imagens antigas por ordem sem mutar dados demo', async () => {
-    const original = { ...TutorialModel.findById(1), passos: [{ ordem: 2, titulo: 'Título antigo', descricao: 'Descrição antiga' }], imagens: [{ ordem: 2, url: '/images/tutorials/pix-seguranca.jpg', alt: 'Imagem antiga', legenda: 'Legenda preservada' }] };
+    const original = { ...(await TutorialModel.findById(1)), passos: [{ ordem: 2, titulo: 'Título antigo', descricao: 'Descrição antiga' }], imagens: [{ ordem: 2, url: '/images/tutorials/pix-seguranca.jpg', alt: 'Imagem antiga', legenda: 'Legenda preservada' }] };
     const copia = JSON.stringify(original);
     const resultado = (await TutorialService.enriquecerTutorial(original));
     assert.equal(resultado.passos[0].imagem.alt, 'Imagem antiga');
@@ -104,8 +104,8 @@ test('vídeo aceita URLs comuns do YouTube e rejeita domínios e IDs inválidos'
 test('vídeo externo legado tem fallback seguro e pode ser preservado em edição', async () => {
     const videoUrl = 'https://example.com/video-antigo';
     assert.equal(TutorialService.validarCampos({ ...dados(), videoUrl }, { videoLegado: videoUrl }).dados.videoUrl, videoUrl);
-    assert.equal((await TutorialService.enriquecerTutorial({ ...TutorialModel.findById(1), videoUrl })).videoId, null);
-    assert.equal((await TutorialService.enriquecerTutorial({ ...TutorialModel.findById(1), videoUrl: 'javascript:alert(1)' })).videoUrl, '');
+    assert.equal((await TutorialService.enriquecerTutorial({ ...(await TutorialModel.findById(1)), videoUrl })).videoId, null);
+    assert.equal((await TutorialService.enriquecerTutorial({ ...(await TutorialModel.findById(1)), videoUrl: 'javascript:alert(1)' })).videoUrl, '');
 });
 
 let servidor, base, cookieAutor, cookieLeitor, tutorialCriado;

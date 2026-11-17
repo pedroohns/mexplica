@@ -5,8 +5,9 @@ function conflito(codigo) {
 }
 
 class UsuarioMemoryRepository {
-    constructor(usuarios = require('../data/usuarioData')) {
+    constructor(usuarios = require('../data/usuarioData'), tutoriais = []) {
         this.usuarios = usuarios;
+        this.tutoriais = tutoriais;
     }
 
     async findAll() { return this.usuarios; }
@@ -76,6 +77,10 @@ class UsuarioMemoryRepository {
         const usuario = await this.findById(id);
         if (!usuario) return null;
         for (const ajuste of ajustesPontos) await this.adicionarPontos(ajuste.id, ajuste.delta, pontosPlatina);
+        // Simula a FK usuarios → tutoriais dos Repositories PostgreSQL nos testes.
+        for (let indice = this.tutoriais.length - 1; indice >= 0; indice--) {
+            if (this.tutoriais[indice].autorId === usuario.id) this.tutoriais.splice(indice, 1);
+        }
         this.usuarios.splice(this.usuarios.indexOf(usuario), 1);
         return usuario;
     }

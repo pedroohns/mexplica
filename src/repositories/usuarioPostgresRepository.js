@@ -105,11 +105,12 @@ class UsuarioPostgresRepository {
         return resultado.rows[0] || null;
     }
 
-    async adicionarPontos(id, delta, pontosPlatina) {
-        return this.#emTransacao(async client => {
-            if (!await this.#ajustarPontos(client, id, delta, pontosPlatina)) return null;
-            return (await this.#buscar('WHERE u.id = $1', [id], client))[0];
-        });
+    async adicionarPontos(id, delta, pontosPlatina, { client } = {}) {
+        const tarefa = async executor => {
+            if (!await this.#ajustarPontos(executor, id, delta, pontosPlatina)) return null;
+            return (await this.#buscar('WHERE u.id = $1', [id], executor))[0];
+        };
+        return client ? tarefa(client) : this.#emTransacao(tarefa);
     }
 
     async definirDisponibilidade(id, disponivel, pontosPlatina) {

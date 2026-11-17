@@ -1,7 +1,7 @@
 # Banco de dados do MExplica
 
-O schema inicial está em `src/database/schema.sql`. Usuários agora usam PostgreSQL no
-runtime real; tutoriais, comentários e avaliações continuam nos arrays de `src/data/`.
+O schema inicial está em `src/database/schema.sql`. Usuários e tutoriais agora usam PostgreSQL
+no runtime real; somente comentários e avaliações continuam nos arrays de `src/data/`.
 Os comandos de infraestrutura e o Repository reutilizam o Singleton `DatabaseConnection`.
 O frontend e a autenticação com cookie-session permanecem preservados.
 
@@ -47,21 +47,99 @@ quando o saldo cai abaixo de Platina. Limites de nível continuam centralizados 
 são passados como parâmetros ao Repository. Somente colaboradores Platina alteram sua
 disponibilidade. Ranking filtra colaboradores pelo threshold de Diamante e ordena por pontos.
 
+## Persistência de tutoriais no runtime
+
+A mesma RepositoryFactory fornece `TutorialMemoryRepository` em `NODE_ENV=test` e
+`TutorialPostgresRepository` nos demais ambientes. O Repository PostgreSQL reutiliza
+`DatabaseConnection.getInstance()`, compartilhando o Pool com usuários. `tutorialData.js`
+permanece como fixture de testes/seed, sem alimentar a persistência normal de tutoriais.
+
+As dez operações do TutorialModel são async: `findAll`, `findById`, `findBySlug`,
+`findByAutorId`, `buscar`, `maisAcessadosDaSemana`, `incrementarVisualizacao`, `create`,
+`update` e `remove`. Controllers de tutorial/página/comentário/avaliação e os Services de
+perfil/tutorial/relacionamento aguardam os resultados, inclusive antes de map/filter/forEach.
+
+Uma carga não vazia faz três SELECTs, independentemente da quantidade de tutoriais: metadados,
+passos por `ANY(ids)` e tags por `ANY(ids)`. A hidratação agrupa as coleções por tutorial,
+converte snake_case para camelCase e datas para ISO. Passos são ordenados por ordem; imagem
+e link são objetos opcionais ou null. `imagens` é derivado dos passos; tags têm ordem
+determinística por nome e não se repetem. Não existe tabela de imagens separada.
+
+O Model mantém o algoritmo de busca sobre dados hidratados do Repository. Os pesos da frase
+continuam 30/16/12/8/5/3 para título/tags/resumo/categoria/conteúdo/passos; por palavra,
+7/5/4/3/2/1. Os desempates continuam por visualizações e ordem histórica de IDs. Listagens
+usam data de criação decrescente. Mais acessados mantém sua janela e fallback existentes;
+ranking de respostas mantém sete dias, autores colaboradores e desempates anteriores.
+O contrato consumido pelo MExplicAI não mudou.
+
+Criação usa um único client e transação para inserir `tutoriais`, `tutorial_passos` e
+`tutorial_tags`. Edição bloqueia a linha, atualiza os campos permitidos e substitui as
+coleções enviadas dentro da mesma transação. Falhas provocam ROLLBACK e descarte do client.
+Autor vem da sessão e categoria é validada no Service, com FKs como garantia adicional.
+Imagem serializada continua em TEXT, com os mesmos limites do contrato atual.
+
+O Model gera o slug e consulta sua disponibilidade; colisão concorrente da UNIQUE tenta
+o próximo sufixo, com limite de 50 candidatos. Slug, autor e visualizações não são editáveis
+pelo update. Abrir `/tutoriais/:slug` executa `visualizacoes = visualizacoes + 1` em UPDATE
+atômico e usa o tutorial retornado, sem nova consulta redundante do metadado. Esse GET escreve
+no banco. `GET /api/tutoriais/:id` é uma alternativa de leitura sem incremento.
+
 ## Consistência temporária entre PostgreSQL e arrays
 
 `relacionamentoService` serializa as mutações híbridas por processo. Uma avaliação só é
 criada/editada/removida no array depois de confirmar o ajuste de pontos no PostgreSQL.
-Excluir um tutorial ajusta os pontos antes de remover seus dependentes em memória.
+Excluir tutorial compartilha um único client entre TutorialPostgresRepository e o ajuste
+de pontos do UsuarioPostgresRepository. O DELETE e o desconto de pontos são confirmados ou
+desfeitos juntos; as cascatas removem passos/tags e dependentes persistidos. Somente após
+o commit os comentários e avaliações correspondentes são removidos dos arrays.
 
 Excluir usuário calcula os ajustes das avaliações em memória e executa ajustes de pontos
 mais DELETE de usuário em uma única transação do Repository. As cascatas cuidam dos dados
-persistidos. Somente após o commit os tutoriais, comentários e avaliações correspondentes
-são removidos dos arrays, de forma síncrona. Se o PostgreSQL falhar, esses arrays permanecem.
+persistidos, incluindo tutoriais do autor. IDs dos tutoriais e dependentes dos arrays são
+capturados antes da exclusão. Uma carga em lote fornece os autores dos tutoriais avaliados,
+evitando consulta por avaliação. Após o commit, comentários e avaliações são limpos de forma
+síncrona. O adapter Memory simula a cascata de tutoriais para manter equivalência nos testes.
+Se o PostgreSQL falhar, esses arrays permanecem.
 
 Esses arrays são locais ao processo e reiniciam com ele. Não há transação distribuída ou
 atomicidade durável entre memória e banco em caso de término do processo, nem compartilhamento
 das coleções entre instâncias serverless. A migração das próximas entidades eliminará essa
-condição temporária; Tutorial é a próxima etapa.
+condição temporária; Comentario e Avaliacao são a próxima etapa.
+
+## Prova manual de persistência de tutoriais
+
+Validação automática desta etapa: 172 testes offline aprovados. No Neon real, retornaram
+HTTP 200: `/api/tutoriais` (18 tutoriais hidratados), `/api/tutoriais/buscar?q=fonte`,
+`/comunidade`, `/perfil/lucas-mendes` e `/api/tutoriais/:id`. O processo usou os Repositories
+PostgreSQL sem carregar usuarioData/tutorialData. Foram executados 49 SELECTs nessas rotas,
+incluindo enriquecimento de autores; nenhuma escrita foi executada ou tentada. O bloqueio
+de comandos diferentes de SELECT ficou restrito ao processo de validação, sem alterar runtime.
+Os três SELECTs por carga de tutoriais não incluem as consultas de usuários do enriquecimento.
+
+As escritas abaixo devem ser executadas manualmente pelo usuário. A validação automática no
+Neon usa apenas SELECT e evita a página de tutorial que incrementa visualizações.
+
+1. Iniciar com `npm.cmd run dev` e entrar como colaborador seed.
+2. Abrir `/tutoriais/novo` e criar um tutorial sintético com título identificável, passos,
+   imagem opcional, link e tags.
+3. Conferir ID, slug, autor e conteúdo em `tutoriais` no Neon.
+4. Conferir ordem, textos e campos opcionais em `tutorial_passos`, pelo tutorial_id.
+5. Conferir as linhas e ausência de duplicação em `tutorial_tags`.
+6. Parar o servidor e iniciar novamente com `npm.cmd run dev`.
+7. Anotar visualizacoes no Neon, abrir o tutorial e conferir os dados. Confirmar incremento
+   de uma unidade no banco para essa abertura.
+8. Pelo editor, alterar título, resumo, passos e tags; salvar.
+9. Conferir as alterações nas três tabelas e confirmar que o slug ficou estável.
+10. Reiniciar novamente o servidor.
+11. Conferir no Neon que o contador anterior foi preservado; abrir e conferir a edição
+    persistida. Essa nova abertura deve acrescentar mais uma visualização.
+12. Buscar o novo conteúdo e testar o encaminhamento do MExplicAI quando houver relevância.
+13. Para validar o tratamento híbrido, entrar com outra conta e criar comentário/avaliação
+    no tutorial. Anotar os pontos concedidos ao autor, voltar à conta autora e excluir o
+    tutorial pelo MExplica, sem reiniciar o processo entre essas operações.
+14. Confirmar a remoção do tutorial e a cascata de passos/tags no Neon.
+15. Confirmar que não restaram comentários/avaliações do runtime para esse tutorial e que
+    os pontos concedidos por suas avaliações foram descontados.
 
 ## Validação manual de escrita
 
@@ -111,7 +189,7 @@ npm.cmd run db:verify
 
 `src/database/migrations/001_remove_usuario_especialidades.sql` contém apenas
 `DROP TABLE IF EXISTS public.usuario_especialidades;`, sem CASCADE. Nenhuma conta é removida.
-A execução real desta migration está pendente; ela não foi aplicada automaticamente.
+A migration foi aplicada na etapa anterior; o controle registra sua versão.
 
 `scripts/runMigrations.js` usa o Singleton existente, aplica arquivos `NNN_nome.sql` em
 ordem e registra nome/data em `public.schema_migrations`. Essa é uma tabela técnica,
@@ -193,7 +271,7 @@ preservando coleções que já foram editadas ou removidas no banco.
 
 As cinco identities são localizadas por `pg_get_serial_sequence` e ajustadas com `setval`
 depois dos inserts, para o próximo ID ser `MAX(id) + 1` (ou 1 em tabela vazia). O seed
-bloqueia escritas nas oito tabelas durante a transação para estabilizar esse máximo.
+bloqueia escritas nas sete tabelas de domínio durante a transação para estabilizar esse máximo.
 O estado de sequences não sofre rollback no PostgreSQL: um erro tardio pode deixar lacunas,
 mas o ajuste não fica abaixo dos IDs existentes. Referências oficiais:
 [identity](https://www.postgresql.org/docs/current/ddl-identity-columns.html),

@@ -711,7 +711,7 @@ test('comunidade preserva os tutoriais e o footer da home e usa a sessão no CTA
     assert.match(html, /Criar sua conta/);
 
     const TutorialModel = require('../src/models/tutorialModel');
-    for (const tutorial of TutorialModel.maisAcessadosDaSemana(6)) {
+    for (const tutorial of await TutorialModel.maisAcessadosDaSemana(6)) {
         assert.ok(html.includes(`/tutoriais/${tutorial.slug}`));
     }
 

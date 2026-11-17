@@ -216,7 +216,7 @@ app.get(
                 'MExplica',
 
             arquitetura:
-                'Persistência híbrida: usuários PostgreSQL; demais entidades temporariamente em memória',
+                'Persistência híbrida: usuários e tutoriais PostgreSQL; comentários e avaliações temporariamente em memória',
 
             dominio:
                 'tutoriais, comentários, avaliações e ranking'
@@ -330,6 +330,9 @@ app.use(
         }
         if (err.code === 'USUARIO_SLUG_CONFLITO') {
             return res.status(409).json({ erro: 'Não foi possível reservar um nome de perfil. Tente novamente.' });
+        }
+        if (err.code === 'TUTORIAL_SLUG_CONFLITO') {
+            return res.status(409).json({ erro: 'Não foi possível reservar o endereço do tutorial. Tente novamente.' });
         }
 
         // Erros do driver podem conter query, contatos e credenciais. Não registrar a exceção.

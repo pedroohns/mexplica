@@ -221,8 +221,8 @@ test(
     async () => {
 
         const tutorial =
-            TutorialModel
-                .findAll()[0];
+            (await TutorialModel
+                .findAll())[0];
 
 
         assert.ok(

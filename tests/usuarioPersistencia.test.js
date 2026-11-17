@@ -231,13 +231,13 @@ test('Controller descarta especialidades antes de chamar o Model e mantém ediç
 test('falha ao excluir usuário preserva todos os arrays do runtime', async t => {
     restaurarArrays(t);
     const usuario = await UsuarioModel.create(conta());
-    const tutorial = TutorialModel.create({ autorId: usuario.id, titulo: 'Tutorial temporário', passos: [] });
+    const tutorial = (await TutorialModel.create({ autorId: usuario.id, titulo: 'Tutorial temporário', passos: [] }));
     ComentarioModel.create({ tutorialId: tutorial.id, usuarioId: 1, texto: 'Comentário temporário' });
     AvaliacaoModel.create({ tutorialId: tutorial.id, avaliadorId: 1, nota: 5 });
-    const anteriores = JSON.stringify([TutorialModel.findAll(), ComentarioModel.findAll(), AvaliacaoModel.findAll()]);
+    const anteriores = JSON.stringify([(await TutorialModel.findAll()), ComentarioModel.findAll(), AvaliacaoModel.findAll()]);
     t.mock.method(UsuarioModel, 'remove', async () => { throw new Error('Falha simulada no commit'); });
     await assert.rejects(RelacionamentoService.removerDadosDoUsuario(usuario.id), /Falha simulada/);
-    assert.equal(JSON.stringify([TutorialModel.findAll(), ComentarioModel.findAll(), AvaliacaoModel.findAll()]) === anteriores, true);
+    assert.equal(JSON.stringify([(await TutorialModel.findAll()), ComentarioModel.findAll(), AvaliacaoModel.findAll()]) === anteriores, true);
     assert.ok(await UsuarioModel.findById(usuario.id));
 });
 
@@ -247,7 +247,7 @@ test('falha no ajuste de pontos preserva avaliação e tutorial e não bloqueia 
     await assert.rejects(RelacionamentoService.removerAvaliacaoComAjuste(1), /Falha simulada/);
     assert.ok(AvaliacaoModel.findById(1));
     await assert.rejects(RelacionamentoService.removerTutorialCompleto(1), /Falha simulada/);
-    assert.ok(TutorialModel.findById(1));
+    assert.ok((await TutorialModel.findById(1)));
     assert.ok(AvaliacaoModel.findById(1));
     assert.equal(await RelacionamentoService.removerTutorialCompleto(999999), null);
 });
@@ -256,7 +256,7 @@ test('falha persistente ao avaliar ou editar avaliação não modifica o array',
     restaurarArrays(t);
     t.mock.method(console, 'error', () => {});
     t.mock.method(UsuarioModel, 'adicionarPontos', async () => { throw new Error('Falha simulada nos pontos'); });
-    const tutorial = TutorialModel.create({ autorId: 2, titulo: 'Tutorial temporário', passos: [] });
+    const tutorial = (await TutorialModel.create({ autorId: 2, titulo: 'Tutorial temporário', passos: [] }));
     const tamanho = AvaliacaoModel.findAll().length;
     const nova = await request(`/api/tutoriais/${tutorial.id}/avaliacoes`, 'POST', { nota: 5 }, true);
     assert.equal(nova.status, 500);
@@ -271,7 +271,7 @@ test('falha persistente ao avaliar ou editar avaliação não modifica o array',
 
 test('avaliações concorrentes no mesmo processo não duplicam avaliação nem pontos', async t => {
     restaurarArrays(t);
-    const tutorial = TutorialModel.create({ autorId: 2, titulo: 'Tutorial temporário', passos: [] });
+    const tutorial = (await TutorialModel.create({ autorId: 2, titulo: 'Tutorial temporário', passos: [] }));
     const pontosAnteriores = (await UsuarioModel.findById(2)).pontos;
     const respostas = await Promise.all([
         request(`/api/tutoriais/${tutorial.id}/avaliacoes`, 'POST', { nota: 5 }, true),

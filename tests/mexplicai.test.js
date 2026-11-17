@@ -45,23 +45,23 @@ function buscar(texto) {
     return TutorialModel.buscar(engine.criarConsulta(texto), Number.MAX_SAFE_INTEGER);
 }
 
-test('MExplicAI indica o tutorial humano real de fonte com slug preservado', () => {
+test('MExplicAI indica o tutorial humano real de fonte com slug preservado', async () => {
     const texto = 'Como aumentar a fonte das letras do meu celular?';
-    const resposta = engine.resolverResposta(texto, buscar(texto));
+    const resposta = engine.resolverResposta(texto, await buscar(texto));
     assert.equal(resposta.tipo, 'tutorial');
     assert.equal(resposta.tutorial.slug, 'saiba-como-aumentar-a-fonte-do-celular');
 });
 
-test('MExplicAI filtra resultados amplos da API antes de responder CarPlay e outras intenções', () => {
+test('MExplicAI filtra resultados amplos da API antes de responder CarPlay e outras intenções', async () => {
     for (const intencao of engine.intencoes) {
         const texto = intencao.exemplos[0];
-        assert.equal(engine.resolverResposta(texto, buscar(texto)).tipo, 'local', texto);
+        assert.equal(engine.resolverResposta(texto, await buscar(texto)).tipo, 'local', texto);
     }
     const texto = 'Como conectar o CarPlay do meu carro?';
-    assert.ok(buscar(texto).length > 0, 'A busca real também devolve o tutorial de Spotify no carro');
-    assert.equal(engine.resolverResposta(texto, buscar(texto)).tipo, 'local');
+    assert.ok((await buscar(texto)).length > 0, 'A busca real também devolve o tutorial de Spotify no carro');
+    assert.equal(engine.resolverResposta(texto, await buscar(texto)).tipo, 'local');
     for (const pergunta of ['Como conectar CarPlay no carro por Bluetooth?', 'Como conectar fone Bluetooth no celular?']) {
-        assert.equal(engine.resolverResposta(pergunta, buscar(pergunta)).tipo, 'local', pergunta);
+        assert.equal(engine.resolverResposta(pergunta, await buscar(pergunta)).tipo, 'local', pergunta);
     }
 });
 
@@ -74,7 +74,7 @@ test('MExplicAI prefere um novo tutorial humano mesmo quando existe resposta loc
     assert.doesNotMatch(resposta.texto, /porta USB/);
 });
 
-test('MExplicAI encaminha os temas existentes aos tutoriais humanos relacionados', () => {
+test('MExplicAI encaminha os temas existentes aos tutoriais humanos relacionados', async () => {
     const exemplos = [
         ['autenticação de dois fatores no Instagram', 'instagram'],
         ['identificar golpe no WhatsApp', 'golpe'],
@@ -95,7 +95,7 @@ test('MExplicAI encaminha os temas existentes aos tutoriais humanos relacionados
         ['ativar leitor de tela', 'leitor']
     ];
     for (const [texto, slug] of exemplos) {
-        const resposta = engine.resolverResposta(texto, buscar(texto));
+        const resposta = engine.resolverResposta(texto, await buscar(texto));
         assert.equal(resposta.tipo, 'tutorial', texto);
         assert.ok(resposta.tutorial.slug.includes(slug), `${texto}: ${resposta.tutorial.slug}`);
     }

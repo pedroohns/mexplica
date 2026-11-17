@@ -56,16 +56,16 @@ function validarNota(
 }
 
 
-function listarPorTutorial(
+async function listarPorTutorial(
     req,
     res
 ) {
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findById(
                 req.params.tutorialId
-            );
+            ));
 
 
     if (!tutorial) {
@@ -103,10 +103,10 @@ async function criar(
 ) {
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findById(
                 req.params.tutorialId
-            );
+            ));
 
 
     if (!tutorial) {
@@ -333,10 +333,10 @@ async function atualizar(
 
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findById(
                 avaliacao.tutorialId
-            );
+            ));
 
 
     if (!tutorial) {

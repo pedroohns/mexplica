@@ -35,8 +35,8 @@ async function listar(
 
     return res.json(
 
-        (await Promise.all(TutorialModel
-            .findAll()
+        (await Promise.all((await TutorialModel
+            .findAll())
 
             .map(
                 tutorial =>
@@ -135,14 +135,14 @@ async function buscar(
     */
 
     let encontrados =
-        TutorialModel
+        (await TutorialModel
             .buscar(
 
                 termo,
 
                 Number.MAX_SAFE_INTEGER
 
-            );
+            ));
 
 
     /*
@@ -227,10 +227,10 @@ async function populares(
 
     return res.json(
 
-        (await Promise.all(TutorialModel
+        (await Promise.all((await TutorialModel
             .maisAcessadosDaSemana(
                 limite
-            )
+            ))
 
             .map(
                 tutorial =>
@@ -250,10 +250,10 @@ async function buscarPorId(
 ) {
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findById(
                 req.params.id
-            );
+            ));
 
 
     if (!tutorial) {
@@ -314,7 +314,7 @@ async function criar(
 
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .create({
 
                 autorId:
@@ -322,7 +322,7 @@ async function criar(
 
                 ...validacao.dados
 
-            });
+            }));
 
 
     return res
@@ -352,10 +352,10 @@ async function atualizar(
 ) {
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findById(
                 req.params.id
-            );
+            ));
 
 
     if (!tutorial) {
@@ -452,14 +452,14 @@ async function atualizar(
 
 
     const atualizado =
-        TutorialModel
+        (await TutorialModel
             .update(
 
                 tutorial.id,
 
                 validacao.dados
 
-            );
+            ));
 
 
     return res.json({
@@ -487,10 +487,10 @@ async function excluir(
 ) {
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findById(
                 req.params.id
-            );
+            ));
 
 
     if (!tutorial) {

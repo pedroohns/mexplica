@@ -1,7 +1,5 @@
-const tutoriais =
-    require(
-        '../data/tutorialData'
-    );
+const RepositoryFactory = require('../repositories/repositoryFactory');
+const repository = RepositoryFactory.criarTutorialRepository();
 
 function normalizarTexto(
     valor = ''
@@ -35,141 +33,24 @@ function criarSlugBase(
 }
 
 
-function criarSlugUnico(
-    titulo
-) {
-    const base =
-        criarSlugBase(
-            titulo
-        )
-        || 'tutorial';
+async function findAll() { return repository.findAll(); }
 
-    let slug =
-        base;
-
-    let sufixo =
-        2;
-
-    while (
-        tutoriais.some(
-            tutorial =>
-                tutorial.slug
-                === slug
-        )
-    ) {
-        slug =
-            `${base}-${sufixo}`;
-
-        sufixo +=
-            1;
-    }
-    return slug;
+async function findById(id) {
+    const numero = Number(id);
+    return Number.isSafeInteger(numero) && numero > 0 ? repository.findById(numero) : null;
 }
 
-function proximoId() {
-    if (
-        tutoriais.length
-        === 0
-    ) {
-        return 1;
-    }
+async function findBySlug(slug) { return repository.findBySlug(String(slug)); }
 
-    return (
-        Math.max(
-            ...tutoriais.map(
-                tutorial =>
-                    tutorial.id
-            )
-        )
-        +
-        1
-    );
+async function findByAutorId(autorId) {
+    const numero = Number(autorId);
+    return Number.isSafeInteger(numero) && numero > 0 ? repository.findByAutorId(numero) : [];
 }
-
-function findAll() {
-    return [
-        ...tutoriais
-    ]
-        .sort(
-            (a, b) =>
-
-                new Date(
-                    b.criadoEm
-                )
-
-                -
-
-                new Date(
-                    a.criadoEm
-                )
-        );
-}
-
-
-function findById(id) {
-    const numero =
-        Number(id);
-
-    return (
-        tutoriais.find(
-            tutorial =>
-                tutorial.id
-                === numero
-        )
-        ||
-        null
-    );
-}
-
-function findBySlug(
-    slug
-) {
-    return (
-        tutoriais.find(
-            tutorial =>
-                tutorial.slug
-                === String(slug)
-        )
-        ||
-        null
-    );
-}
-
-function findByAutorId(
-    autorId
-) {
-    const numero =
-        Number(
-            autorId
-        );
-
-    return tutoriais
-
-        .filter(
-            tutorial =>
-                tutorial.autorId
-                === numero
-        )
-        .sort(
-            (a, b) =>
-
-                new Date(
-                    b.criadoEm
-                )
-
-                -
-
-                new Date(
-                    a.criadoEm
-                )
-        );
-}
-
 
 // =============================
 // BUSCA PRINCIPAL DO MEXPLICA
 // =============================
-function buscar(
+async function buscar(
     termo,
     limite = 10
 ) {
@@ -192,6 +73,9 @@ function buscar(
             .filter(
                 Boolean
             );
+
+    // A ordem de IDs preserva os desempates historicos da colecao em memoria.
+    const tutoriais = await repository.findAll({ ordem: 'id' });
 
     return tutoriais
 
@@ -390,7 +274,7 @@ function buscar(
         );
 }
 
-function maisAcessadosDaSemana(
+async function maisAcessadosDaSemana(
     limite = 6
 ) {
     const agora =
@@ -406,6 +290,8 @@ function maisAcessadosDaSemana(
         60
         *
         1000;
+
+    const tutoriais = await repository.findAll({ ordem: 'id' });
 
     const recentes =
         tutoriais.filter(
@@ -463,150 +349,51 @@ function maisAcessadosDaSemana(
         );
 }
 
-function incrementarVisualizacao(
-    id
-) {
-    const tutorial =
-        findById(id);
-
-    if (!tutorial) {
-        return null;
-    }
-
-    tutorial.visualizacoes +=
-        1;
-    return tutorial;
+async function incrementarVisualizacao(id) {
+    const numero = Number(id);
+    return Number.isSafeInteger(numero) && numero > 0 ? repository.incrementarVisualizacao(numero) : null;
 }
 
-// CREATE
-function create(
-    dados
-) {
-    const novoTutorial = {
-        id:
-            proximoId(),
-        slug:
-            criarSlugUnico(
-                dados.titulo
-            ),
-        autorId:
-            Number(
-                dados.autorId
-            ),
-        categoriaId:
-            dados.categoriaId,
-        titulo:
-            dados.titulo,
-        resumo:
-            dados.resumo,
-        conteudo:
-            dados.conteudo,
-        passos:
-            Array.isArray(
-                dados.passos
-            )
-                ? dados.passos
-                : [],
-        imagens:
-            Array.isArray(
-                dados.imagens
-            )
-                ? dados.imagens
-                : [],
-        videoUrl:
-            dados.videoUrl
-            || '',
-        tags:
-            Array.isArray(
-                dados.tags
-            )
-                ? dados.tags
-                : [],
-        visualizacoes:
-            0,
-        criadoEm:
-            new Date()
-                .toISOString(),
-        atualizadoEm:
-            null
+async function create(dados) {
+    const base = criarSlugBase(dados.titulo) || 'tutorial';
+    const tutorial = {
+        autorId: Number(dados.autorId), categoriaId: dados.categoriaId,
+        titulo: dados.titulo, resumo: dados.resumo, conteudo: dados.conteudo,
+        passos: Array.isArray(dados.passos) ? dados.passos : [],
+        imagens: Array.isArray(dados.imagens) ? dados.imagens : [],
+        videoUrl: dados.videoUrl || '', tags: Array.isArray(dados.tags) ? dados.tags : [],
+        visualizacoes: 0, criadoEm: new Date().toISOString(), atualizadoEm: null
     };
-
-    tutoriais.push(
-        novoTutorial
-    );
-    return novoTutorial;
-}
-
-// UPDATE
-function update(
-    id,
-    alteracoes
-) {
-    const tutorial =
-        findById(id);
-
-    if (!tutorial) {
-        return null;
-    }
-
-    Object.assign(
-        tutorial,
-        alteracoes,
-        {
-            atualizadoEm:
-                new Date()
-                    .toISOString()
+    for (let tentativa = 1; tentativa <= 50; tentativa++) {
+        const slug = tentativa === 1 ? base : base + '-' + tentativa;
+        if (await repository.findBySlug(slug)) continue;
+        try {
+            return await repository.create({ ...tutorial, slug });
+        } catch (erro) {
+            if (erro.code !== 'TUTORIAL_SLUG_CONFLITO') throw erro;
         }
-    );
-    /*
-        o slug nao muda.
-
-        Se o titulo for editado, uma URL
-        que já foi compartilhada continua
-        funcionando.
-    */
-    return tutorial;
+    }
+    const erro = new Error('Não foi possível reservar o endereço do tutorial. Tente novamente.');
+    erro.code = 'TUTORIAL_SLUG_CONFLITO';
+    throw erro;
 }
 
-// DELETE
-function remove(id) {
-    const numero =
-        Number(id);
-
-    const indice =
-        tutoriais.findIndex(
-            tutorial =>
-                tutorial.id
-                === numero
-        );
-
-    if (
-        indice === -1
-    ) {
-        return null;
+async function update(id, alteracoes) {
+    const numero = Number(id);
+    if (!Number.isSafeInteger(numero) || numero <= 0) return null;
+    const permitidas = { atualizadoEm: new Date().toISOString() };
+    for (const campo of ['titulo', 'resumo', 'conteudo', 'categoriaId', 'passos', 'imagens', 'videoUrl', 'tags']) {
+        if (Object.hasOwn(alteracoes, campo)) permitidas[campo] = alteracoes[campo];
     }
+    return repository.update(numero, permitidas);
+}
 
-    const [
-        removido
-    ] =
-        tutoriais.splice(
-            indice,
-            1
-        );
-
-    return removido;
+async function remove(id, opcoes = {}) {
+    const numero = Number(id);
+    return Number.isSafeInteger(numero) && numero > 0 ? repository.remove(numero, opcoes) : null;
 }
 
 module.exports = {
-    normalizarTexto,
-    findAll,
-    findById,
-    findBySlug,
-    findByAutorId,
-    buscar,
-    maisAcessadosDaSemana,
-    incrementarVisualizacao,
-    create,
-    update,
-    remove
+    normalizarTexto, findAll, findById, findBySlug, findByAutorId, buscar,
+    maisAcessadosDaSemana, incrementarVisualizacao, create, update, remove
 };

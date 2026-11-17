@@ -56,7 +56,7 @@ banco-persistencia
 ```
 
 Fase atual: migração incremental para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
-usuários agora usam PostgreSQL no runtime, com RepositoryFactory e testes em memória.
+usuários e tutoriais agora usam PostgreSQL no runtime, com RepositoryFactory e testes em memória.
 As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
 
 Consulte o Git para a contagem atual de commits. Não fazer commit ou merge automaticamente.
@@ -70,7 +70,7 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-147 testes (134 anteriores + 13 da limpeza/migrations, sem acesso ao Neon real)
+172 testes (147 anteriores + 25 da persistência de tutoriais, sem acesso ao Neon real)
 ```
 
 Distribuição atual:
@@ -89,11 +89,13 @@ frontend.test.js                3
 mexplicai.test.js              13
 perfilService.test.js           3
 relacionamentoService.test.js   3
-repositoryFactory.test.js       5
+repositoryFactory.test.js       7
 seedData.test.js                9
 smoke-test.js                  16
 tutorialService.test.js         4
 tutorialBlocos.test.js         15
+tutorialPersistencia.test.js    8
+tutorialPostgresRepository.test.js 15
 usuarioPersistencia.test.js    16
 usuarioPostgresRepository.test.js 14
 vlibras.test.js                 6
@@ -131,7 +133,7 @@ Service, quando existe regra/composição
   ↓
 Model
   ↓
-Repository (usuários) / Data (demais entidades)
+Repository (usuários/tutoriais) / Data (comentários/avaliações)
 ```
 
 Regras importantes:
@@ -139,7 +141,7 @@ Regras importantes:
 - Controllers devem continuar focados em HTTP.
 - Services só devem existir quando houver responsabilidade real de negócio/composição.
 - Models concentram operações das entidades.
-- Usuários usam Repository/PostgreSQL; tutoriais, comentários e avaliações permanecem em `src/data/`.
+- Usuários e tutoriais usam Repository/PostgreSQL; comentários e avaliações permanecem em `src/data/`.
 - Não devolver regras de relacionamento para `utils`.
 - Não espalhar `fetch` pelo frontend; usar `public/js/core/api.js`.
 - Não alterar a arquitetura apenas para implementar visual.
@@ -204,7 +206,7 @@ O runtime possui persistência híbrida:
 
 ```text
 Usuario → PostgreSQL (usuarios)
-Tutorial → src/data/tutorialData.js
+Tutorial → PostgreSQL (tutoriais + tutorial_passos + tutorial_tags)
 Comentario → src/data/comentarioData.js
 Avaliacao → src/data/avaliacaoData.js
 ```
@@ -212,12 +214,13 @@ Avaliacao → src/data/avaliacaoData.js
 Isso significa:
 
 - cadastro, login, sessão, perfil, ranking, pontos e disponibilidade de usuários usam PostgreSQL;
-- as outras três entidades ainda perdem alterações ao reiniciar o processo/serverless;
-- `usuarioData.js` permanece como fixture de testes/seed, sem fallback no runtime normal.
+- comentários e avaliações ainda perdem alterações ao reiniciar o processo/serverless;
+- `usuarioData.js` e `tutorialData.js` permanecem como fixtures de testes/seed, sem fallback no runtime normal.
 
-Factory: `src/repositories/repositoryFactory.js` cria UsuarioMemoryRepository em `NODE_ENV=test`
-e UsuarioPostgresRepository nos demais ambientes. O Model usa essa seleção; suas onze operações
-de persistência são async. Regras de nível/tipo e projeções continuam no UsuarioModel.
+Factory: `src/repositories/repositoryFactory.js` fornece Repositories de Usuario e Tutorial,
+em memória para `NODE_ENV=test` e PostgreSQL nos demais ambientes. Os Models usam essa seleção;
+as onze operações persistentes de Usuario e as dez de Tutorial são async. Regras de nível/tipo
+e projeções continuam no UsuarioModel; busca, slugs e seleção dos mais acessados no TutorialModel.
 `npm.cmd test` usa preload explícito em `scripts/testSetup.js`, com driver real bloqueado.
 
 A infraestrutura de conexão foi introduzida com `pg` em `src/database/databaseConnection.js`.
@@ -248,20 +251,27 @@ O seed real e sua idempotência foram concluídos na etapa anterior; Neon conté
 demonstrativos (12 usuários e 18 tutoriais), além da conta sintética para validação de CRUD.
 
 Especialidades foram removidas por não fazerem parte do produto atual. A migration
-`001_remove_usuario_especialidades.sql` está pronta, com aplicação manual no Neon pendente:
-`npm.cmd run db:migrate`, seguido de `npm.cmd run db:verify`. O controle `schema_migrations`
+`001_remove_usuario_especialidades.sql` foi aplicada na etapa anterior. O controle `schema_migrations`
 é técnico e não integra as sete entidades. O verificador exige ausência da tabela legada
 e aceita contas adicionais; a conta sintética existente permanece para validação de CRUD.
 
-Perfil usa UPDATE único e parametrizado; pontos usam incremento atômico.
-Exclusões/avaliações têm tratamento híbrido em relacionamentoService: confirmam alterações
-de usuários no banco antes de modificar os arrays. As coleções permanecem locais ao processo,
+Perfil de usuário usa UPDATE único; pontos e visualizações usam incrementos atômicos.
+TutorialPostgresRepository hidrata metadados/passos/tags em três SELECTs em lote. Create/update
+usam transações, preservando imagem/link, imagens derivadas e slug estável. A busca mantém
+os pesos e desempates existentes, incluindo o contrato usado pelo MExplicAI.
+Exclusões/avaliações têm tratamento híbrido em relacionamentoService: pontos e DELETE de
+tutorial compartilham transação; só após commit os arrays restantes são limpos. A exclusão
+de usuário captura tutoriais/dependentes antes da cascata. As coleções permanecem locais ao processo,
 sem transação distribuída. Assets/health são atendidos antes da consulta de sessão.
 Detalhes, limites e roteiro manual de escrita em `docs/BANCO_DE_DADOS.md`.
 
-Login seed, rotas de leitura e persistência de cadastro após reinício foram validados com
-PostgreSQL real. Esta limpeza não executou escritas externas.
-Próximo passo: migrar Tutorial para PostgreSQL. JWT continua pendente.
+Login seed e persistência de cadastro após reinício foram validados com PostgreSQL real
+na etapa anterior. Nesta etapa, API de tutoriais, busca, comunidade, perfil e leitura por ID
+retornaram HTTP 200 no Neon; 49 SELECTs, zero escritas, com qualquer comando de escrita bloqueado
+no processo de validação. A suíte offline passou com 172 testes.
+Escritas reais de tutoriais ficam para o roteiro manual em BANCO_DE_DADOS.md; a página de
+tutorial incrementa visualizações e não deve ser usada em uma verificação de zero escrita.
+Próximo passo: migrar Comentario + Avaliacao para PostgreSQL. Observer e JWT continuam pendentes.
 
 ---
 
@@ -437,7 +447,8 @@ entrada de até 8192 pixels por lado e 24 milhões de pixels. O editor usa
 FileReader/Canvas para preview e redução até 1600 pixels por lado e 72 KB
 por imagem. A API confere formato, bytes e dimensões do arquivo serializado.
 SVG não é aceito. O JSON global continua limitado a 1 MB, com erro 413 legível.
-O fluxo de tutoriais continua em memória, sem storage externo ou persistência no banco.
+O fluxo de tutoriais agora persiste em PostgreSQL; imagens serializadas permanecem em TEXT,
+sem introduzir storage externo.
 
 Novos vídeos aceitam somente YouTube com ID validado. O player usa thumbnail
 e carrega iframe de `youtube-nocookie.com` apenas após clicar. Vídeos externos
@@ -630,17 +641,16 @@ A fase atual é de entregáveis técnicos: conexão com banco primeiro, seguida 
 As funcionalidades visuais e o MExplicAI v1 estão concluídos. A fase técnica começou em
 `banco-persistencia`, com conexão via `pg` e Singleton de `DatabaseConnection`/Pool implementados.
 
-Conexão/Singleton, schema, seed e RepositoryFactory estão implementados. Usuários já usam
+Conexão/Singleton, schema, seed e RepositoryFactory estão implementados. Usuários e tutoriais usam
 persistência real; pendências seguintes:
 
 ```text
-migrar Tutorial para PostgreSQL
 migrar Comentario e Avaliacao para PostgreSQL
 tokens
 Observer
 ```
 
-A migração continua deliberada e incremental; a próxima entidade é Tutorial.
+A migração continua deliberada e incremental; as próximas entidades são Comentario e Avaliacao.
 
 ---
 

@@ -46,10 +46,10 @@ async function listarPorTutorial(
 ) {
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findById(
                 req.params.tutorialId
-            );
+            ));
 
 
     if (!tutorial) {
@@ -88,10 +88,10 @@ async function criar(
 ) {
 
     const tutorial =
-        TutorialModel
+        (await TutorialModel
             .findById(
                 req.params.tutorialId
-            );
+            ));
 
 
     if (!tutorial) {

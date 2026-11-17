@@ -283,10 +283,10 @@ async function update(id, alteracoes) {
     return sincronizarNivel(await repository.update(usuario.id, permitidas));
 }
 
-async function adicionarPontos(id, quantidade) {
+async function adicionarPontos(id, quantidade, { client } = {}) {
     const valor = Number(quantidade);
     if (!Number.isFinite(valor)) return findById(id);
-    return sincronizarNivel(await repository.adicionarPontos(Number(id), valor, NIVEL_PLATINA));
+    return sincronizarNivel(await repository.adicionarPontos(Number(id), valor, NIVEL_PLATINA, { client }));
 }
 
 async function definirDisponibilidade(id, disponivel) {

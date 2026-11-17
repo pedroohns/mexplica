@@ -39,10 +39,10 @@ async function montarPerfil(
     }
 
     const tutoriais =
-        (await Promise.all(TutorialModel
+        (await Promise.all((await TutorialModel
             .findByAutorId(
                 usuario.id
-            )
+            ))
             .map(
                 tutorial =>
                     TutorialService
