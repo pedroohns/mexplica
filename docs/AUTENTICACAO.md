@@ -127,7 +127,7 @@ disponibilidade ao banco, independente de autenticação; `/api/health` é indep
 `api/index.js` continua exportando `src/index.js`. Não existe estado de sessão por instância.
 Configurar `DATABASE_URL`, `JWT_SECRET` e `NODE_ENV=production` na Vercel e usar HTTPS.
 
-`npm.cmd test`: 241 testes offline, incluindo os 208 anteriores e 33 novos. O preload mantém
+Na etapa de migração JWT, `npm.cmd test` passou com 241 testes offline, incluindo os 208 anteriores e 33 novos. O preload mantém
 MemoryRepositories e bloqueia o driver real; testes SQL usam clientes falsos. A cobertura JWT
 inclui assinatura, validade sem sleeps, claims, algoritmo, ausência de chave, cookies de produção,
 login/cadastro/logout, exclusão, Bearer, prioridade, EJS, permissões atuais e assets/health.
@@ -191,6 +191,9 @@ Não executar automaticamente no Neon real.
    `Você precisa estar autenticado para realizar esta ação.` Sem stack/detalhe criptográfico.
 6. Repetir `/api/auth/token` com senha incorreta: esperar 401 e nenhuma credencial emitida.
 7. Expiração e claims incorretas já estão cobertas automaticamente; não esperar oito horas.
+
+O roteiro de Preview HTTPS na Vercel, incluindo escopos de variáveis, cookie Secure e Bearer,
+está em [DEPLOY.md](DEPLOY.md). O estado atual da suíte está em [CONTEXTO_CODEX.md](CONTEXTO_CODEX.md).
 
 Referências oficiais: [jsonwebtoken: sign/verify e restrição de algoritmo](https://github.com/auth0/node-jsonwebtoken#readme),
 [cookie-parser](https://expressjs.com/en/resources/middleware/cookie-parser/).

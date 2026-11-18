@@ -282,6 +282,10 @@ app.use(
             return res.status(413).json({ erro: 'O tutorial excede o limite total de 1 MB. Reduza as imagens.' });
         }
 
+        if (err.type === 'entity.parse.failed') {
+            return res.status(400).json({ erro: 'Envie um JSON válido no corpo da requisição.' });
+        }
+
         if (err.code === 'JWT_SECRET_AUSENTE') {
             console.error('JWT_SECRET não configurada para autenticação.');
             const mensagem = 'Autenticação indisponível. Verifique a configuração JWT_SECRET do servidor.';

@@ -1,13 +1,13 @@
 
 @font-face {
     font-family: 'Nimbus Sans';
-    src: url('fonts/NimbusSanL-Bol.otf') format('otf');
+    src: url('../fontes/NimbusSanL-Bol.otf') format('opentype');
     font-weight: 700;
 }
 
 @font-face {
     font-family: 'Nimbus Sans Regular';
-    src: url('fonts/NimbusSans-Regular.otf') format('otf');
+    src: url('../fontes/NimbusSanL-Reg.otf') format('opentype');
     font-weight: 400;
 }
 

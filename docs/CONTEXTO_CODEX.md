@@ -56,7 +56,9 @@ A branch atual, criada diretamente da `main`, é:
 banco-persistencia
 ```
 
-Fase atual: auditoria de Singleton/Factory e Observer transacional de avaliações concluídos após JWT e migração para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
+Fase atual: auditoria final de integração/produção concluída localmente; Preview de `banco-persistencia`
+na Vercel ainda pendente de configuração e validação manual. Singleton/Factory e Observer
+transacional de avaliações já foram concluídos após JWT e migração para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
 usuários, tutoriais, comentários e avaliações usam PostgreSQL no runtime, com RepositoryFactory
 e MemoryRepositories somente nos testes. A persistência real do domínio está concluída.
 As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
@@ -72,7 +74,7 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-258 testes (241 anteriores + 17 de Observer, sem acesso ao Neon real)
+261 testes (258 anteriores + 3 da auditoria de produção, sem acesso ao Neon real)
 ```
 
 Distribuição atual:
@@ -85,6 +87,8 @@ comentarioService.test.js       3
 checkDatabase.test.js           3
 community.test.js               1
 css.test.js                     2
+staticAssets.test.js            1
+productionErrors.test.js        2
 databaseConnection.test.js      7
 databaseHealth.test.js          3
 databaseMigrations.test.js      8
@@ -290,7 +294,8 @@ As APIs de comentários/avaliações, tutoriais, busca, perfil, comunidade e hea
 Foram confirmados os 10 comentários e 20 avaliações persistidos, resumos e totais do perfil.
 Escritas reais ficam para os roteiros manuais em BANCO_DE_DADOS.md; a página de
 tutorial incrementa visualizações e não deve ser usada em uma verificação de zero escrita.
-Próximos entregáveis: revisão final de integração e Vercel/produção.
+Auditoria final de integração concluída localmente. Próximo entregável: validar Preview na
+Vercel antes de qualquer merge em `main`, conforme [DEPLOY.md](DEPLOY.md).
 
 ### Padrões auditados e Observer implementado
 
@@ -335,9 +340,27 @@ de stack/persistência no `AGENTS.md` foram atualizadas. Dependências existente
 jsonwebtoken, cookie-parser, pg e bcryptjs; cookie-session ausente. Sem atualização de versões.
 Justificativas acadêmicas, participantes e limites em [PADROES_DE_PROJETO.md](PADROES_DE_PROJETO.md).
 
-Observação para revisão final: dois NetworkError transitórios anteriores ocorreram na edição
-de comentário e na avaliação; repetir funcionou. Sem reprodução clara nesta etapa, não houve
-investigação ou mudança de tratamento de rede.
+Os dois NetworkError transitórios anteriores, na edição de comentário e na avaliação, receberam
+inspeção estática curta na auditoria final. Não foi encontrada causa concreta; helper e fluxos
+foram preservados para monitoramento no Preview.
+
+### Auditoria final de integração e produção
+
+Baseline de 258 testes preservado; três testes novos conferem assets de HTML/EJS/CSS e erros
+HTTP em processo isolado de produção, sem banco real nem leitura de `.env` nesse processo.
+Foram corrigidos caminhos/formato de duas fontes, removido um request de imagem inexistente
+que já era ocultada pelo perfil, declarado favicon no cadastro e corrigido JSON malformado
+de 500 para 400 público. Não houve refatoração arquitetural ou mudança de regras JWT.
+
+Entrypoint, views/includeFiles, rewrite, limite de duração, Pool lazy por instância, Factory,
+Observer aguardado na transação, health, cookies/proxy, logs e dependências foram auditados.
+Sem credenciais reais de infraestrutura identificadas nos arquivos versionados pela busca
+realizada; fixtures/seed continuam públicos e separados do runtime PostgreSQL. Conferência
+Chrome local offline incluiu páginas, perfil vazio e editor em desktop/mobile.
+
+Resultados e limites: [AUDITORIA_PRODUCAO.md](AUDITORIA_PRODUCAO.md). Configuração pelo
+Dashboard, segredos privados, roteiro exato de Preview, limpeza sintética e rollback:
+[DEPLOY.md](DEPLOY.md). Nenhum commit, merge, deploy ou operação no Neon foi realizado.
 
 ---
 
@@ -726,11 +749,12 @@ As funcionalidades visuais e o MExplicAI v1 estão concluídos. A fase técnica 
 
 Conexão/Singleton, schema, seed e RepositoryFactory estão implementados. Todas as entidades usam
 persistência real e autenticação JWT. Singleton/Factory foram auditados e o Observer transacional
-de avaliação/pontuação está implementado; pendências seguintes:
+de avaliação/pontuação está implementado. A auditoria final de integração/produção foi
+concluída localmente, com 261 testes offline. Pendências seguintes:
 
 ```text
-revisão final de integração
-Vercel/produção
+configurar e validar Preview de banco-persistencia na Vercel
+aprovar resultado antes de merge manual em main e liberação de produção
 ```
 
 A persistência real, a migração JWT e a auditoria dos três padrões estão concluídas.

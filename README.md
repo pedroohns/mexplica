@@ -143,7 +143,7 @@ Essa evolução transformou o projeto de um protótipo visual em uma aplicação
 ## Próximas etapas
 O projeto continua em desenvolvimento.
 Entre as principais possibilidades de evolução estão:
-- implementação de uma camada definitiva de persistência com banco de dados;
+- validação em Preview da persistência PostgreSQL e JWT da branch `banco-persistencia`;
 - continuidade da evolução da arquitetura;
 - aprimoramento das funcionalidades existentes;
 - refinamento das interfaces;
@@ -170,4 +170,9 @@ Algumas funcionalidades e interfaces continuam sendo refinadas conforme o projet
 
 ## Observação
 O MExplica é um projeto acadêmico em desenvolvimento.
-Algumas soluções utilizadas atualmente, especialmente a persistência através de arrays de objetos, foram adotadas para permitir o desenvolvimento e demonstração das funcionalidades nesta etapa do projeto e poderão ser substituídas conforme a arquitetura evoluir.
+Na branch `banco-persistencia`, o runtime usa PostgreSQL/Neon e autenticação JWT. Arrays de
+demonstração ficam restritos aos testes offline e seed. A validação dessa branch deve ocorrer
+em Preview antes de sua aprovação para `main`.
+
+Configuração e checklist de validação: [docs/DEPLOY.md](docs/DEPLOY.md).
+Resultados da auditoria local: [docs/AUDITORIA_PRODUCAO.md](docs/AUDITORIA_PRODUCAO.md).
