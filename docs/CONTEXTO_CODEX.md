@@ -29,7 +29,8 @@ Stack atual:
 - CSS
 - JavaScript vanilla
 - bcryptjs
-- cookie-session
+- jsonwebtoken
+- cookie-parser
 - dotenv
 - pg (PostgreSQL/Neon)
 - Vercel
@@ -55,7 +56,7 @@ A branch atual, criada diretamente da `main`, é:
 banco-persistencia
 ```
 
-Fase atual: migração incremental para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
+Fase atual: autenticação JWT concluída após a migração para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
 usuários, tutoriais, comentários e avaliações usam PostgreSQL no runtime, com RepositoryFactory
 e MemoryRepositories somente nos testes. A persistência real do domínio está concluída.
 As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
@@ -71,12 +72,14 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-208 testes (172 anteriores + 36 da persistência de comentários/avaliações, sem acesso ao Neon real)
+241 testes (208 anteriores + 33 de JWT, sem acesso ao Neon real)
 ```
 
 Distribuição atual:
 
 ```text
+authJwt.test.js                21
+tokenService.test.js           12
 comentarioService.test.js       3
 checkDatabase.test.js           3
 community.test.js               1
@@ -158,7 +161,8 @@ src/services/
 ├── tutorialService.js
 ├── perfilService.js
 ├── comentarioService.js
-└── relacionamentoService.js
+├── relacionamentoService.js
+└── tokenService.js
 ```
 
 ---
@@ -285,7 +289,7 @@ As APIs de comentários/avaliações, tutoriais, busca, perfil, comunidade e hea
 Foram confirmados os 10 comentários e 20 avaliações persistidos, resumos e totais do perfil.
 Escritas reais ficam para os roteiros manuais em BANCO_DE_DADOS.md; a página de
 tutorial incrementa visualizações e não deve ser usada em uma verificação de zero escrita.
-Próximos entregáveis: JWT, Observer, revisão final de padrões/arquitetura e Vercel/produção.
+Próximos entregáveis: Observer, revisão final de padrões/arquitetura e Vercel/produção.
 
 ---
 
@@ -293,11 +297,13 @@ Próximos entregáveis: JWT, Observer, revisão final de padrões/arquitetura e 
 
 O projeto já possui:
 
-- autenticação;
-- sessão com `cookie-session`;
-- cookies `httpOnly`;
+- autenticação JWT real com `jsonwebtoken`, centralizada em `tokenService`;
+- cookie `mexplica_token` HttpOnly para navegação web/EJS;
+- `Authorization: Bearer <token>` para APIs, com prioridade sobre cookie;
 - `sameSite: lax`;
 - `secure` em produção;
+- HS256, issuer `mexplica`, audience `mexplica-web` e expiração de oito horas;
+- payload mínimo: `sub` (ID como string), `iat`, `exp`, `iss`, `aud`;
 - hash de senha com `bcryptjs`;
 - autorização por middleware;
 - níveis de acesso para colaborador e Platina.
@@ -311,9 +317,23 @@ exigirColaborador
 exigirPlatina
 ```
 
-Token/JWT ainda NÃO foi implementado.
+Login e cadastro emitem JWT no cookie; cadastro continua autenticando imediatamente.
+`POST /api/auth/token` reutiliza a validação de credenciais/bcrypt e retorna token para APIs sem
+definir cookie. `/api/auth/sessao` mantém seu contrato, inclusive para o avatar do MExplicAI.
+`carregarUsuario` verifica assinatura/claims e consulta `UsuarioModel.findById(sub)` a cada
+requisição dinâmica. Autorizações usam o estado atual do usuário PostgreSQL; permissões
+não vêm do token. Assets e health não verificam JWT nem consultam usuário.
 
-A implementação de token será tratada em fase própria, depois do fechamento das funcionalidades atuais.
+`cookie-session` foi completamente removido do código e dependências; `SESSION_SECRET` ficou
+obsoleto e pode existir apenas no `.env` local, sem uso. `JWT_SECRET` é obrigatório ao emitir ou
+verificar JWT, sem fallback; ausência retorna erro de configuração seguro e não impede
+inicialização, assets, health ou endpoints públicos sem credenciais. A suíte sobrescreve
+`JWT_SECRET` com uma chave exclusiva antes de dotenv e mantém MemoryRepositories/driver bloqueado.
+O frontend não salva JWT em localStorage/sessionStorage e continua enviando cookie automaticamente.
+
+Logout remove o cookie; Bearer copiado continua válido até expirar, desde que a conta exista.
+Não há refresh token, blacklist, tabela de sessões ou estado de autenticação em memória.
+Fluxos, limitações e roteiro manual exato estão em [AUTENTICACAO.md](AUTENTICACAO.md).
 
 ---
 
@@ -399,6 +419,7 @@ Esse fluxo já possui cobertura de teste.
 A fase visual incluiu uma atualização de dependências transitivas de segurança gerada por `npm audit fix`.
 
 Na fase atual, `pg` foi adicionado ao `package.json` e ao `package-lock.json`.
+Na etapa JWT foram adicionados `jsonwebtoken` e `cookie-parser` e removido `cookie-session`.
 
 O `package-lock.json` foi atualizado para versões transitivas corrigidas.
 
@@ -646,7 +667,7 @@ Validação: 63 testes Node aprovados e conferência no Chrome local, com deskto
 
 As logos completas mantêm a transparência original também no tema escuro, sem fundo claro artificial ou filtros de cor. O VLibras é inicializado globalmente por `site.js`, com um único markup/script/widget por página e tratamento de falha externa. Home e cadastro não possuem mais integrações próprias. O posicionamento à esquerda fica em `base.css`, acima do painel mobile do MExplicAI para manter o botão acessível. Os testes dessa integração usam simulação local, sem requisições ao VLibras. A conferência no Chrome abrangeu as sete rotas principais em claro/escuro e larguras desktop/tablet/mobile; como o serviço externo estava inacessível, seu widget foi simulado para validar posicionamento e coexistência, sem validar tradução real.
 
-A fase atual é de entregáveis técnicos: conexão com banco primeiro, seguida das próximas etapas descritas a seguir.
+A fase atual é de entregáveis técnicos: persistência e JWT concluídos, seguidos das próximas etapas descritas a seguir.
 
 ---
 
@@ -656,16 +677,15 @@ As funcionalidades visuais e o MExplicAI v1 estão concluídos. A fase técnica 
 `banco-persistencia`, com conexão via `pg` e Singleton de `DatabaseConnection`/Pool implementados.
 
 Conexão/Singleton, schema, seed e RepositoryFactory estão implementados. Todas as entidades usam
-persistência real; pendências seguintes:
+persistência real e autenticação JWT; pendências seguintes:
 
 ```text
-JWT
 Observer
 revisão final de padrões/arquitetura
 Vercel/produção
 ```
 
-A migração de persistência real está concluída; JWT e Observer permanecem fora desta etapa.
+A persistência real e a migração JWT estão concluídas; Observer permanece para a próxima etapa.
 
 ---
 
@@ -679,7 +699,7 @@ A migração de persistência real está concluída; JWT e Observer permanecem f
 6. Não migrar para React/Vue/etc.
 7. Não adicionar biblioteca visual se CSS/JS atual resolver.
 8. Não criar nova camada arquitetural sem necessidade real.
-9. Evoluir banco por etapas, migrando somente a entidade autorizada; JWT continua em fase separada.
+9. Evoluir banco por etapas, migrando somente a entidade autorizada; preservar JWT e não misturar novas features arquiteturais.
 10. Não remover recursos funcionais simplesmente porque não aparecem no protótipo.
 11. Diferenciar claramente comportamento a preservar, comportamento a alterar e comportamento novo.
 12. Se uma alteração visual exigir mudança estrutural legítima, alterar todas as camadas afetadas de forma coerente.

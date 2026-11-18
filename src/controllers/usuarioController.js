@@ -3,6 +3,8 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
+const { limparCookie } = require('../utils/authCookie');
+
 
 const {
     removerDadosDoUsuario
@@ -416,8 +418,7 @@ async function excluir(
     );
 
 
-    req.session =
-        null;
+    limparCookie(res);
 
 
     return res.json({

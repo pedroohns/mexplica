@@ -11,6 +11,11 @@ const authController =
 const router =
     express.Router();
 
+// Respostas de autenticação e tokens não devem ser armazenados por caches.
+router.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+});
 
 router.post(
     '/verificar',
@@ -21,6 +26,11 @@ router.post(
 router.post(
     '/login',
     authController.login
+);
+
+router.post(
+    '/token',
+    authController.token
 );
 
 

@@ -7,6 +7,9 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
+const TokenService = require('../services/tokenService');
+const { definirCookie, limparCookie } = require('../utils/authCookie');
+
 
 function identificarTipo(
     identificador
@@ -133,100 +136,41 @@ async function verificar(
 }
 
 
-// LOGIN
-async function login(
-    req,
-    res
-) {
-
-    const {
-        identificador,
-        senha
-    } = req.body;
-
-
-    if (
-        !validarIdentificador(
-            identificador
-        )
-        ||
-        !senha
-    ) {
-
-        return res
-            .status(400)
-            .json({
-
-                erro:
-                    'Informe o email/telefone e a senha.'
-
-            });
-
+// Login web e emissão para API compartilham validação, busca e comparação bcrypt.
+async function autenticarCredenciais(identificador, senha) {
+    if (!validarIdentificador(identificador) || !senha) {
+        return { status: 400, erro: 'Informe o email/telefone e a senha.' };
     }
 
-
-    const usuario =
-        (await UsuarioModel
-            .findByIdentifier(
-                identificador
-            ));
-
-
-    if (!usuario) {
-
-        return res
-            .status(401)
-            .json({
-
-                erro:
-                    'Credenciais inválidas.'
-
-            });
-
+    const usuario = await UsuarioModel.findByIdentifier(identificador);
+    if (!usuario || !await bcrypt.compare(String(senha), usuario.senhaHash)) {
+        return { status: 401, erro: 'Credenciais inválidas.' };
     }
+    return { usuario };
+}
 
+// LOGIN WEB
+async function login(req, res) {
+    const resultado = await autenticarCredenciais(req.body.identificador, req.body.senha);
+    if (resultado.erro) return res.status(resultado.status).json({ erro: resultado.erro });
 
-    const senhaCorreta =
-        await bcrypt.compare(
+    definirCookie(res, TokenService.criarToken(resultado.usuario.id));
+    return res.json({
+        mensagem: 'Login realizado com sucesso.',
+        usuario: UsuarioModel.toPrivate(resultado.usuario)
+    });
+}
 
-            String(senha),
-
-            usuario.senhaHash
-
-        );
-
-
-    if (!senhaCorreta) {
-
-        return res
-            .status(401)
-            .json({
-
-                erro:
-                    'Credenciais inválidas.'
-
-            });
-
-    }
-
-
-    req.session.usuarioId =
-        usuario.id;
-
+// CLIENTES DE API (sem cookie)
+async function token(req, res) {
+    const resultado = await autenticarCredenciais(req.body.identificador, req.body.senha);
+    if (resultado.erro) return res.status(resultado.status).json({ erro: resultado.erro });
 
     return res.json({
-
-        mensagem:
-            'Login realizado com sucesso.',
-
-        usuario:
-            UsuarioModel
-                .toPrivate(
-                    usuario
-                )
-
+        token: TokenService.criarToken(resultado.usuario.id),
+        tipo: 'Bearer',
+        expiraEm: TokenService.CONFIGURACAO.expiraEm
     });
-
 }
 
 
@@ -378,6 +322,9 @@ async function cadastro(
         );
 
 
+    // Evitar persistir uma conta que não poderá receber sua credencial de autenticação.
+    TokenService.validarConfiguracao();
+
     const senhaHash =
         await bcrypt.hash(
             String(senha),
@@ -438,8 +385,7 @@ async function cadastro(
 
     // Depois do cadastro,
     // o usuário já fica logado.
-    req.session.usuarioId =
-        usuario.id;
+    definirCookie(res, TokenService.criarToken(usuario.id));
 
 
     return res
@@ -466,8 +412,7 @@ function logout(
     res
 ) {
 
-    req.session =
-        null;
+    limparCookie(res);
 
 
     return res.json({
@@ -522,6 +467,8 @@ module.exports = {
     verificar,
 
     login,
+
+    token,
 
     cadastro,
 

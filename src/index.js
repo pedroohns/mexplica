@@ -16,9 +16,9 @@ const path =
     );
 
 
-const cookieSession =
+const cookieParser =
     require(
-        'cookie-session'
+        'cookie-parser'
     );
 
 
@@ -130,50 +130,6 @@ app.use(
 
 
 // =============================
-// SESSAO
-// =============================
-app.use(
-
-    cookieSession({
-
-        name:
-            'mexplica_session',
-
-        keys: [
-
-            process.env
-                .SESSION_SECRET
-
-            ||
-
-            'mexplica-chave-dev-troque-em-producao'
-
-        ],
-
-        httpOnly:
-            true,
-
-        sameSite:
-            'lax',
-
-        secure:
-            process.env.NODE_ENV
-            === 'production',
-
-        maxAge:
-            1000
-            *
-            60
-            *
-            60
-            *
-            8
-
-    })
-
-);
-
-// =============================
 // ARQUIVOS PUBLICOS
 // =============================
 app.use(
@@ -230,7 +186,8 @@ app.get(
 // =============================
 // API
 // =============================
-// Arquivos estáticos e health checks não precisam consultar o usuário da sessão.
+// Arquivos estáticos e health checks não precisam ler cookies, verificar JWT ou consultar usuário.
+app.use(cookieParser());
 app.use(carregarUsuario);
 
 app.use(
@@ -323,6 +280,14 @@ app.use(
 
         if (err.type === 'entity.too.large') {
             return res.status(413).json({ erro: 'O tutorial excede o limite total de 1 MB. Reduza as imagens.' });
+        }
+
+        if (err.code === 'JWT_SECRET_AUSENTE') {
+            console.error('JWT_SECRET não configurada para autenticação.');
+            const mensagem = 'Autenticação indisponível. Verifique a configuração JWT_SECRET do servidor.';
+            return req.path.startsWith('/api/')
+                ? res.status(503).json({ erro: mensagem })
+                : res.status(503).send(mensagem);
         }
 
         if (err.code === 'USUARIO_IDENTIFICADOR_CONFLITO') {

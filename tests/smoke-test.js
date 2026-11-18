@@ -13,11 +13,6 @@ process.env.NODE_ENV =
     'test';
 
 
-process.env.SESSION_SECRET =
-    process.env.SESSION_SECRET
-    || 'mexplica-chave-exclusiva-para-testes';
-
-
 const app =
     require('../src/index');
 

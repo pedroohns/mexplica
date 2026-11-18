@@ -4,7 +4,9 @@ O schema inicial está em `src/database/schema.sql`. Usuários, tutoriais, passo
 comentários e avaliações usam PostgreSQL no runtime real. O estado híbrido foi encerrado.
 Os quatro Repositories e os comandos de infraestrutura reutilizam o Singleton `DatabaseConnection`.
 Os arquivos de `src/data/` ficam restritos ao seed e aos MemoryRepositories dos testes offline.
-O frontend e a autenticação com cookie-session permanecem preservados.
+O frontend permanece preservado. Após a persistência, a autenticação migrou para JWT em
+cookie HttpOnly/Bearer; o usuário e suas permissões continuam vindo do PostgreSQL atual.
+Detalhes em [AUTENTICACAO.md](AUTENTICACAO.md).
 
 ## Persistência de usuários no runtime
 

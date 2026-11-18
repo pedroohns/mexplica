@@ -25,14 +25,14 @@ after(async () => {
 
 function preparar(t) {
     const urlOriginal = process.env.DATABASE_URL;
-    const segredoOriginal = process.env.SESSION_SECRET;
+    const segredoOriginal = process.env.JWT_SECRET;
     process.env.DATABASE_URL = urlTeste;
-    process.env.SESSION_SECRET = segredoTeste;
+    process.env.JWT_SECRET = segredoTeste;
     t.after(() => {
         if (urlOriginal === undefined) delete process.env.DATABASE_URL;
         else process.env.DATABASE_URL = urlOriginal;
-        if (segredoOriginal === undefined) delete process.env.SESSION_SECRET;
-        else process.env.SESSION_SECRET = segredoOriginal;
+        if (segredoOriginal === undefined) delete process.env.JWT_SECRET;
+        else process.env.JWT_SECRET = segredoOriginal;
     });
 
     pools = [];
@@ -77,7 +77,7 @@ test('health do banco retorna 200 e reutiliza o mesmo Pool em várias requisiç�
     assert.deepEqual(pools[0].consultas, ['SELECT 1 AS ok', 'SELECT 1 AS ok']);
 });
 
-test('health do banco retorna 503 sem expor exceção, DATABASE_URL ou SESSION_SECRET nos logs e JSON', async t => {
+test('health do banco retorna 503 sem expor exceção, DATABASE_URL ou JWT_SECRET nos logs e JSON', async t => {
     const { instancia, logs } = preparar(t);
     const pool = instancia.getPool();
     t.mock.method(pool, 'query', async () => {

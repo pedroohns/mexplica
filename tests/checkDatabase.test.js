@@ -17,7 +17,7 @@ function executar(modo) {
             async query(sql) {
                 assert.equal(sql, 'SELECT 1 AS ok');
                 if (process.env.MEXPLICA_TEST_DB_MODE === 'falha') {
-                    throw new Error('Exceção privada: ' + process.env.DATABASE_URL + process.env.SESSION_SECRET);
+                    throw new Error('Exceção privada: ' + process.env.DATABASE_URL + process.env.JWT_SECRET);
                 }
                 return { rows: [{ ok: 1 }] };
             }
@@ -35,7 +35,7 @@ function executar(modo) {
         env: {
             ...process.env,
             DATABASE_URL: modo === 'ausente' ? '' : 'postgresql://banco.invalid/mexplica?sslmode=require',
-            SESSION_SECRET: 'segredo-ficticio-de-teste',
+            JWT_SECRET: 'segredo-ficticio-de-teste',
             MEXPLICA_TEST_DB_MODE: modo
         }
     });

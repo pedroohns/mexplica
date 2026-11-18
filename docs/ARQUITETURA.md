@@ -19,7 +19,7 @@ Service (quando existe regra de negócio ou composição)
   ↓
 Model
   ↓
-Data
+Repository → PostgreSQL (runtime) / MemoryRepository → Data (testes)
 ```
 
 Nem toda operação precisa passar por um Service. Services são usados apenas quando existe uma responsabilidade que ultrapassa simples manipulação de dados, como composição de informações vindas de vários Models, validação e normalização de regras de domínio, integridade entre entidades, operações em cascata ou cálculos complexos.
@@ -98,6 +98,7 @@ A pasta `src/services/` concentra operações com responsabilidade de negócio o
 - `perfilService.js`: montagem dos dados completos de perfil e estatísticas.
 - `comentarioService.js`: enriquecimento e listagem de comentários completos.
 - `relacionamentoService.js`: integridade entre entidades, exclusões em cascata e ajustes de pontos.
+- `tokenService.js`: assinatura/verificação JWT, algoritmo, issuer, audience e validade centralizados.
 
 ### Models
 
@@ -105,7 +106,7 @@ Models concentram operações sobre cada entidade: busca, criação, alteração
 
 ### Data
 
-A pasta `src/data/` contém o estado em memória utilizado atualmente pelo projeto:
+A pasta `src/data/` contém fixtures de testes e seed:
 
 ```text
 tutorialData.js
@@ -114,11 +115,17 @@ comentarioData.js
 avaliacaoData.js
 ```
 
-Essa camada separa dados de demonstração da lógica dos Models. Ela não deve ser tratada como substituta permanente para um banco de dados.
+Essa camada separa dados de demonstração da lógica dos Models. O runtime usa exclusivamente
+os Repositories PostgreSQL selecionados pela RepositoryFactory; testes usam MemoryRepositories.
 
 ### Middlewares
 
-Middlewares cuidam de comportamentos transversais do ciclo HTTP, como carregar usuário da sessão e exigir autenticação ou níveis de acesso.
+Middlewares cuidam de comportamentos transversais do ciclo HTTP. Após assets/health,
+`cookie-parser` lê cookies e `carregarUsuario` verifica o JWT de cookie HttpOnly ou Bearer
+(prioritário nas APIs), consulta o usuário por `sub` e preenche `req.usuario`/`res.locals.usuarioAtual`.
+`exigirAutenticacao`, `exigirColaborador` e `exigirPlatina` usam o usuário atual do PostgreSQL.
+`src/utils/authCookie.js` centraliza criação/limpeza e atributos do cookie; não contém regra de domínio.
+Não há estado de sessão em memória. Consulte [AUTENTICACAO.md](AUTENTICACAO.md).
 
 ### Utils
 
@@ -226,21 +233,20 @@ Arquivos estáticos são servidos a partir de `public/`.
 
 ## 9. Persistência
 
-Atualmente a aplicação usa arrays em memória. Isso é suficiente para o estágio acadêmico do projeto, mas não é persistência durável em ambiente serverless.
-
-Uma evolução futura natural seria:
+Usuários, tutoriais, passos, tags, comentários e avaliações persistem em PostgreSQL no runtime:
 
 ```text
 Controller
   ↓
 Service
   ↓
-Repository / Model
+Repository (selecionado pela RepositoryFactory)
   ↓
-Banco de dados
+PostgreSQL (Pool do DatabaseConnection Singleton)
 ```
 
-A adoção de banco de dados deve ser uma evolução separada, não misturada a refatorações organizacionais.
+Persistência real está concluída. `src/data/` e MemoryRepositories continuam nos testes offline
+e seed; não há fallback em memória no runtime. Detalhes em [BANCO_DE_DADOS.md](BANCO_DE_DADOS.md).
 
 ## 10. Princípios adotados
 

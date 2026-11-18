@@ -3,6 +3,8 @@ const UsuarioModel =
         '../models/usuarioModel'
     );
 
+const TokenService = require('../services/tokenService');
+const { NOME_COOKIE, limparCookie } = require('../utils/authCookie');
 
 async function carregarUsuario(
     req,
@@ -10,31 +12,19 @@ async function carregarUsuario(
     next
 ) {
 
-    const usuarioId =
-        req.session
-            ?.usuarioId;
+    const authorization = req.get('authorization') || '';
+    const usarBearer = req.path.startsWith('/api/') && /^Bearer(?:\s|$)/i.test(authorization);
+    const cookie = req.cookies?.[NOME_COOKIE];
+    let usuario = null;
 
-
-    const usuario =
-        usuarioId
-
-            ? (await UsuarioModel
-                .findById(
-                    usuarioId
-                ))
-
-            : null;
-
-
-    if (
-        usuarioId
-        &&
-        !usuario
-    ) {
-
-        req.session =
-            null;
-
+    if (usarBearer || cookie !== undefined) {
+        // Bearer explícito sempre vence, inclusive quando vazio ou malformado.
+        const token = usarBearer
+            ? (/^Bearer[ \t]+(\S+)$/i.exec(authorization)?.[1] || '')
+            : cookie;
+        const payload = TokenService.verificarToken(token);
+        if (payload) usuario = await UsuarioModel.findById(payload.sub);
+        if (!usuario && !usarBearer) limparCookie(res);
     }
 
 

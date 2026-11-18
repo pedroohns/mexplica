@@ -141,7 +141,7 @@ test('sessão de usuário removido é limpa depois da consulta assíncrona', asy
     const resposta = await request('/api/auth/sessao', 'GET', undefined, true);
     assert.equal(resposta.status, 200);
     assert.deepEqual(await resposta.json(), { autenticado: false, usuario: null });
-    assert.equal(resposta.headers.getSetCookie().some(valor => valor.startsWith('mexplica_session=;')), true);
+    assert.equal(resposta.headers.getSetCookie().some(valor => valor.startsWith('mexplica_token=;')), true);
 });
 
 test('falha assíncrona inesperada chega ao middleware sem expor SQL ou detalhes privados', async t => {
