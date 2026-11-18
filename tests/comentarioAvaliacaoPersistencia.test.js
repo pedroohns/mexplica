@@ -124,6 +124,29 @@ test('avaliações mantêm validação de nota/autoria e edições concorrentes 
     assert.equal((await UsuarioModel.findById(2)).pontos, pontos + AvaliacaoModel.pontosPorNota(final.nota));
 });
 
+test('API mantém níveis anterior/atual e disponibilidade após a reação do observer em memória', async t => {
+    restaurar(t);
+    const autor = await UsuarioModel.findById(2);
+    await UsuarioModel.adicionarPontos(2, 2470 - autor.pontos);
+    const tutorial = await novoTutorial();
+    const criada = await request('/api/tutoriais/' + tutorial.id + '/avaliacoes', 1, 'POST', { nota: 3 });
+    assert.equal(criada.status, 201);
+    const resultado = await criada.json();
+    assert.equal(resultado.nivelAnterior, 'Diamante');
+    assert.equal(resultado.nivelAtual, 'Platina');
+    assert.equal(resultado.mudouNivel, true);
+    assert.equal(resultado.colaborador.pontos, 2500);
+    await UsuarioModel.definirDisponibilidade(2, true);
+    const editada = await request('/api/avaliacoes/' + resultado.avaliacao.id, 1, 'PUT', { nota: 1 });
+    assert.equal(editada.status, 200);
+    const atual = await editada.json();
+    assert.equal(atual.nivelAnterior, 'Platina');
+    assert.equal(atual.nivelAtual, 'Diamante');
+    assert.equal(atual.mudouNivel, true);
+    assert.equal(atual.colaborador.pontos, 2480);
+    assert.equal(atual.colaborador.disponivelAtendimento, false);
+});
+
 test('listagem de comentários consulta cada autor distinto apenas uma vez', async t => {
     restaurar(t);
     const tutorial = await novoTutorial();

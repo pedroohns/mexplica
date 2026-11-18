@@ -56,7 +56,7 @@ A branch atual, criada diretamente da `main`, é:
 banco-persistencia
 ```
 
-Fase atual: autenticação JWT concluída após a migração para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
+Fase atual: auditoria de Singleton/Factory e Observer transacional de avaliações concluídos após JWT e migração para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
 usuários, tutoriais, comentários e avaliações usam PostgreSQL no runtime, com RepositoryFactory
 e MemoryRepositories somente nos testes. A persistência real do domínio está concluída.
 As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
@@ -72,7 +72,7 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-241 testes (208 anteriores + 33 de JWT, sem acesso ao Neon real)
+258 testes (241 anteriores + 17 de Observer, sem acesso ao Neon real)
 ```
 
 Distribuição atual:
@@ -80,6 +80,7 @@ Distribuição atual:
 ```text
 authJwt.test.js                21
 tokenService.test.js           12
+avaliacaoObserver.test.js       8
 comentarioService.test.js       3
 checkDatabase.test.js           3
 community.test.js               1
@@ -96,8 +97,8 @@ relacionamentoService.test.js   3
 repositoryFactory.test.js       9
 comentarioPostgresRepository.test.js 6
 avaliacaoPostgresRepository.test.js 7
-comentarioAvaliacaoPersistencia.test.js 6
-relacionamentosPostgres.test.js 15
+comentarioAvaliacaoPersistencia.test.js 7
+relacionamentosPostgres.test.js 23
 seedData.test.js                9
 smoke-test.js                  16
 tutorialService.test.js         4
@@ -270,8 +271,8 @@ TutorialPostgresRepository hidrata metadados/passos/tags em três SELECTs em lot
 usam transações, preservando imagem/link, imagens derivadas e slug estável. A busca mantém
 os pesos e desempates existentes, incluindo o contrato usado pelo MExplicAI.
 relacionamentoService compõe criação/edição/exclusão de avaliação e pontos em uma única
-transação, passando o mesmo client entre Repositories. Bloqueia o tutorial e relê a nota
-anterior sob FOR UPDATE para calcular o delta. Exclusão de tutorial desconta avaliações
+transação, passando o mesmo client entre Repositories e o Observer de pontuação. Bloqueia
+o tutorial e relê a nota anterior sob FOR UPDATE para calcular o delta. Exclusão de tutorial desconta avaliações
 antes da cascata. Exclusão de usuário agrupa reversões por outros autores antes da cascata.
 executarOperacaoHibrida/operacaoAtual e limpeza de arrays no Service foram removidos.
 MemoryRepositories simulam transações/cascatas apenas nos testes via transacaoMemory.js.
@@ -282,14 +283,61 @@ Detalhes, limites e roteiro manual de escrita em `docs/BANCO_DE_DADOS.md`.
 Login seed e persistência de cadastro após reinício foram validados com PostgreSQL real
 em etapas anteriores. Na migração de tutoriais, API de tutoriais, busca, comunidade, perfil e leitura por ID
 retornaram HTTP 200 no Neon; 49 SELECTs, zero escritas, com qualquer comando de escrita bloqueado
-no processo de validação. A suíte atual é de 208 testes offline.
+no processo de validação. Na conclusão da migração de comentários/avaliações eram 208 testes offline.
 Na migração de comentários/avaliações, db:verify passou no Neon (PK/FK, órfãos e identities).
 As APIs de comentários/avaliações, tutoriais, busca, perfil, comunidade e health retornaram
 200; foram 137 SELECTs, zero escritas e nenhum dos quatro arquivos Data carregado no runtime.
 Foram confirmados os 10 comentários e 20 avaliações persistidos, resumos e totais do perfil.
 Escritas reais ficam para os roteiros manuais em BANCO_DE_DADOS.md; a página de
 tutorial incrementa visualizações e não deve ser usada em uma verificação de zero escrita.
-Próximos entregáveis: Observer, revisão final de padrões/arquitetura e Vercel/produção.
+Próximos entregáveis: revisão final de integração e Vercel/produção.
+
+### Padrões auditados e Observer implementado
+
+Singleton e Factory foram confirmados e preservados: `DatabaseConnection` compartilha um
+único Pool lazy por processo e `RepositoryFactory` seleciona as quatro entidades, memória
+nos testes e PostgreSQL no runtime. A busca inicial encontrou eventos de infraestrutura,
+callbacks e listeners do browser, mas nenhum Observer de domínio no backend.
+
+O CRUD normal de avaliação passou a usar:
+
+```text
+relacionamentoService (persiste avaliação e calcula delta com pontosPorNota)
+  ↓ await AvaliacaoEventPublisher.notificar(evento, { client })
+  ↓ await PontuacaoAvaliacaoObserver.atualizar(evento, { client })
+UsuarioModel → UsuarioRepository (mesmo client)
+  ↓ resultado/resumo no mesmo client
+COMMIT, ou ROLLBACK em qualquer falha
+```
+
+Arquivos: `src/events/avaliacaoEventPublisher.js` e
+`src/observers/pontuacaoAvaliacaoObserver.js`. Eventos: `avaliacaoCriada`,
+`avaliacaoAtualizada` e `avaliacaoRemovida`, com `tipo`, `autorId` e `deltaPontos`;
+o client é passado como contexto separado. A composição fica no escopo do módulo do
+Service: um Publisher e um Observer, sem registro por request. Set impede duplicação
+do mesmo objeto; notificação sequencial aguarda cada reação e propaga rejeições.
+O Observer exige client e não abre sua própria transação.
+
+O Service mantém bloqueios, validação, persistência e cálculo, e remove somente o ajuste
+direto de pontos do CRUD normal. A resposta de criação/edição relê o autor após a reação;
+nível anterior é capturado como valor antes da mutação, inclusive nos adapters em memória.
+Exclusões de tutorial/usuário mantêm reversões agregadas e CASCADE na transação, sem
+eventos individuais. API, JWT, views, frontend, schema, seed e Vercel foram preservados.
+
+Foram adicionados 17 testes: oito de Publisher/Observer, oito no fluxo PostgreSQL com clientes
+falsos e um da API em memória. Cobrem deltas, registro, espera async, identidade do client,
+rollback após a reação nos três CRUDs, ausência de duplicação e níveis/disponibilidade.
+O baseline de 241 continua coberto; a suíte final tem 258 testes aprovados.
+
+A auditoria limitada não encontrou código ativo de sessão antiga, operação híbrida,
+Repository legado ou import Data consumido pelo runtime PostgreSQL. Referências obsoletas
+de stack/persistência no `AGENTS.md` foram atualizadas. Dependências existentes confirmadas:
+jsonwebtoken, cookie-parser, pg e bcryptjs; cookie-session ausente. Sem atualização de versões.
+Justificativas acadêmicas, participantes e limites em [PADROES_DE_PROJETO.md](PADROES_DE_PROJETO.md).
+
+Observação para revisão final: dois NetworkError transitórios anteriores ocorreram na edição
+de comentário e na avaliação; repetir funcionou. Sem reprodução clara nesta etapa, não houve
+investigação ou mudança de tratamento de rede.
 
 ---
 
@@ -677,15 +725,15 @@ As funcionalidades visuais e o MExplicAI v1 estão concluídos. A fase técnica 
 `banco-persistencia`, com conexão via `pg` e Singleton de `DatabaseConnection`/Pool implementados.
 
 Conexão/Singleton, schema, seed e RepositoryFactory estão implementados. Todas as entidades usam
-persistência real e autenticação JWT; pendências seguintes:
+persistência real e autenticação JWT. Singleton/Factory foram auditados e o Observer transacional
+de avaliação/pontuação está implementado; pendências seguintes:
 
 ```text
-Observer
-revisão final de padrões/arquitetura
+revisão final de integração
 Vercel/produção
 ```
 
-A persistência real e a migração JWT estão concluídas; Observer permanece para a próxima etapa.
+A persistência real, a migração JWT e a auditoria dos três padrões estão concluídas.
 
 ---
 

@@ -1,6 +1,12 @@
 const UsuarioModel = require('../models/usuarioModel');
 const TutorialModel = require('../models/tutorialModel');
 const AvaliacaoModel = require('../models/avaliacaoModel');
+const AvaliacaoEventPublisher = require('../events/avaliacaoEventPublisher');
+const PontuacaoAvaliacaoObserver = require('../observers/pontuacaoAvaliacaoObserver');
+
+// Composição única no carregamento do módulo; nenhum registro ocorre por request.
+const avaliacaoPublisher = new AvaliacaoEventPublisher();
+avaliacaoPublisher.registrar(new PontuacaoAvaliacaoObserver());
 
 function falha(code) { throw Object.assign(new Error('Operação de relacionamento recusada.'), { code }); }
 
@@ -10,9 +16,10 @@ function conferirAvaliador(avaliacao, avaliadorId, acao) {
     }
 }
 
-async function resultadoDaAvaliacao(avaliacao, tutorial, colaboradorAnterior, delta, client) {
-    const colaborador = await UsuarioModel.adicionarPontos(tutorial.autorId, delta, { client });
-    const nivelAnterior = colaboradorAnterior?.nivel || null;
+async function resultadoDaAvaliacao(avaliacao, tutorial, nivelAnterior, client) {
+    // A resposta lê o estado após as reações, sem depender do retorno de um observer.
+    const usuario = await UsuarioModel.findById(tutorial.autorId, { client });
+    const colaborador = usuario?.colaborador ? usuario : null;
     return {
         avaliacao, resumo: await AvaliacaoModel.resumoDoTutorial(tutorial.id, { client }),
         colaborador: UsuarioModel.toPublic(colaborador),
@@ -29,8 +36,11 @@ async function criarAvaliacaoComPontos(tutorialId, avaliadorId, nota) {
         if (tutorial.autorId === Number(avaliadorId)) falha('AVALIACAO_PROPRIO_TUTORIAL');
         if (await AvaliacaoModel.findByTutorialEAvaliador(tutorial.id, avaliadorId, { client })) falha('AVALIACAO_DUPLICADA');
         const colaborador = await UsuarioModel.findById(tutorial.autorId, { client });
+        const nivelAnterior = colaborador?.nivel || null;
         const avaliacao = await AvaliacaoModel.create({ tutorialId: tutorial.id, avaliadorId, nota }, { client });
-        return resultadoDaAvaliacao(avaliacao, tutorial, colaborador, AvaliacaoModel.pontosPorNota(nota), client);
+        await avaliacaoPublisher.notificar({ tipo: 'avaliacaoCriada', autorId: tutorial.autorId,
+            deltaPontos: AvaliacaoModel.pontosPorNota(nota) }, { client });
+        return resultadoDaAvaliacao(avaliacao, tutorial, nivelAnterior, client);
     });
 }
 
@@ -45,8 +55,11 @@ async function atualizarAvaliacaoComPontos(id, nota, { avaliadorId } = {}) {
         conferirAvaliador(anterior, avaliadorId, 'editar');
         const delta = AvaliacaoModel.pontosPorNota(nota) - AvaliacaoModel.pontosPorNota(anterior.nota);
         const colaborador = await UsuarioModel.findById(tutorial.autorId, { client });
+        const nivelAnterior = colaborador?.nivel || null;
         const avaliacao = await AvaliacaoModel.update(id, nota, { client });
-        return resultadoDaAvaliacao(avaliacao, tutorial, colaborador, delta, client);
+        await avaliacaoPublisher.notificar({ tipo: 'avaliacaoAtualizada', autorId: tutorial.autorId,
+            deltaPontos: delta }, { client });
+        return resultadoDaAvaliacao(avaliacao, tutorial, nivelAnterior, client);
     });
 }
 
@@ -59,7 +72,8 @@ async function removerAvaliacaoComAjuste(id, { avaliadorId } = {}) {
         if (!avaliacao) return null;
         conferirAvaliador(avaliacao, avaliadorId, 'excluir');
         const removida = await AvaliacaoModel.remove(id, { client });
-        if (tutorial) await UsuarioModel.adicionarPontos(tutorial.autorId, -AvaliacaoModel.pontosPorNota(avaliacao.nota), { client });
+        if (tutorial) await avaliacaoPublisher.notificar({ tipo: 'avaliacaoRemovida', autorId: tutorial.autorId,
+            deltaPontos: -AvaliacaoModel.pontosPorNota(avaliacao.nota) }, { client });
         return removida;
     });
 }

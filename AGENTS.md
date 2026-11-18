@@ -26,8 +26,10 @@ A estrutura atual foi resultado de uma refatoração incremental com testes de r
 - CSS
 - JavaScript
 - bcryptjs
-- cookie-session
+- jsonwebtoken
+- cookie-parser
 - dotenv
+- pg (PostgreSQL/Neon)
 - Vercel
 
 ## Execução
@@ -50,7 +52,7 @@ Service (quando necessário)
   ↓
 Model
   ↓
-Data
+Repository → PostgreSQL (runtime) / MemoryRepository → Data (testes)
 ```
 
 Nem toda chamada precisa passar por todas as camadas.
@@ -71,7 +73,7 @@ Concentram operações das entidades.
 
 ### Data
 
-Contém os arrays em memória atuais. Não mover novamente os grandes dados de demonstração para dentro dos Models.
+Contém os arrays de demonstração usados pelo seed e pelos MemoryRepositories dos testes offline. Não mover esses dados para dentro dos Models nem usá-los como fallback no runtime.
 
 ## Services existentes
 
@@ -80,13 +82,15 @@ src/services/
 ├── tutorialService.js
 ├── perfilService.js
 ├── comentarioService.js
-└── relacionamentoService.js
+├── relacionamentoService.js
+└── tokenService.js
 ```
 
 - `tutorialService`: validação, normalização e enriquecimento de tutorial.
 - `perfilService`: montagem completa de perfil e estatísticas.
 - `comentarioService`: enriquecimento e listagem de comentários completos.
-- `relacionamentoService`: exclusões em cascata, integridade e ajustes de pontos.
+- `relacionamentoService`: exclusões em cascata, integridade e coordenação transacional de avaliações/eventos de pontuação.
+- `tokenService`: assinatura e verificação JWT centralizadas.
 
 Não devolver essas responsabilidades para Controllers ou `utils`.
 
@@ -160,7 +164,9 @@ Não substituir esse fluxo sem motivo. Arquivos estáticos são servidos a parti
 
 ## Persistência
 
-Os dados atuais vivem em memória. Isso é conhecido e aceito no estágio atual do projeto. Adicionar banco de dados deve ser tratado como uma feature/arquitetura separada.
+Usuários, tutoriais, passos, tags, comentários e avaliações persistem em PostgreSQL no runtime. RepositoryFactory seleciona memória somente em `NODE_ENV=test`; não há fallback em memória no runtime. DatabaseConnection compartilha um Pool lazy por processo.
+
+O CRUD normal de avaliação publica eventos aguardados por PontuacaoAvaliacaoObserver usando o mesmo client da transação. Exclusões em lote de tutorial/usuário mantêm ajustes agregados. Preservar a atomicidade; não notificar depois do COMMIT. Detalhes em `docs/PADROES_DE_PROJETO.md`.
 
 ## Testes
 

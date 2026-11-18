@@ -5,6 +5,7 @@ const UsuarioPostgresRepository = require('../src/repositories/usuarioPostgresRe
 const TutorialPostgresRepository = require('../src/repositories/tutorialPostgresRepository');
 const AvaliacaoPostgresRepository = require('../src/repositories/avaliacaoPostgresRepository');
 const ComentarioPostgresRepository = require('../src/repositories/comentarioPostgresRepository');
+const AvaliacaoEventPublisher = require('../src/events/avaliacaoEventPublisher');
 
 const usuario = (id, pontos = 1000) => ({ id, slug: 'usuario-' + id, nome: 'Pessoa', sobrenome: 'Sintética',
     email: '', telefone: '', idade: 30, genero: 'outro', colaborador: true, pontos, bio: '', localizacao: 'Brasil',
@@ -96,6 +97,7 @@ mock.method(Factory, 'criarUsuarioRepository', () => new UsuarioPostgresReposito
 mock.method(Factory, 'criarTutorialRepository', () => new TutorialPostgresRepository(pool));
 mock.method(Factory, 'criarAvaliacaoRepository', () => new AvaliacaoPostgresRepository(pool));
 mock.method(Factory, 'criarComentarioRepository', () => new ComentarioPostgresRepository(pool));
+const PontuacaoAvaliacaoObserver = require('../src/observers/pontuacaoAvaliacaoObserver');
 const Service = require('../src/services/relacionamentoService');
 const AvaliacaoModel = require('../src/models/avaliacaoModel');
 const ComentarioModel = require('../src/models/comentarioModel');
@@ -239,4 +241,136 @@ test('IDs inválidos preservam ausência no domínio sem enviar NaN ao PostgreSQ
         assert.equal(await AvaliacaoModel.remove(id), null);
     }
     assert.equal(banco.consultas.length, 0);
+});
+
+test('CRUD publica os três eventos com deltas corretos e um ajuste por evento no mesmo client', async t => {
+    const eventos = [], recebidos = [], clients = [];
+    const conectar = banco.connect;
+    t.mock.method(banco, 'connect', async function () {
+        const client = await conectar.call(this);
+        clients.push(client);
+        return client;
+    });
+    const notificar = AvaliacaoEventPublisher.prototype.notificar;
+    t.mock.method(AvaliacaoEventPublisher.prototype, 'notificar', async function (evento, contexto) {
+        eventos.push({ evento, client: contexto.client, ultimaQuery: banco.consultas.at(-1).sql });
+        return notificar.call(this, evento, contexto);
+    });
+    const atualizar = PontuacaoAvaliacaoObserver.prototype.atualizar;
+    t.mock.method(PontuacaoAvaliacaoObserver.prototype, 'atualizar', async function (evento, contexto) {
+        recebidos.push({ evento, client: contexto.client });
+        return atualizar.call(this, evento, contexto);
+    });
+
+    const criada = await Service.criarAvaliacaoComPontos(11, 1, 3);
+    assert.equal(criada.colaborador.pontos, 1030);
+    const editada = await Service.atualizarAvaliacaoComPontos(criada.avaliacao.id, 5);
+    assert.equal(editada.colaborador.pontos, 1050);
+    await Service.atualizarAvaliacaoComPontos(criada.avaliacao.id, 5);
+    await Service.removerAvaliacaoComAjuste(criada.avaliacao.id);
+    assert.equal(banco.estado.usuarios.find(item => item.id === 2).pontos, 1000);
+    assert.equal(await Service.removerAvaliacaoComAjuste(criada.avaliacao.id), null);
+
+    assert.deepEqual(eventos.map(item => item.evento), [
+        { tipo: 'avaliacaoCriada', autorId: 2, deltaPontos: 30 },
+        { tipo: 'avaliacaoAtualizada', autorId: 2, deltaPontos: 20 },
+        { tipo: 'avaliacaoAtualizada', autorId: 2, deltaPontos: 0 },
+        { tipo: 'avaliacaoRemovida', autorId: 2, deltaPontos: -50 }
+    ]);
+    assert.equal(recebidos.length, eventos.length);
+    for (let i = 0; i < eventos.length; i++) {
+        assert.equal(eventos[i].client, clients[i]);
+        assert.equal(recebidos[i].client, clients[i]);
+        assert.equal(recebidos[i].evento, eventos[i].evento);
+        assert.match(eventos[i].ultimaQuery, /^(INSERT INTO|UPDATE|DELETE FROM) public.avaliacoes/);
+    }
+    assert.equal(banco.consultas.filter(item => item.sql.startsWith('UPDATE public.usuarios')).length, 4);
+    assert.equal(banco.consultas.filter(item => item.sql === 'COMMIT').length, 5);
+    assert.equal(banco.consultas.every(item => item.executor === 'client'), true);
+});
+
+test('COMMIT aguarda o observer mesmo quando o ajuste de pontos já terminou', async t => {
+    const atualizar = PontuacaoAvaliacaoObserver.prototype.atualizar;
+    let liberar, sinalizarInicio;
+    const bloqueio = new Promise(resolve => { liberar = resolve; });
+    const iniciou = new Promise(resolve => { sinalizarInicio = resolve; });
+    t.mock.method(PontuacaoAvaliacaoObserver.prototype, 'atualizar', async function (...args) {
+        await atualizar.apply(this, args);
+        sinalizarInicio();
+        await bloqueio;
+    });
+
+    const operacao = Service.criarAvaliacaoComPontos(11, 1, 4);
+    await iniciou;
+    try {
+        assert.equal(banco.consultas.some(item => item.sql.startsWith('UPDATE public.usuarios')), true);
+        assert.equal(banco.consultas.some(item => item.sql === 'COMMIT'), false);
+        assert.equal(banco.liberacoes.length, 0);
+        assert.equal(banco.estado.avaliacoes.length, 0);
+        assert.equal(banco.estado.usuarios.find(item => item.id === 2).pontos, 1000);
+    } finally { liberar(); }
+    assert.equal((await operacao).colaborador.pontos, 1040);
+    conferirTransacao();
+});
+
+for (const [nome, executar] of [
+    ['criação', () => Service.criarAvaliacaoComPontos(11, 1, 4)],
+    ['edição', () => Service.atualizarAvaliacaoComPontos(51, 5)],
+    ['remoção', () => Service.removerAvaliacaoComAjuste(51)]
+]) {
+    test('falha async do observer após ajustar pontos desfaz avaliação e pontos na ' + nome, async t => {
+        banco.estado.avaliacoes = [avaliacao(51, 11, 8, 3)];
+        const anterior = structuredClone(banco.estado);
+        const falha = new Error('Falha async do observer');
+        const atualizar = PontuacaoAvaliacaoObserver.prototype.atualizar;
+        t.mock.method(PontuacaoAvaliacaoObserver.prototype, 'atualizar', async function (...args) {
+            await atualizar.apply(this, args);
+            await Promise.resolve();
+            throw falha;
+        });
+
+        await assert.rejects(executar(), erro => erro === falha);
+
+        assert.deepEqual(banco.estado, anterior);
+        assert.equal(banco.consultas.filter(item => item.sql.startsWith('UPDATE public.usuarios')).length, 1);
+        assert.equal(banco.consultas.some(item => item.sql === 'COMMIT'), false);
+        assert.equal(banco.liberacoes[0], falha);
+        conferirTransacao('ROLLBACK');
+    });
+}
+
+test('operações recusadas e avaliação ausente não notificam observers', async t => {
+    banco.estado.avaliacoes = [avaliacao(51, 11, 1, 3)];
+    const notificacao = t.mock.method(AvaliacaoEventPublisher.prototype, 'notificar');
+    await assert.rejects(Service.criarAvaliacaoComPontos(11, 1, 5), { code: 'AVALIACAO_DUPLICADA' });
+    await assert.rejects(Service.atualizarAvaliacaoComPontos(51, 5, { avaliadorId: 8 }), { code: 'AVALIACAO_EDICAO_PROIBIDA' });
+    assert.equal(await Service.removerAvaliacaoComAjuste(999), null);
+    assert.equal(notificacao.mock.callCount(), 0);
+});
+
+test('cascatas de tutorial e usuário preservam ajustes agregados sem publicar eventos individuais', async t => {
+    banco.estado.avaliacoes = [avaliacao(51, 11, 8, 3), avaliacao(52, 12, 8, 5), avaliacao(53, 21, 8, 2)];
+    const notificacao = t.mock.method(AvaliacaoEventPublisher.prototype, 'notificar');
+    await Service.removerTutorialCompleto(11);
+    await Service.removerDadosDoUsuario(8);
+    assert.equal(notificacao.mock.callCount(), 0);
+    assert.deepEqual(banco.consultas.filter(item => item.sql.startsWith('UPDATE public.usuarios'))
+        .map(item => item.valores.slice(0, 2)), [[2, -30], [2, -50], [3, -20]]);
+    assert.equal(banco.estado.avaliacoes.length, 0);
+});
+
+test('observer preserva a projeção de mudança de nível ao subir e descer de Platina', async () => {
+    banco.estado.usuarios.find(item => item.id === 2).pontos = 2470;
+    const criada = await Service.criarAvaliacaoComPontos(11, 1, 3);
+    assert.equal(criada.nivelAnterior, 'Diamante');
+    assert.equal(criada.nivelAtual, 'Platina');
+    assert.equal(criada.mudouNivel, true);
+    assert.equal(criada.colaborador.pontos, 2500);
+    banco.estado.usuarios.find(item => item.id === 2).disponivel_atendimento = true;
+    const editada = await Service.atualizarAvaliacaoComPontos(criada.avaliacao.id, 1);
+    assert.equal(editada.nivelAnterior, 'Platina');
+    assert.equal(editada.nivelAtual, 'Diamante');
+    assert.equal(editada.mudouNivel, true);
+    assert.equal(editada.colaborador.pontos, 2480);
+    assert.equal(editada.colaborador.disponivelAtendimento, false);
 });

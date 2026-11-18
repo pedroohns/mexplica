@@ -63,8 +63,12 @@ mexplica/
 ├── src/
 │   ├── controllers/
 │   ├── data/
+│   ├── database/
+│   ├── events/
 │   ├── middlewares/
 │   ├── models/
+│   ├── observers/
+│   ├── repositories/
 │   ├── routes/
 │   ├── services/
 │   ├── utils/
@@ -97,12 +101,46 @@ A pasta `src/services/` concentra operações com responsabilidade de negócio o
 - `tutorialService.js`: validação, normalização e enriquecimento de tutoriais.
 - `perfilService.js`: montagem dos dados completos de perfil e estatísticas.
 - `comentarioService.js`: enriquecimento e listagem de comentários completos.
-- `relacionamentoService.js`: integridade entre entidades, exclusões em cascata e ajustes de pontos.
+- `relacionamentoService.js`: integridade, exclusões em cascata, coordenação transacional de avaliações e publicação dos eventos de pontuação.
 - `tokenService.js`: assinatura/verificação JWT, algoritmo, issuer, audience e validade centralizados.
 
 ### Models
 
 Models concentram operações sobre cada entidade: busca, criação, alteração, exclusão, filtros e consultas específicas.
+
+### Eventos e observer de avaliação
+
+`src/events/avaliacaoEventPublisher.js` implementa o Subject/Publisher. Seu `registrar()` mantém
+observers em um Set; `notificar()` aguarda cada `atualizar()` em sequência e propaga falhas.
+`src/observers/pontuacaoAvaliacaoObserver.js` reage aos eventos usando
+`UsuarioModel.adicionarPontos(autorId, deltaPontos, { client })`; o Model mantém as regras de nível
+e disponibilidade e delega o incremento atômico ao Repository.
+
+`relacionamentoService` compõe um Publisher e registra uma instância do observer ao carregar
+o módulo, sem registro por request. Após persistir a avaliação, publica `avaliacaoCriada`,
+`avaliacaoAtualizada` ou `avaliacaoRemovida`. Os eventos contêm `tipo`, `autorId` e `deltaPontos`;
+o client é contexto de execução separado. O cálculo continua usando somente
+`AvaliacaoModel.pontosPorNota`: nota na criação, diferença na edição e valor negativo na remoção.
+
+```text
+AvaliacaoController → relacionamentoService
+  ↓ AvaliacaoModel.emTransacao → BEGIN (Repository)
+  ↓ bloqueios/validações e persistência da avaliação
+  ↓ await AvaliacaoEventPublisher.notificar(evento, { client })
+  ↓ await PontuacaoAvaliacaoObserver.atualizar(evento, { client })
+  ↓ UsuarioModel → UsuarioRepository (mesmo client)
+  ↓ leitura do resultado/resumo no mesmo client
+  ↓ COMMIT, ou ROLLBACK se qualquer etapa falhar
+```
+
+A resposta de criação/edição consulta o autor após a notificação; o nível anterior é capturado
+antes da mutação, inclusive no adapter em memória. O Service não depende do retorno do observer.
+O Publisher pode estar vazio isoladamente, mas a composição de produção sempre registra o
+observer de pontuação. O observer recusa execução sem client para evitar um ajuste em autocommit.
+
+Exclusões de tutorial e usuário mantêm os cálculos agrupados no Service e o CASCADE do banco,
+na mesma transação. Não publicam eventos por avaliação: são operações em lote com contexto e
+estratégia próprios, já testadas. A API, as views e a autenticação permanecem com os mesmos contratos.
 
 ### Data
 
@@ -272,3 +310,21 @@ Antes de mover ou dividir código:
 5. executar a suíte;
 6. validar visualmente quando houver frontend envolvido;
 7. fazer commits pequenos e reversíveis.
+
+## 12. Auditoria dos padrões de projeto
+
+- **Singleton**: `src/database/databaseConnection.js` possui uma instância compartilhada e um
+  Pool criado sob demanda. Os quatro Repositories PostgreSQL e os comandos de infraestrutura
+  reutilizam `getInstance().getPool()`. Existe apenas um local de `new Pool` no código de
+  produção. O escopo é o processo/instância serverless; o Pool pode conter várias conexões.
+- **Factory**: `src/repositories/repositoryFactory.js` seleciona os Repositories de Usuario,
+  Tutorial, Comentario e Avaliacao. `NODE_ENV=test` usa MemoryRepositories e os demais ambientes
+  usam PostgresRepositories; os Models não selecionam implementações concretas. É uma Factory
+  simples com métodos estáticos, sem hierarquias adicionais.
+- **Observer**: a auditoria inicial não encontrou um Observer de domínio no backend. O listener
+  de erro do Pool, callbacks transacionais e listeners/IntersectionObserver do browser não
+  representavam o caso de negócio. Foi implementado somente o ciclo de avaliação → pontuação,
+  com registro explícito, notificação aguardada e transação preservada.
+
+Singleton e Factory foram mantidos sem alterações. Participantes, justificativas, limites,
+diagramas e evidências estão em [PADROES_DE_PROJETO.md](PADROES_DE_PROJETO.md).
