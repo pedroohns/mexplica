@@ -139,7 +139,10 @@
 
 <main class="mexp-page tutorial-workspace">
     <section class="container tutorial-editor">
-        <a class="mexp-back-link" href="<%= tutorial ? '/tutoriais/' + tutorial.slug : '/perfil/' + usuarioAtual.slug %>">← Voltar</a>
+        <a class="back-btn" href="<%= tutorial ? '/tutoriais/' + tutorial.slug : '/comunidade' %>" data-back-button>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" /></svg>
+            VOLTAR
+        </a>
         <h1 class="tutorial-sr-only"><%= modo === 'criar' ? 'Publicar novo tutorial' : 'Editar tutorial' %></h1>
         <form id="formTutorial" data-modo="<%= modo %>" data-id="<%= tutorial ? tutorial.id : '' %>">
             <div class="tutorial-editor-heading">

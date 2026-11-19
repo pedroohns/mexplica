@@ -148,6 +148,10 @@
 
 <main class="mexp-page tutorial-workspace">
     <article class="container tutorial-publication mexp-theme-<%= tutorial.categoria.classe %>" data-tutorial-id="<%= tutorial.id %>">
+        <a class="back-btn" href="/" data-back-button>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" /></svg>
+            VOLTAR
+        </a>
         <header class="tutorial-publication-header">
             <div class="tutorial-author">
                 <a class="mexp-avatar tutorial-author-avatar" href="/perfil/<%= tutorial.autor.slug %>" aria-label="Ver perfil de <%= tutorial.autor.nomeCompleto %>"><%= tutorial.autor.iniciais %></a>

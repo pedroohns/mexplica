@@ -91,6 +91,28 @@
     else inicializar();
 })();
 
+// Links de retorno mantêm o href como fallback, inclusive sem JavaScript.
+document.addEventListener('click', event => {
+    const botao = event.target.closest?.('[data-back-button]');
+    if (!botao || event.defaultPrevented || event.button > 0
+        || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey
+        || (botao.target && botao.target !== '_self')) return;
+
+    event.preventDefault();
+    let fallback = '/';
+    let origemInterna = false;
+    try {
+        const destino = new URL(botao.getAttribute('href') || '/', window.location.href);
+        if (destino.origin === window.location.origin) fallback = destino.pathname + destino.search + destino.hash;
+    } catch { /* Um fallback inválido mantém o retorno à home. */ }
+    try {
+        origemInterna = new URL(document.referrer).origin === window.location.origin;
+    } catch { /* Acesso direto ou referrer indisponível: usa o fallback. */ }
+
+    if (origemInterna && window.history.length > 1) window.history.back();
+    else window.location.assign(fallback);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // Nas páginas estáticas, a sessão existente completa o mesmo header das views EJS.

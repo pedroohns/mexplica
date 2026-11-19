@@ -56,6 +56,10 @@
     transform: translateX(-2px);
 }
 
+.back-btn svg { flex-shrink: 0; }
+.back-btn:focus-visible { outline: 3px solid #7061de; outline-offset: 4px; }
+body.dark-blue .back-btn:focus-visible { outline-color: #b8aaff; }
+
 /* LOGO AUTH */
 .auth-logo {
     text-align: center;

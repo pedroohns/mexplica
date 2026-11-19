@@ -31,6 +31,7 @@
 .tutorial-workspace :is(input, textarea)::placeholder { color: var(--tutorial-muted); opacity: 1; }
 .tutorial-editor, .tutorial-publication { max-width: 1400px; }
 .tutorial-editor { padding-top: 1rem; padding-bottom: 4rem; }
+.tutorial-editor > .back-btn { margin-bottom: 0; }
 .tutorial-editor-heading { text-align: center; margin: 3rem auto 4rem; }
 .tutorial-editor-heading #tutorialTitulo {
     display: block; max-width: 1150px; margin: 0 auto 1.5rem;
