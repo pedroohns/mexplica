@@ -1,7 +1,13 @@
 # Deploy e validação do MExplica na Vercel
 
-A primeira validação desta implementação deve ser um **Preview de `banco-persistencia`**.
-`main` só recebe as mudanças após revisão e aprovação. Este roteiro não exige trocar a
+O **Preview real de `banco-persistencia` já foi validado pelo responsável**, incluindo acesso
+ao Neon, ambos os health checks com 200, assets, autenticação/cookie Secure e fluxos principais.
+Os NetworkError transitórios anteriores não foram reproduzidos. Este documento permanece
+como roteiro de repetição da validação; não é uma pendência de configurar o primeiro Preview.
+O relatório pré-merge está em [AUDITORIA_PRODUCAO.md](AUDITORIA_PRODUCAO.md).
+
+`main` só recebe as mudanças após revisão e aprovação, incluindo as correções locais da
+auditoria. Production permanece para uma etapa posterior autorizada. Este roteiro não exige trocar a
 Production Branch, fazer merge, preparar novamente o banco ou instalar a CLI da Vercel.
 Os resultados da conferência local estão em [AUDITORIA_PRODUCAO.md](AUDITORIA_PRODUCAO.md).
 
@@ -23,7 +29,7 @@ npm.cmd test
 git status --short
 ```
 
-Esperado: branch `banco-persistencia` e **261 testes aprovados**, incluindo os 258 anteriores.
+Esperado: branch `banco-persistencia` e **262 testes aprovados**, incluindo os 261 anteriores.
 Se as dependências ainda não estiverem instaladas, executar `npm.cmd ci` primeiro.
 
 O Preview do GitHub usa somente arquivos que já foram commitados e enviados à branch remota.

@@ -224,9 +224,9 @@ perder a mesma transação.”
   DatabaseConnection; `bcryptjs` na autenticação e nas fixtures. Dependências e versões
   foram preservadas, sem `npm audit fix`.
 
-Observação técnica para revisão final: anteriormente ocorreram dois NetworkError transitórios
-ao editar comentário e avaliar; repetir funcionou. Não houve reprodução clara nesta etapa.
-Essa investigação permanece fora do escopo desta auditoria.
+Observação histórica: ocorreram dois NetworkError transitórios ao editar comentário e avaliar;
+repetir funcionou. Não houve reprodução nesta etapa nem no Preview real posteriormente
+validado pelo responsável. Nenhuma alteração de código foi feita por esses relatos.
 
 ## Validação da etapa
 

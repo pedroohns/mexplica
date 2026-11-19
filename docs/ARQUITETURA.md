@@ -39,7 +39,8 @@ mexplica/
 │   │   ├── community.css
 │   │   ├── tutorial.css
 │   │   ├── search.css
-│   │   └── profile.css
+│   │   ├── profile.css
+│   │   └── mexplicai.css
 │   ├── js/
 │   │   ├── core/
 │   │   │   ├── api.js
@@ -225,6 +226,7 @@ community.css
 tutorial.css
 search.css
 profile.css
+mexplicai.css
 ```
 
 A ordem deve ser preservada porque a cascata pode alterar o comportamento visual mesmo quando o conteúdo das regras não muda.
@@ -276,7 +278,9 @@ Usuários, tutoriais, passos, tags, comentários e avaliações persistem em Pos
 ```text
 Controller
   ↓
-Service
+Service (quando necessário)
+  ↓
+Model
   ↓
 Repository (selecionado pela RepositoryFactory)
   ↓

@@ -56,8 +56,10 @@ A branch atual, criada diretamente da `main`, é:
 banco-persistencia
 ```
 
-Fase atual: auditoria final de integração/produção concluída localmente; Preview de `banco-persistencia`
-na Vercel ainda pendente de configuração e validação manual. Singleton/Factory e Observer
+Fase atual: Preview real de `banco-persistencia` na Vercel validado pelo responsável e auditoria
+final pré-merge concluída, com uma correção de limites de IDs e documentação atualizada.
+As alterações desta auditoria permanecem locais para revisão e inclusão manual na branch;
+nenhum commit, merge ou alteração de Production foi executado. Singleton/Factory e Observer
 transacional de avaliações já foram concluídos após JWT e migração para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
 usuários, tutoriais, comentários e avaliações usam PostgreSQL no runtime, com RepositoryFactory
 e MemoryRepositories somente nos testes. A persistência real do domínio está concluída.
@@ -74,7 +76,7 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-261 testes (258 anteriores + 3 da auditoria de produção, sem acesso ao Neon real)
+262 testes (261 anteriores + 1 da auditoria pré-merge, sem acesso ao Neon real)
 ```
 
 Distribuição atual:
@@ -102,7 +104,7 @@ repositoryFactory.test.js       9
 comentarioPostgresRepository.test.js 6
 avaliacaoPostgresRepository.test.js 7
 comentarioAvaliacaoPersistencia.test.js 7
-relacionamentosPostgres.test.js 23
+relacionamentosPostgres.test.js 24
 seedData.test.js                9
 smoke-test.js                  16
 tutorialService.test.js         4
@@ -292,10 +294,13 @@ Na migração de comentários/avaliações, db:verify passou no Neon (PK/FK, ór
 As APIs de comentários/avaliações, tutoriais, busca, perfil, comunidade e health retornaram
 200; foram 137 SELECTs, zero escritas e nenhum dos quatro arquivos Data carregado no runtime.
 Foram confirmados os 10 comentários e 20 avaliações persistidos, resumos e totais do perfil.
-Escritas reais ficam para os roteiros manuais em BANCO_DE_DADOS.md; a página de
-tutorial incrementa visualizações e não deve ser usada em uma verificação de zero escrita.
-Auditoria final de integração concluída localmente. Próximo entregável: validar Preview na
-Vercel antes de qualquer merge em `main`, conforme [DEPLOY.md](DEPLOY.md).
+Esses registros descrevem as etapas anteriores; o Preview real já foi validado pelo responsável.
+Após a limpeza manual informada, há 18 tutoriais, 10 comentários e 20 avaliações, sem órfãos
+de comentários/avaliações nem pares duplicados de avaliação; Lucas Mendes tem 1250 pontos.
+Esse estado não foi reconsultado nesta auditoria. A conta Teste Persistencia pode permanecer.
+A página de tutorial incrementa visualizações e não deve ser usada em uma verificação de zero escrita.
+Próximo entregável: revisão das correções locais e aprovação para merge manual em `main`;
+a liberação de Production exige uma etapa posterior autorizada, conforme [DEPLOY.md](DEPLOY.md).
 
 ### Padrões auditados e Observer implementado
 
@@ -332,7 +337,7 @@ eventos individuais. API, JWT, views, frontend, schema, seed e Vercel foram pres
 Foram adicionados 17 testes: oito de Publisher/Observer, oito no fluxo PostgreSQL com clientes
 falsos e um da API em memória. Cobrem deltas, registro, espera async, identidade do client,
 rollback após a reação nos três CRUDs, ausência de duplicação e níveis/disponibilidade.
-O baseline de 241 continua coberto; a suíte final tem 258 testes aprovados.
+O baseline de 241 continuou coberto; a etapa do Observer terminou com 258 testes aprovados.
 
 A auditoria limitada não encontrou código ativo de sessão antiga, operação híbrida,
 Repository legado ou import Data consumido pelo runtime PostgreSQL. Referências obsoletas
@@ -342,7 +347,8 @@ Justificativas acadêmicas, participantes e limites em [PADROES_DE_PROJETO.md](P
 
 Os dois NetworkError transitórios anteriores, na edição de comentário e na avaliação, receberam
 inspeção estática curta na auditoria final. Não foi encontrada causa concreta; helper e fluxos
-foram preservados para monitoramento no Preview.
+foram preservados. Os erros não foram reproduzidos no Preview real, conforme validação
+informada pelo responsável; permanece apenas a observação histórica.
 
 ### Auditoria final de integração e produção
 
@@ -361,6 +367,24 @@ Chrome local offline incluiu páginas, perfil vazio e editor em desktop/mobile.
 Resultados e limites: [AUDITORIA_PRODUCAO.md](AUDITORIA_PRODUCAO.md). Configuração pelo
 Dashboard, segredos privados, roteiro exato de Preview, limpeza sintética e rollback:
 [DEPLOY.md](DEPLOY.md). Nenhum commit, merge, deploy ou operação no Neon foi realizado.
+
+### Auditoria final pré-merge
+
+Na revisão de 18/11/2026, os 261 testes iniciais passaram. A validação numérica de IDs
+aceitava valores maiores que o INTEGER do schema PostgreSQL. Os quatro Models agora
+rejeitam IDs acima de 2147483647 antes da persistência, preservando ausência/404.
+O teste de IDs inválidos foi ampliado e um caso HTTP novo cobre a faixa excedida e a
+preservação do maior ID válido. Resultado: 262 aprovados, sem acesso ao Neon real.
+
+O Preview informado pelo responsável confirmou home/assets, login/JWT/cookie Secure,
+sessão após F5, perfil, comunidade, MExplicAI, comentários, avaliações/Observer/pontos,
+logout, responsividade, busca PostgreSQL e ambos os health checks com 200. Não foi
+feito novo deploy nem nova validação remota nesta auditoria.
+
+A busca em conteúdo versionado e histórico local não identificou segredo real de
+infraestrutura. O warning SSL sobre comportamento futuro do pg v9 fica como dívida
+técnica não bloqueadora, sem alteração de URL, SSL ou dependências. Relatório e
+veredito em [AUDITORIA_PRODUCAO.md](AUDITORIA_PRODUCAO.md).
 
 ---
 
@@ -750,11 +774,13 @@ As funcionalidades visuais e o MExplicAI v1 estão concluídos. A fase técnica 
 Conexão/Singleton, schema, seed e RepositoryFactory estão implementados. Todas as entidades usam
 persistência real e autenticação JWT. Singleton/Factory foram auditados e o Observer transacional
 de avaliação/pontuação está implementado. A auditoria final de integração/produção foi
-concluída localmente, com 261 testes offline. Pendências seguintes:
+concluída localmente e o Preview real foi validado pelo responsável. A revisão pré-merge
+corrigiu o limite de IDs e passou com 262 testes offline. Pendências seguintes:
 
 ```text
-configurar e validar Preview de banco-persistencia na Vercel
-aprovar resultado antes de merge manual em main e liberação de produção
+revisar e incluir manualmente as correções locais na branch banco-persistencia
+aprovar o resultado e fazer merge manual em main
+configurar e liberar Production somente em etapa posterior autorizada
 ```
 
 A persistência real, a migração JWT e a auditoria dos três padrões estão concluídas.

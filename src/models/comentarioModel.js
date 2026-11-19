@@ -1,6 +1,6 @@
 const repository = require('../repositories/repositoryFactory').criarComentarioRepository();
 
-function idValido(id) { return Number.isSafeInteger(Number(id)) && Number(id) > 0; }
+function idValido(id) { return Number.isSafeInteger(Number(id)) && Number(id) > 0 && Number(id) <= 2147483647; }
 
 async function findAll(opcoes) { return repository.findAll(opcoes); }
 async function findById(id, opcoes) { return idValido(id) ? repository.findById(Number(id), opcoes) : null; }

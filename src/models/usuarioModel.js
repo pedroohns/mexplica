@@ -226,7 +226,7 @@ async function findAll() {
 
 async function findById(id, opcoes) {
     const numero = Number(id);
-    if (!Number.isSafeInteger(numero) || numero <= 0) return null;
+    if (!Number.isSafeInteger(numero) || numero <= 0 || numero > 2147483647) return null;
     return sincronizarNivel(await repository.findById(numero, opcoes));
 }
 
@@ -296,7 +296,9 @@ async function definirDisponibilidade(id, disponivel) {
 }
 
 async function remove(id, { ajustesPontos = [], antesDeRemover } = {}) {
-    return sincronizarNivel(await repository.remove(Number(id), { ajustesPontos, antesDeRemover, pontosPlatina: NIVEL_PLATINA }));
+    const numero = Number(id);
+    if (!Number.isSafeInteger(numero) || numero <= 0 || numero > 2147483647) return null;
+    return sincronizarNivel(await repository.remove(numero, { ajustesPontos, antesDeRemover, pontosPlatina: NIVEL_PLATINA }));
 }
 
 module.exports = {

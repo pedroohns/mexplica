@@ -37,14 +37,14 @@ async function findAll(opcoes) { return repository.findAll(opcoes); }
 
 async function findById(id, opcoes) {
     const numero = Number(id);
-    return Number.isSafeInteger(numero) && numero > 0 ? repository.findById(numero, opcoes) : null;
+    return Number.isSafeInteger(numero) && numero > 0 && numero <= 2147483647 ? repository.findById(numero, opcoes) : null;
 }
 
 async function findBySlug(slug) { return repository.findBySlug(String(slug)); }
 
 async function findByAutorId(autorId) {
     const numero = Number(autorId);
-    return Number.isSafeInteger(numero) && numero > 0 ? repository.findByAutorId(numero) : [];
+    return Number.isSafeInteger(numero) && numero > 0 && numero <= 2147483647 ? repository.findByAutorId(numero) : [];
 }
 
 // =============================
@@ -351,7 +351,7 @@ async function maisAcessadosDaSemana(
 
 async function incrementarVisualizacao(id) {
     const numero = Number(id);
-    return Number.isSafeInteger(numero) && numero > 0 ? repository.incrementarVisualizacao(numero) : null;
+    return Number.isSafeInteger(numero) && numero > 0 && numero <= 2147483647 ? repository.incrementarVisualizacao(numero) : null;
 }
 
 async function create(dados) {
@@ -380,7 +380,7 @@ async function create(dados) {
 
 async function update(id, alteracoes) {
     const numero = Number(id);
-    if (!Number.isSafeInteger(numero) || numero <= 0) return null;
+    if (!Number.isSafeInteger(numero) || numero <= 0 || numero > 2147483647) return null;
     const permitidas = { atualizadoEm: new Date().toISOString() };
     for (const campo of ['titulo', 'resumo', 'conteudo', 'categoriaId', 'passos', 'imagens', 'videoUrl', 'tags']) {
         if (Object.hasOwn(alteracoes, campo)) permitidas[campo] = alteracoes[campo];
@@ -390,7 +390,7 @@ async function update(id, alteracoes) {
 
 async function remove(id, opcoes = {}) {
     const numero = Number(id);
-    return Number.isSafeInteger(numero) && numero > 0 ? repository.remove(numero, opcoes) : null;
+    return Number.isSafeInteger(numero) && numero > 0 && numero <= 2147483647 ? repository.remove(numero, opcoes) : null;
 }
 
 module.exports = {

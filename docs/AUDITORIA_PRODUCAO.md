@@ -1,9 +1,122 @@
 # Auditoria final de integração e produção
 
+## Auditoria pré-merge de 18/11/2026
+
+**Veredito: APROVADA PARA MERGE**, considerando o estado local com as correções desta
+auditoria. Elas ainda precisam ser revisadas e incluídas manualmente em `banco-persistencia`
+antes do merge: o commit auditado `a2fe7c0`, isoladamente, não contém essas correções.
+Nenhum commit, merge, deploy, alteração de Production ou escrita no Neon foi executado.
+
+O Preview real já foi validado pelo responsável. Foram informados: home/assets, login/JWT,
+cookie Secure, sessão após F5, perfil, comunidade, MExplicAI, comentários, avaliações,
+Observer/pontos, logout, responsividade, busca PostgreSQL e health básico/banco com 200,
+sem falha funcional relevante nos logs. Essa evidência externa foi usada como contexto;
+não houve nova consulta remota, teste de navegador ou deploy nesta auditoria.
+
+### Git, histórico e escopo do diff
+
+Branch confirmada: `banco-persistencia`, sincronizada com `origin/banco-persistencia`.
+O `git status` inicial estava limpo. Ao final há somente as alterações rastreadas desta
+auditoria, sem novos arquivos não rastreados. `.env` e `node_modules/` existem localmente
+e são ignorados; foram preservados. Não há `.env`, logs, downloads, artefatos temporários,
+node_modules ou arquivos de editor versionados identificados na conferência.
+
+O diff entre os commits de `main...banco-persistencia`, antes das alterações locais,
+contém **92 arquivos, 7060 inserções e 2632 remoções**, distribuídos em oito commits:
+infraestrutura (`cb3c7b6`), schema/seed (`3740075`), usuários (`bfbd9d7`), tutoriais
+(`3da4bed`), comentários/avaliações (`85d0551`), JWT (`99f5cb1`), Observer (`5d23f13`)
+e preparação para Vercel (`a2fe7c0`). Não houve remoção de arquivos.
+
+| Área | Mudanças auditadas |
+| --- | --- |
+| Infraestrutura PostgreSQL | Pool lazy centralizado, health do banco e comandos explícitos |
+| Schema/migrations/seed | Sete entidades, remoção versionada de especialidades, seed transacional/idempotente e verificador somente leitura |
+| Repositories | Quatro implementações PostgreSQL e quatro adapters em memória para testes |
+| Models | Persistência async via Factory, mantendo regras, busca, slugs e projeções |
+| Services | Composição async e coordenação transacional de relacionamentos/pontuação |
+| Controllers | Await dos dados e transferência da composição de avaliações para o Service |
+| JWT | jsonwebtoken, TokenService, cookie HttpOnly/Bearer e remoção de cookie-session |
+| Patterns | Singleton/Factory e Observer aguardado de pontuação |
+| Tests | Cobertura offline de SQL, HTTP, autenticação, cascatas, rollback, assets e frontend |
+| Docs | Arquitetura, banco, autenticação, padrões, deploy e contexto |
+| Deploy | Entrada/configuração preservadas, importação sem conexão e views incluídas |
+| Correções de produção | Fontes, estado vazio do perfil, favicon e JSON inválido com 400 |
+
+A remoção de especialidades é deliberada, documentada e acompanhada de migration;
+não é perda acidental de dados funcionais. Os dois arquivos de configuração do Postman
+são metadados laterais da etapa JWT, sem credenciais; foram preservados.
+
+### Regressão corrigida e validação
+
+Os IDs do schema são INTEGER, mas os Models aceitavam inteiros seguros JavaScript até
+9007199254740991. Valores acima de 2147483647 chegavam às queries, embora não sejam
+representáveis nas colunas, podendo gerar erro de banco em vez da ausência/404 anterior.
+A correção limita as validações existentes dos quatro Models à faixa do schema e evita
+consultas/remoção de usuário para IDs inválidos. Não altera schema, rotas, permissões,
+contratos para IDs válidos ou responsabilidades entre camadas.
+
+O teste de IDs inválidos foi ampliado; um caso HTTP novo confere quatro rotas de leitura
+com IDs fora da faixa, sem consultas, e confirma o encaminhamento de 2147483647 aos quatro
+Repositories. Antes da correção, os testes evidenciaram consultas indevidas; depois,
+`npm.cmd test` passou com **262 testes, zero falhas, cancelados ou ignorados**. Baseline
+inicial: 261 aprovados. Nenhum teste anterior foi removido. Os processos de teste mantêm
+chave JWT exclusiva, MemoryRepositories ou Pool/client falsos e driver real bloqueado.
+
+### Resultados finais
+
+| Item | Resultado |
+| --- | --- |
+| Segredos | Busca em 137 arquivos textuais versionados e 450 blobs textuais de 74 commits alcançáveis localmente: nenhuma credencial real de infraestrutura identificada pelos padrões examinados. URLs encontradas usam hosts reservados de teste; senhas/chaves são fixtures demonstrativas. Nenhum JWT completo, cookie real, token Neon/Vercel ou chave privada identificado. `.env` não aparece no histórico local. Valores não foram reproduzidos. |
+| Banco/schema/migrations/seed | Sete PKs/oito FKs; CASCADE de dependentes, RESTRICT de categoria e constraints coerentes. `schema_migrations` separado; migration e registro atômicos, seed sem sobrescrever dados existentes. DATABASE_URL somente por ambiente; nenhum hook de deploy/start/install escreve no banco. |
+| Repositories/Factory | Usuario, Tutorial, Comentario e Avaliacao usam PostgreSQL fora de NODE_ENV=test. Models pedem os Repositories à Factory; nenhum Data como fallback no runtime. |
+| Singleton | getInstance e Pool lazy reutilizado por processo; único new Pool no runtime, max 2 e timeouts conservadores. Nenhuma conexão no import. |
+| Observer | Registro no carregamento do Service, Set, notificação aguardada no mesmo client, deltas corretos e rollback após falha. Cascatas agregadas continuam diretas intencionalmente. |
+| Transações | Avaliação/pontos, edição/delta, remoção/desconto, exclusões de tutorial/usuário e escrita de tutorial mantêm um client e COMMIT após todas as etapas; falhas propagam rollback e descarte do client. |
+| JWT | HS256, issuer mexplica, audience mexplica-web, oito horas, sub mínimo, jwt.verify e segredo obrigatório. Cookie mexplica_token HttpOnly/Lax/Path=/, Secure em produção; Bearer prioritário sem fallback quando inválido; logout limpa cookie e conta removida perde autenticação. |
+| Autorização | Usuário atual do PostgreSQL, sem confiar em permissões de claims; autenticação, colaborador, Platina e autorias preservados; avaliação do próprio tutorial recusada. |
+| API | Sem mudança acidental de métodos, rotas, status ou JSON encontrada. Adições deliberadas de /token e health/database e remoção documentada de especialidades. JSON malformado retorna 400 seguro; IDs fora do schema preservam 404. |
+| Vercel/serverless | Express exportado por api/index.js; listen somente local, paths absolutos, views incluídas, rewrite e maxDuration 10 preservados. Sem persistência de domínio no processo. Preview informado já aprovado; Production não alterada. |
+| Assets | Fontes, favicon e remoção da imagem inexistente confirmados. Referências ativas de HTML/EJS/CSS passam na verificação de existência e caixa; nenhuma referência essencial quebrada identificada. |
+| Error handler | JSON inválido 400, payload grande 413, JWT_SECRET ausente 503, health sem banco 503, DATABASE_URL ausente no domínio e falhas desconhecidas com 500 genérico; conflitos/relacionamentos com mensagens fixas. Sem stack, SQL, hash, token ou connection string públicos. |
+| Frontend/MExplicAI/VLibras | APIs/helper e ordem de scripts preservados. Sem JWT em localStorage/sessionStorage; MExplicAI continua local/determinístico com busca real, sem provedor externo de IA. VLibras global permanece; frontend não foi alterado. |
+| Dependências | npm ls --depth=0 válido, sete dependências esperadas em uso, package/lock coerentes e cookie-session ausente. As versões dos pacotes comuns à main foram preservadas; nenhuma instalação/atualização nesta auditoria. |
+| Documentação | README agora cobre stack, execução, variáveis, testes e padrões; contexto/deploy/banco/relatório refletem Preview concluído e Production futura. Contagens antigas de migrações permanecem identificadas como histórico. |
+
+A busca por segredos se limita aos padrões e ao histórico disponíveis localmente; não
+inspecionou valores do `.env`, configurações privadas externas ou todos os formatos possíveis.
+O estado do Neon após limpeza foi informado pelo responsável: 18 tutoriais, 10 comentários,
+20 avaliações, zero órfãos de comentários/avaliações, zero pares duplicados e Lucas Mendes
+com 1250 pontos. Não foi reconsultado nesta auditoria; Teste Persistencia foi preservada.
+
+### Resíduos e observações sem bloqueio
+
+- O mapa legado de imagens `print-*` em `site.js` cita oito arquivos ausentes, mas os
+  contêineres `.step-print` atuais não contêm imagens. Já existia na main, não gera requests ativos
+  e foi preservado conforme o escopo de não refatorar frontend.
+- Há acentuação corrompida em um comentário e na mensagem interna de esgotamento de slugs
+  de UsuarioModel; o error handler retorna o 409 público correto. Resíduo cosmético preservado.
+- Metadados do Postman e os arquivos locais ignorados são conhecidos, sem segredo identificado.
+- Warning SSL sobre comportamento futuro do pg v9: dívida técnica, sem alteração de URL/SSL/pg.
+- NetworkError transitórios: não reproduzidos no Preview informado; nenhuma mudança por hipótese.
+- Carga, duração acumulada das consultas e ciclo de vida dos Pools serverless permanecem
+  observações futuras, sem evidência atual de falha. Não foi realizado teste de carga.
+
+Arquivos alterados nesta auditoria: quatro Models, `tests/relacionamentosPostgres.test.js`,
+`README.md`, `docs/ARQUITETURA.md`, `docs/CONTEXTO_CODEX.md`, `docs/BANCO_DE_DADOS.md`,
+`docs/DEPLOY.md`, `docs/PADROES_DE_PROJETO.md` e este relatório. Não houve mudança de
+Controllers, Repositories, schema, seed, migrations, JWT, frontend, dependências ou Vercel.
+
+**Bloqueadores restantes: nenhum identificado no estado local corrigido e testado.**
+A aprovação técnica se refere a esse estado; incluir as alterações revisadas na branch
+antes do merge manual. Configurar/publicar Production continua sendo uma tarefa separada.
+
+## Registro da auditoria local anterior
+
 Conferência local de **17–18/11/2026**, na branch **`banco-persistencia`**, com Node 24.11.1.
 Baseline: **258 testes aprovados**. Resultado após as correções: **261 aprovados**, sem
-conexão real com PostgreSQL. O Preview da Vercel e seu acesso ao Neon ainda precisam da
-validação manual em [DEPLOY.md](DEPLOY.md); nenhum deploy foi executado nesta auditoria.
+conexão real com PostgreSQL. Naquele momento o Preview da Vercel e seu acesso ao Neon
+ainda aguardavam validação manual; a atualização pré-merge acima registra sua conclusão
+informada pelo responsável. Nenhum deploy foi executado pela auditoria local.
 
 ## Resultado por componente
 
@@ -11,7 +124,7 @@ validação manual em [DEPLOY.md](DEPLOY.md); nenhum deploy foi executado nesta 
 | --- | --- |
 | Entrypoint | `api/index.js` continua exportando `src/index.js`, que exporta o Express. `app.listen` permanece sob `if (require.main === module)`. A importação de produção é coberta por `authJwt.test.js`, sem chave/banco obrigatórios na inicialização. |
 | `vercel.json` | Mantidos `functions["api/index.js"]`, `includeFiles: "src/views/**"`, rewrite `/(.*)` → `/api` e `maxDuration: 10`. Não há operação longa intencional ou necessidade demonstrada de elevar duração; várias consultas sequenciais podem somar mais que o timeout individual. O tempo real será medido no Preview. |
-| Arquivos públicos | CSS, JS, imagens, ícones e fontes permanecem em `public/`. Express usa caminho absoluto relativo ao módulo. Referências literais de HTML/EJS/CSS são verificadas, inclusive caixa dos nomes para Linux; quatro falhas de assets foram corrigidas conforme abaixo. |
+| Arquivos públicos | CSS, JS, imagens, ícones e fontes permanecem em `public/`. Express usa caminho absoluto relativo ao módulo. Referências literais de HTML/EJS/CSS são verificadas, inclusive caixa dos nomes para Linux; fontes, imagem inexistente e favicon foram corrigidos conforme abaixo. |
 | EJS | `src/views/**` inclui comunidade, perfil, tutorial, editor e ambos os partials. O caminho absoluto de views não depende do cwd da Function. Rotas EJS e editor seguem cobertos pela suíte offline. Nenhuma view foi movida. |
 | Variáveis | O Pool recebe somente `process.env.DATABASE_URL`; TokenService lê somente `process.env.JWT_SECRET`. Não há fallback de segredo ou conexão. `.env.example` continua com as duas entradas vazias, sem `SESSION_SECRET`. Não houve leitura direta nem modificação do `.env` local. |
 | Health | `/api/health` é independente do banco. `/api/health/database` executa `SELECT 1 AS ok` e retorna 200 ou 503 genérico, com `Cache-Control: no-store`. Ambos antecedem cookie-parser/carregarUsuario; não consultam usuário nem exigem JWT. |

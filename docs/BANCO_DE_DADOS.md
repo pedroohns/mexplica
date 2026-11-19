@@ -8,6 +8,24 @@ O frontend permanece preservado. Após a persistência, a autenticação migrou 
 cookie HttpOnly/Bearer; o usuário e suas permissões continuam vindo do PostgreSQL atual.
 Detalhes em [AUTENTICACAO.md](AUTENTICACAO.md).
 
+## Estado após o Preview e auditoria pré-merge
+
+O Preview real na Vercel e seu acesso ao Neon foram validados pelo responsável.
+Estado informado após a limpeza manual: 18 tutoriais, 10 comentários, 20 avaliações,
+zero comentários/avaliações órfãos, zero pares duplicados de avaliação e Lucas Mendes
+com 1250 pontos. A conta Teste Persistencia pode permanecer. Esses dados não foram
+reconsultados nem alterados na auditoria de 18/11/2026.
+
+Os relatos de migração e suas contagens abaixo são históricos; os roteiros manuais
+continuam como referência para futuras verificações autorizadas. A suíte atual tem
+262 testes offline. Os quatro Models respeitam o limite positivo de INTEGER dos IDs
+do schema (até 2147483647), evitando consultas inválidas e preservando ausência/404.
+
+O warning conhecido de `pg`/`pg-connection-string` sobre o comportamento futuro do
+pg v9 para `sslmode=require` não bloqueia esta branch: a conexão e o health funcionam.
+Nenhuma URL, configuração SSL ou versão foi alterada. A revisão desse comportamento
+fica para uma tarefa futura. Resultado completo em [AUDITORIA_PRODUCAO.md](AUDITORIA_PRODUCAO.md).
+
 ## Persistência de usuários no runtime
 
 O fluxo é Controller → Service quando necessário → UsuarioModel → Repository → PostgreSQL.

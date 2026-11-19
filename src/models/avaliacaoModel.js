@@ -1,6 +1,6 @@
 const repository = require('../repositories/repositoryFactory').criarAvaliacaoRepository();
 
-function idValido(id) { return Number.isSafeInteger(Number(id)) && Number(id) > 0; }
+function idValido(id) { return Number.isSafeInteger(Number(id)) && Number(id) > 0 && Number(id) <= 2147483647; }
 
 function pontosPorNota(nota) { return Number(nota) * 10; }
 async function findAll(opcoes) { return repository.findAll(opcoes); }

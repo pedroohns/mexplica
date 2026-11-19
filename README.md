@@ -28,7 +28,7 @@ Atualmente, o MExplica possui funcionalidades relacionadas a usuários, conteúd
 ### Usuários e autenticação
 - Cadastro de usuários;
 - Login utilizando e-mail ou telefone;
-- Autenticação de usuários;
+- Autenticação JWT, com cookie HttpOnly na web e Bearer nas APIs;
 - Senhas armazenadas através de hash;
 - Sessão de usuário;
 - Perfis de usuários;
@@ -72,11 +72,56 @@ A estrutura principal está dividida em:
 
 - **Models:** representação e manipulação dos dados da aplicação;
 - **Views:** páginas e interfaces renderizadas através do EJS;
-- **Controllers:** regras responsáveis pelo processamento das requisições e funcionalidades;
+- **Controllers:** tratamento HTTP, renderização e chamadas aos Models/Services;
+- **Services:** validação, composição de entidades, integridade e operações transacionais;
+- **Repositories:** persistência PostgreSQL no runtime e memória somente nos testes;
 - **Routes:** definição e organização das rotas da aplicação;
 - **Middlewares:** funções intermediárias utilizadas em autenticação, sessões e controle de acesso;
 - **Utils:** funções auxiliares utilizadas pelo sistema;
 - **Public:** arquivos estáticos da interface, como CSS, JavaScript e recursos visuais.
+
+O fluxo principal é Route → Controller → Service quando necessário → Model → Repository.
+`src/data/` contém dados demonstrativos usados pelo seed e pelos testes offline.
+Os padrões implementados são Singleton (`DatabaseConnection`, Pool lazy por processo),
+Factory (seleção dos quatro Repositories) e Observer (avaliações e pontuação na mesma transação).
+Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e
+[docs/PADROES_DE_PROJETO.md](docs/PADROES_DE_PROJETO.md).
+
+---
+
+## Stack e execução
+
+Node.js 24, Express 5, EJS, HTML/CSS/JavaScript, PostgreSQL/Neon, `pg`, `bcryptjs`,
+`jsonwebtoken`, `cookie-parser` e `dotenv`. Hospedagem na Vercel.
+
+Instale as dependências do lockfile com `npm.cmd ci`. Configure privadamente o `.env`
+local, ignorado pelo Git, usando os nomes de [.env.example](.env.example):
+
+| Variável | Uso |
+| --- | --- |
+| `DATABASE_URL` | Conexão pooled do Neon, preservando as opções SSL fornecidas pelo provedor |
+| `JWT_SECRET` | Chave aleatória forte e estável para assinar/verificar JWT |
+| `NODE_ENV` | `production` na hospedagem HTTPS; `test` é reservado à suíte offline |
+| `PORT` | Opcional no desenvolvimento local; padrão 3000 |
+
+Com o banco existente preparado, execute:
+
+```powershell
+npm.cmd run dev
+```
+
+Abra `http://localhost:3000`. Para rodar a suíte nativa `node:test`:
+
+```powershell
+npm.cmd test
+```
+
+Baseline atual: **262 testes aprovados**, sem acesso ao Neon real, com chave JWT exclusiva
+de testes e driver real bloqueado. Schema, migrations e seed são comandos manuais separados;
+não são executados por start, instalação ou deploy.
+Consulte [docs/BANCO_DE_DADOS.md](docs/BANCO_DE_DADOS.md) e
+[docs/AUTENTICACAO.md](docs/AUTENTICACAO.md) para preparação do banco e autenticação.
+
 ---
 
 ## API e backend
@@ -136,14 +181,15 @@ Com sua evolução, passou a incorporar conceitos e funcionalidades relacionados
 9. operações CRUD;
 10. comentários e avaliações;
 11. organização dos dados através de Models;
-12. preparação da arquitetura para futuras formas de persistência.
+12. persistência relacional em PostgreSQL/Neon através de Repositories.
 Essa evolução transformou o projeto de um protótipo visual em uma aplicação funcional utilizada também como ambiente de aprendizado e aplicação prática de conceitos de desenvolvimento, arquitetura de software e análise de sistemas.
 ---
 
 ## Próximas etapas
 O projeto continua em desenvolvimento.
 Entre as principais possibilidades de evolução estão:
-- validação em Preview da persistência PostgreSQL e JWT da branch `banco-persistencia`;
+- revisão das correções finais e integração manual de `banco-persistencia` à `main` após aprovação;
+- configuração e liberação de Production em uma etapa posterior autorizada;
 - continuidade da evolução da arquitetura;
 - aprimoramento das funcionalidades existentes;
 - refinamento das interfaces;
@@ -157,6 +203,7 @@ Atualmente, o MExplica possui:
 - frontend e backend integrados;
 - arquitetura baseada em MVC;
 - autenticação;
+- persistência do domínio em PostgreSQL/Neon;
 - gerenciamento de usuários;
 - tutoriais;
 - comentários;
@@ -171,8 +218,10 @@ Algumas funcionalidades e interfaces continuam sendo refinadas conforme o projet
 ## Observação
 O MExplica é um projeto acadêmico em desenvolvimento.
 Na branch `banco-persistencia`, o runtime usa PostgreSQL/Neon e autenticação JWT. Arrays de
-demonstração ficam restritos aos testes offline e seed. A validação dessa branch deve ocorrer
-em Preview antes de sua aprovação para `main`.
+demonstração ficam restritos aos testes offline e seed. O Preview real dessa branch na Vercel
+já foi validado pelo responsável. A auditoria pré-merge está registrada abaixo; as correções
+locais precisam ser revisadas e incluídas na branch antes do merge manual. Production
+permanece para uma etapa posterior autorizada.
 
 Configuração e checklist de validação: [docs/DEPLOY.md](docs/DEPLOY.md).
-Resultados da auditoria local: [docs/AUDITORIA_PRODUCAO.md](docs/AUDITORIA_PRODUCAO.md).
+Resultados da auditoria final: [docs/AUDITORIA_PRODUCAO.md](docs/AUDITORIA_PRODUCAO.md).

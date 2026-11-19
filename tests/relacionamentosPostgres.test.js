@@ -46,6 +46,7 @@ class BancoFalso {
         if (s.startsWith('SELECT t.*')) return resultado(s.includes('WHERE') ? estado.tutoriais.filter(item => item.id === valores[0]) : estado.tutoriais);
         if (s.startsWith('SELECT * FROM public.tutorial_passos')) return resultado(estado.passos.filter(item => valores[0].includes(item.tutorial_id)));
         if (s.startsWith('SELECT tutorial_id, tag')) return resultado(estado.tags.filter(item => valores[0].includes(item.tutorial_id)));
+        if (s.startsWith('SELECT c.*')) return resultado(estado.comentarios.filter(item => item.id === valores[0]));
         if (s.startsWith('SELECT a.*')) {
             let rows = estado.avaliacoes;
             if (s.includes('a.id =')) rows = rows.filter(item => item.id === valores[0]);
@@ -101,6 +102,8 @@ const PontuacaoAvaliacaoObserver = require('../src/observers/pontuacaoAvaliacaoO
 const Service = require('../src/services/relacionamentoService');
 const AvaliacaoModel = require('../src/models/avaliacaoModel');
 const ComentarioModel = require('../src/models/comentarioModel');
+const UsuarioModel = require('../src/models/usuarioModel');
+const TutorialModel = require('../src/models/tutorialModel');
 beforeEach(() => { banco = new BancoFalso(); });
 
 function conferirTransacao(final = 'COMMIT') {
@@ -227,7 +230,14 @@ test('resumo mantém média com uma casa decimal e retorna zeros quando não há
 });
 
 test('IDs inválidos preservam ausência no domínio sem enviar NaN ao PostgreSQL', async () => {
-    for (const id of ['invalido', -1, 0, 1.5]) {
+    for (const id of ['invalido', -1, 0, 1.5, 2147483648, Number.MAX_SAFE_INTEGER]) {
+        assert.equal(await UsuarioModel.findById(id), null);
+        assert.equal(await UsuarioModel.remove(id), null);
+        assert.equal(await TutorialModel.findById(id), null);
+        assert.deepEqual(await TutorialModel.findByAutorId(id), []);
+        assert.equal(await TutorialModel.incrementarVisualizacao(id), null);
+        assert.equal(await TutorialModel.update(id, {}), null);
+        assert.equal(await TutorialModel.remove(id), null);
         assert.equal(await ComentarioModel.findById(id), null);
         assert.deepEqual(await ComentarioModel.findByTutorialId(id), []);
         assert.deepEqual(await ComentarioModel.findByUserId(id), []);
@@ -241,6 +251,36 @@ test('IDs inválidos preservam ausência no domínio sem enviar NaN ao PostgreSQ
         assert.equal(await AvaliacaoModel.remove(id), null);
     }
     assert.equal(banco.consultas.length, 0);
+});
+
+test('API preserva 404 para IDs acima do INTEGER PostgreSQL sem consultar o banco', async t => {
+    const app = require('../src/index');
+    const server = app.listen(0, '127.0.0.1');
+    t.after(() => new Promise(resolve => { server.closeAllConnections(); server.close(resolve); }));
+    await require('node:events').once(server, 'listening');
+    const base = 'http://127.0.0.1:' + server.address().port;
+
+    for (const id of ['2147483648', String(Number.MAX_SAFE_INTEGER)]) {
+        for (const [rota, erro] of [
+            ['/api/usuarios/' + id, 'Usuário não encontrado.'],
+            ['/api/tutoriais/' + id, 'Tutorial não encontrado.'],
+            ['/api/tutoriais/' + id + '/comentarios', 'Tutorial não encontrado.'],
+            ['/api/tutoriais/' + id + '/avaliacoes', 'Tutorial não encontrado.']
+        ]) {
+            const resposta = await fetch(base + rota);
+            assert.equal(resposta.status, 404);
+            assert.deepEqual(await resposta.json(), { erro });
+        }
+    }
+    assert.equal(banco.consultas.length, 0);
+
+    // O maior ID representável no schema continua chegando ao Repository.
+    assert.equal(await UsuarioModel.findById(2147483647), null);
+    assert.equal(await TutorialModel.findById(2147483647), null);
+    assert.equal(await ComentarioModel.findById(2147483647), null);
+    assert.equal(await AvaliacaoModel.findById(2147483647), null);
+    assert.equal(banco.consultas.length, 4);
+    assert.ok(banco.consultas.every(item => item.valores[0] === 2147483647));
 });
 
 test('CRUD publica os três eventos com deltas corretos e um ajuste por evento no mesmo client', async t => {
