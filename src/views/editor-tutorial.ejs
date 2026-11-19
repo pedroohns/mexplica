@@ -112,14 +112,10 @@
 
         <div class="nav-actions">
 
-            <a
-                href="/perfil/<%= usuarioAtual.slug %>"
-                class="btn-acessar"
-            >
-
-                <%= usuarioAtual.nome %>
-
-            </a>
+            <a href="/perfil/<%= usuarioAtual.slug %>" class="btn-acessar nav-account" aria-label="Abrir perfil de <%= usuarioAtual.nomeCompleto %>">
+                    <span class="nav-account-avatar" aria-hidden="true"><%= usuarioAtual.iniciais %></span>
+                    <span>Perfil</span>
+                </a>
 
         </div>
 

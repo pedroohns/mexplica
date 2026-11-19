@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="shortcut icon" href="icons/favicon.ico" type="image/x-icon">
 </head>
-<body>
+<body class="home-page">
 <script>
     (function() {
         var classes = ['', 'dark-blue'];
@@ -394,15 +394,15 @@
                 <div class="legend-bar">
                     <div class="legend-item">
                         <span class="dot dot-red"> <img src="icons/vermelho.png" alt="icone vermelho de atenção"> </span>
-                        <span>Resultados <strong style="color: #F87777;">VERMELHOS</strong> são sobre segurança e usabilidade.</span>
+                        <span>Resultados <strong class="legend-security">VERMELHOS</strong> são sobre segurança e usabilidade.</span>
                     </div>
                     <div class="legend-item">
                         <span class="dot dot-green"> <img src="icons/verde.png" alt="icone verde de mensagem"> </span>
-                        <span>Resultados <strong style="color: #43A46F;">VERDES</strong> são sobre comunicação e interação.</span>
+                        <span>Resultados <strong class="legend-communication">VERDES</strong> são sobre comunicação e interação.</span>
                     </div>
                     <div class="legend-item">
                         <span class="dot dot-blue"> <img src="icons/azul.png" alt="icone azul de engrenagem"> </span>
-                        <span>Resultados <strong style="color: #4B7DB5;">AZUIS</strong> são sobre sistemas e acessibilidade.</span>
+                        <span>Resultados <strong class="legend-systems">AZUIS</strong> são sobre sistemas e acessibilidade.</span>
                     </div>
                 </div>
 
@@ -553,8 +553,10 @@
                         <img src="icons/user-roxo.png" alt="" class="step-topic-icon" aria-hidden="true">
                         <h3>1 - Crie uma conta como colaborador</h3>
                         <p>Ao criar sua conta, aparecerá uma opção para se tornar colaborador, você pode ou não aceitar.</p>
-                        <div class="step-print">
-                            
+                        <div class="step-print step-signup-preview">
+                            <div class="step-preview-heading">Quer ser um colaborador?</div>
+                            <p>Compartilhe o que você sabe e ajude outras pessoas a usar a tecnologia.</p>
+                            <a class="step-preview-cta" href="cadastro.html">Quero ser um colaborador!</a>
                         </div>
                     </div>
                     <div class="step-card step-green">
@@ -562,7 +564,19 @@
                         <h3>2 - Publique tutoriais para ajudar</h3>
                         <p>Compartilhe voluntariamente o que você sabe por meio de tutoriais simples, objetivos e fáceis de acompanhar.</p>
                         <div class="step-print">
-                            
+                            <div class="step-tutorial-preview">
+                                <div class="step-preview-author">
+                                    <img src="icons/verde.png" alt="" aria-hidden="true">
+                                    <div><strong>Um colaborador como você</strong><span>Exemplo de tutorial</span></div>
+                                </div>
+                                <div class="step-preview-heading">Como salvar um contato no WhatsApp?</div>
+                                <p>Um passo de cada vez, fica mais fácil aprender.</p>
+                                <ol class="step-preview-list">
+                                    <li>Abra o WhatsApp e toque em nova conversa.</li>
+                                    <li>Escolha “Novo contato” e salve os dados.</li>
+                                </ol>
+                                <div class="step-preview-tags"><span>Tutorial passo a passo</span><span>Comunicação</span></div>
+                            </div>
                         </div>
                     </div>
                     <div class="step-card step-green">
@@ -570,7 +584,20 @@
                         <h3>3 - Receba comentários e avaliações.</h3>
                         <p>Usuários logados podem agradecer, comentar e avaliar seus tutoriais depois de utilizá-los.</p>
                         <div class="step-print">
-                            
+                            <ul class="step-comments-preview" aria-label="Exemplos de comentários">
+                                <li>
+                                    <span class="step-preview-avatar" aria-hidden="true">B</span>
+                                    <div><strong>Bárbara</strong><span class="step-preview-stars" aria-label="5 de 5 estrelas">★★★★★</span><p>Essa dica me ajudou muito. Obrigada!</p></div>
+                                </li>
+                                <li>
+                                    <span class="step-preview-avatar" aria-hidden="true">C</span>
+                                    <div><strong>Cleber</strong><span class="step-preview-stars" aria-label="5 de 5 estrelas">★★★★★</span><p>Não sabia dessa função. Foi fácil acompanhar!</p></div>
+                                </li>
+                                <li>
+                                    <span class="step-preview-avatar" aria-hidden="true">M</span>
+                                    <div><strong>Maria Lúcia</strong><span class="step-preview-stars" aria-label="5 de 5 estrelas">★★★★★</span><p>Sua explicação é muito boa. Valeu!</p></div>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                     <div class="step-card step-blue">
@@ -578,7 +605,11 @@
                         <h3>4 - Consiga pontos com avaliações</h3>
                         <p>Ao conseguir pontos de avaliação você pode subir de nível como colaborador, até chegar a platina.</p>
                         <div class="step-print">
-                            
+                            <ol class="step-levels-preview" aria-label="Níveis de colaborador">
+                                <li class="step-level-common"><img src="icons/comum.png" alt="" aria-hidden="true"><strong>Comum</strong><span>Compartilhe tutoriais</span></li>
+                                <li class="step-level-diamond"><img src="icons/diamante.png" alt="" aria-hidden="true"><strong>Diamante</strong><span>Entre no ranking</span></li>
+                                <li class="step-level-platinum"><img src="icons/platina.png" alt="" aria-hidden="true"><strong>Platina</strong><span>Converse e ajude</span></li>
+                            </ol>
                         </div>
                     </div>
                 </div>

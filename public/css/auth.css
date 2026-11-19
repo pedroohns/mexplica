@@ -14,12 +14,12 @@
 }
 
 .auth-card {
-    background: #ffffff;
-    border-radius: 20px;
+    background: transparent;
+    border-radius: 0;
     padding: 40px 36px 32px;
     width: 100%;
     max-width: 580px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
     animation: slideUp 0.3s ease;
 }
 
@@ -81,9 +81,10 @@
 
 /* TITULO DA PAGINA DE AUTENTICAÇAO */
 .auth-title {
-    font-family: 'Nimbus Sans', sans-serif;
+    font-family: var(--font-heading);
     font-size: 32px;
-    font-weight: 500;
+    font-weight: 400;
+    letter-spacing: -0.025em;
     text-align: center;
     margin-bottom: 8px;
     line-height: 1.2;
@@ -461,8 +462,8 @@ body.dark-blue .auth-page {
 }
 
 body.dark-blue .auth-card {
-    background: #1a2535;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    background: transparent;
+    box-shadow: none;
 }
 
 body.dark-blue .auth-title {

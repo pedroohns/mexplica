@@ -11,14 +11,13 @@
     font-weight: 400;
 }
 
-/* Posição do host oficial; o conteúdo interno do VLibras não é alterado.
-   Acima do painel mobile do MExplicAI, com espaço para o composer. */
+/* Host legado e acesso atual usam o mesmo canto, respeitando a área segura. */
 #mexplicaVLibras[vw] {
     position: fixed !important;
-    left: max(16px, env(safe-area-inset-left)) !important;
+    left: max(8px, env(safe-area-inset-left)) !important;
     right: auto !important;
     top: auto !important;
-    bottom: max(105px, env(safe-area-inset-bottom)) !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
     transform: none !important;
     z-index: 600 !important;
 }
@@ -28,9 +27,7 @@
     right: auto !important;
 }
 
-@media (max-width: 640px) {
-    :root { --mexplica-vlibras-top: calc(35vh - 20px); }
-}
+:root { --font-heading: 'Nimbus Sans Regular', 'Inter', sans-serif; }
 
 /* reset basico */
 *, *::before, *::after {
@@ -40,7 +37,7 @@
 }
 
 html {
-    font-size: 16px;
+    font-size: 1rem;
     scroll-behavior: smooth;
 }
 
@@ -53,7 +50,7 @@ body {
 }
 
 body.font-large {
-    font-size: 19px;
+    font-size: 1.1875rem;
 }
 
 img {
@@ -120,7 +117,7 @@ button {
 
 .nav-links a {
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 400;
     color: #111111;
     transition: color 0.18s ease;
@@ -137,13 +134,43 @@ button {
     flex-shrink: 0;
 }
 
+/* Conta autenticada: o mesmo avatar de iniciais usado nos perfis. */
+.nav-actions .nav-account {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 4px 14px 4px 4px;
+    white-space: nowrap;
+}
+
+.nav-account .nav-account-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f0edff;
+    color: #5144b6;
+    font: 700 .875rem/1 'Inter', sans-serif;
+}
+
+body.dark-blue .nav-account .nav-account-avatar { background: #303b57; color: #e4deff; }
+.nav-account:focus-visible { outline: 3px solid #7061de; outline-offset: 4px; }
+
+@media (max-width: 480px) {
+    .nav-logo { margin-right: 20px; }
+    .nav-actions .nav-account { padding-right: 12px; }
+}
+
 .btn-acessar {
     background: #7B6EF6;
     color: #ffffff;
     padding: 8px 20px;
     border-radius: 999px;
     font-family: 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     transition: background 0.18s ease;
     border: 1px solid #111;

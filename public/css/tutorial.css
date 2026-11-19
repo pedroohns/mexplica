@@ -34,7 +34,8 @@
 .tutorial-editor-heading { text-align: center; margin: 3rem auto 4rem; }
 .tutorial-editor-heading #tutorialTitulo {
     display: block; max-width: 1150px; margin: 0 auto 1.5rem;
-    font-size: clamp(2rem, 4.1vw, 3.75rem); font-weight: 700;
+    font-size: clamp(2rem, 4.1vw, 3.75rem); font-weight: 400;
+    font-family: var(--font-heading); letter-spacing: -.025em;
     line-height: 1.15; text-align: center; padding: .7rem 1rem;
 }
 .tutorial-editor-heading #tutorialTitulo::placeholder { color: var(--tutorial-text); }
@@ -43,7 +44,7 @@
     text-align: center; font-size: 1.25rem;
 }
 .tutorial-category-picker { border: 0; margin: 0 auto 3.5rem; min-width: 0; }
-.tutorial-category-picker legend { width: 100%; text-align: center; font-size: 1.55rem; margin-bottom: 2rem; }
+.tutorial-category-picker legend { width: 100%; text-align: center; font: 400 1.55rem/1.25 var(--font-heading); margin-bottom: 2rem; }
 .tutorial-categories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; max-width: 1120px; margin: auto; }
 .tutorial-category { position: relative; cursor: pointer; min-width: 0; }
 .tutorial-category.mexp-theme-blue { --tutorial-category-ink: #1f5795; }
@@ -66,9 +67,9 @@
 .tutorial-category input:checked + .tutorial-category-card .tutorial-category-selected { visibility: visible; }
 .tutorial-category input:focus-visible + .tutorial-category-card { outline: 3px solid #7061de; outline-offset: 5px; }
 .tutorial-intro-editor { padding: 1rem; background: var(--tutorial-fill); border-radius: .75rem; text-align: center; margin-bottom: 3rem; }
-.tutorial-intro-editor label { display: block; font-size: 1.5rem; font-weight: 500; margin-bottom: 1rem; }
+.tutorial-intro-editor label { display: block; font: 400 1.5rem/1.25 var(--font-heading); margin-bottom: 1rem; }
 .tutorial-intro-editor textarea { text-align: center; background: transparent; font-size: 1.125rem; }
-.tutorial-editor-band { padding: .65rem 1rem; border-radius: .75rem; text-align: center; background: var(--tutorial-fill); font-size: 1.5rem; font-weight: 500; }
+.tutorial-editor-band { padding: .65rem 1rem; border-radius: .75rem; text-align: center; background: var(--tutorial-fill); font: 400 1.5rem/1.25 var(--font-heading); }
 .tutorial-help { color: var(--tutorial-muted); font-size: .875rem; line-height: 1.5; }
 .tutorial-builder > .tutorial-help { text-align: center; margin: .75rem 0 2rem; }
 .tutorial-editor-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
@@ -117,7 +118,7 @@
 .tutorial-author-level img { width: 28px; height: 28px; object-fit: contain; }
 .tutorial-author-profile { margin-left: 1.5rem; }
 .tutorial-publication .mexp-tutorial-category { font-size: .8rem; text-transform: uppercase; padding: .5rem .75rem; }
-.tutorial-publication-header h1 { font-size: clamp(2rem, 3.8vw, 3.6rem); line-height: 1.15; letter-spacing: -.035em; margin: 1.5rem 0 1rem; font-weight: 700; overflow-wrap: anywhere; }
+.tutorial-publication-header h1 { font-family: var(--font-heading); font-size: clamp(2rem, 3.8vw, 3.6rem); line-height: 1.15; letter-spacing: -.025em; margin: 1.5rem 0 1rem; font-weight: 400; overflow-wrap: anywhere; }
 .tutorial-publication-summary { font-size: 1.2rem; line-height: 1.6; color: var(--tutorial-muted); white-space: pre-wrap; overflow-wrap: anywhere; }
 .tutorial-metrics { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem 2rem; margin-top: 1.5rem; font-size: .9rem; }
 .tutorial-metrics strong { font-size: 1.25rem; }
@@ -144,7 +145,7 @@
 .tutorial-published-step figure { margin: 0 0 1.5rem; }
 .tutorial-published-image { width: auto; height: auto; max-width: 100%; max-height: 500px; margin-inline: auto; border-radius: .75rem; object-fit: contain; box-shadow: 0 2px 5px #0000000b; }
 .tutorial-published-step figcaption { font-size: .8rem; color: var(--tutorial-muted); margin-top: .75rem; }
-.tutorial-published-step h2 { font-size: 1.3rem; line-height: 1.35; margin-bottom: .75rem; }
+.tutorial-published-step h2 { font-size: 1.3rem; font-weight: 600; line-height: 1.35; margin-bottom: .75rem; }
 .tutorial-published-step p { font-size: 1rem; line-height: 1.7; white-space: pre-wrap; }
 .tutorial-external-link { color: var(--tutorial-link); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
 .tutorial-published-step > .tutorial-external-link { display: inline-block; margin-top: 1rem; }
@@ -152,11 +153,11 @@
 .tutorial-video-preview, .tutorial-video-player { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--tutorial-line); border-radius: 1rem; overflow: hidden; background: #16151c; }
 .tutorial-video-preview img { width: 100%; height: 100%; object-fit: contain; }
 .tutorial-video-play { position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 76px; height: 76px; font-size: 2rem; color: #fff; background: #6252c7; border-radius: 50%; }
-.tutorial-video h2 { font-size: 1.5rem; font-weight: 500; margin: 1.5rem 0 .5rem; }
+.tutorial-video h2 { font: 400 1.5rem/1.25 var(--font-heading); margin: 1.5rem 0 .5rem; }
 .tutorial-comments { max-width: 1400px; padding-top: 3rem; }
 .tutorial-delete-dialog { width: min(520px, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; margin: auto; padding: 2rem; border: 1px solid #aaa6bc; border-radius: 1.5rem; color: #191923; background: #fff; }
 .tutorial-delete-dialog::backdrop { background: #14102499; }
-.tutorial-delete-dialog h2 { font-size: 1.75rem; margin-bottom: 1rem; }
+.tutorial-delete-dialog h2 { font: 400 1.75rem/1.25 var(--font-heading); margin-bottom: 1rem; }
 .tutorial-delete-dialog p { margin-bottom: 1.5rem; }
 .tutorial-dialog-actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: flex-end; }
 body.dark-blue .tutorial-workspace { --tutorial-text: #edf0f7; --tutorial-muted: #bfccdb; --tutorial-fill: #1c293c; --tutorial-field: #2c3b52; --tutorial-line: #61718b; --tutorial-link: #9cc9ff; background: #0d1720; }
@@ -175,6 +176,29 @@ body.dark-blue .tutorial-workspace .mexp-danger-button, body.dark-blue .tutorial
 body.dark-blue .tutorial-workspace .mexp-star { color: #878d9e; }
 body.dark-blue .tutorial-workspace .mexp-star.is-active, body.dark-blue .tutorial-workspace button.mexp-star:hover { color: #ffc25c; }
 body.dark-blue .tutorial-delete-dialog { background: #1c293c; color: #edf0f7; border-color: #61718b; }
+
+/* Comentários reutilizam a estrutura, o backdrop e os botões do dialog de tutorial. */
+.tutorial-comment-dialog form { display: grid; gap: 1.25rem; }
+.tutorial-comment-dialog-heading { display: flex; align-items: flex-start; gap: 1rem; }
+.tutorial-comment-dialog-heading h2 { flex: 1; margin: .35rem 0 0; }
+.tutorial-comment-dialog-close { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; color: inherit; font-size: 1.75rem; line-height: 1; }
+.tutorial-comment-dialog-close:hover { background: var(--tutorial-field); }
+.tutorial-comment-dialog p { margin: 0; }
+.tutorial-comment-field { display: grid; gap: .65rem; min-width: 0; }
+.tutorial-comment-field label { font-size: .95rem; font-weight: 600; }
+.tutorial-comment-dialog textarea { min-height: 9rem; max-height: 44dvh; overflow-y: auto; line-height: 1.6; border-color: var(--tutorial-line); background: var(--tutorial-field); }
+.tutorial-comment-dialog textarea:is(:focus, :focus-visible) { outline: none; border-color: #7061de; box-shadow: 0 0 0 3px #7061de26; }
+.tutorial-comment-dialog .tutorial-feedback { overflow-wrap: anywhere; }
+.tutorial-comment-dialog .tutorial-dialog-actions button { min-height: 44px; }
+.tutorial-comment-dialog[aria-busy="true"] button:disabled { cursor: wait; }
+body:has(.tutorial-comment-dialog[open]) { overflow: hidden; }
+body.dark-blue .tutorial-comment-dialog textarea:is(:focus, :focus-visible) { border-color: #b8aaff; box-shadow: 0 0 0 3px #b8aaff26; }
+@media (max-width: 480px) {
+    .tutorial-comment-dialog { padding: 1.25rem; }
+    .tutorial-comment-dialog .tutorial-dialog-actions { flex-direction: column; }
+    .tutorial-comment-dialog .tutorial-dialog-actions button { width: 100%; }
+}
+
 @media (max-width: 1100px) {
     .tutorial-editor-grid, .tutorial-published-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .tutorial-categories { gap: 1rem; }

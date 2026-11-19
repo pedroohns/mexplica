@@ -7,8 +7,13 @@ const ler = arquivo => fs.readFileSync(path.join(__dirname, '..', arquivo), 'utf
 const source = ler('public/js/core/site.js');
 
 // DOM mínimo para testar somente o carregador, sem rede nem bibliotecas.
-function ambiente({ preloaded = false, throws = false, existingScript = false } = {}) {
+function ambiente({ preloaded = false, throws = false, existingScript = false, chat = false } = {}) {
     const elements = [];
+    const observers = [];
+    class Observer {
+        constructor(callback) { observers.push(callback); }
+        observe() {}
+    }
     class Element extends EventTarget {
         constructor(tag) { super(); this.tagName = tag; this.dataset = {}; this.attrs = {}; this.children = []; elements.push(this); }
         setAttribute(key, value) { this.attrs[key] = value; }
@@ -18,6 +23,7 @@ function ambiente({ preloaded = false, throws = false, existingScript = false } 
     const document = {
         readyState: 'complete', body: new Element('body'), head: new Element('head'),
         createElement: tag => new Element(tag), addEventListener() {},
+        getElementById(id) { return elements.find(e => e.id === id) || null; },
         querySelector(selector) {
             return selector === '[vw]' ? elements.find(e => Object.hasOwn(e.attrs, 'vw'))
                 : elements.find(e => e.tagName === 'script' && e.src === 'https://vlibras.gov.br/app/vlibras-plugin.js');
@@ -35,10 +41,17 @@ function ambiente({ preloaded = false, throws = false, existingScript = false } 
         window.VLibrasWidget = { access, initBtn };
     };
     const window = preloaded ? { VLibras: { Widget } } : {};
+    let panel, composer;
+    if (chat) {
+        panel = new Element('section'); panel.id = 'mexplicaiPanel'; panel.hidden = true;
+        composer = new Element('div'); composer.id = 'mexplicaiComposerWrap'; composer.top = 916;
+        composer.getBoundingClientRect = () => ({ top: composer.top });
+        Object.assign(window, { innerWidth: 390, innerHeight: 1000, addEventListener() {}, requestAnimationFrame: callback => callback() });
+    }
     if (existingScript) { const script = new Element('script'); script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js'; document.head.appendChild(script); }
-    const context = vm.createContext({ document, window });
+    const context = vm.createContext({ document, window, MutationObserver: Observer, ResizeObserver: Observer });
     vm.runInContext(source, context);
-    return { document, window, elements, context, Widget, access, initBtn, calls: () => calls };
+    return { document, window, elements, context, Widget, access, initBtn, panel, composer, layout: () => observers.forEach(callback => callback()), calls: () => calls };
 }
 
 test('VLibras global aguarda load e inicializa somente uma vez, inclusive com site.js repetido', async () => {
@@ -87,22 +100,47 @@ test('todas as páginas principais carregam site.js e não duplicam integração
     }
 });
 
-test('posição do host legado do VLibras é global à esquerda e acima do painel MExplicAI', () => {
+test('host legado do VLibras fica no canto inferior esquerdo com área segura', () => {
     const css = ler('public/css/base.css');
     const host = css.match(/#mexplicaVLibras\[vw\]\s*\{([^}]+)\}/)[1];
-    assert.match(host, /left: max\(16px, env\(safe-area-inset-left\)\) !important/);
+    assert.match(host, /left: max\(8px, env\(safe-area-inset-left\)\) !important/);
+    assert.match(host, /bottom: max\(8px, env\(safe-area-inset-bottom\)\) !important/);
+    assert.match(host, /top: auto !important/);
     assert.match(host, /right: auto !important/);
     assert.match(host, /position: fixed !important/);
     assert.match(host, /z-index: 600 !important/);
 });
 
-test('posiciona o acesso real do VLibras e usa altura responsiva sem alterar bottom', async () => {
+test('acesso real do VLibras acompanha o canto inferior esquerdo sem alterar o app interno', async () => {
     const a = ambiente({ preloaded: true });
     assert.equal(await a.window.MExplicaVLibras.inicializar(), true);
-    assert.deepEqual(a.access.style.properties.left, { value: 'max(20px, env(safe-area-inset-left))', priority: 'important' });
+    assert.deepEqual(a.access.style.properties.left, { value: 'max(8px, env(safe-area-inset-left))', priority: 'important' });
     assert.deepEqual(a.access.style.properties.right, { value: 'auto', priority: 'important' });
     assert.deepEqual(a.initBtn.style.properties.left, { value: '0', priority: 'important' });
     assert.deepEqual(a.initBtn.style.properties.right, { value: 'auto', priority: 'important' });
-    assert.deepEqual(a.access.style.properties.top, { value: 'var(--mexplica-vlibras-top, calc(50vh - 20px))', priority: 'important' });
-    assert.equal(a.access.style.properties.bottom, undefined);
+    assert.deepEqual(a.access.style.properties.top, { value: 'auto', priority: 'important' });
+    assert.deepEqual(a.access.style.properties.bottom, { value: 'max(8px, env(safe-area-inset-bottom))', priority: 'important' });
+});
+
+test('VLibras libera o composer móvel e volta ao canto ao fechar o chat ou ampliar a tela', async () => {
+    const a = ambiente({ preloaded: true, chat: true });
+    assert.equal(await a.window.MExplicaVLibras.inicializar(), true);
+    const bottom = () => a.access.style.properties.bottom.value;
+    assert.equal(bottom(), 'max(8px, env(safe-area-inset-bottom))');
+    a.panel.hidden = false;
+    a.layout();
+    assert.equal(bottom(), '92px');
+    a.composer.top = 840; // O campo cresce ao escrever uma mensagem com várias linhas.
+    a.layout();
+    assert.equal(bottom(), '168px');
+    for (const width of [768, 1440]) {
+        a.window.innerWidth = width;
+        a.layout();
+        assert.equal(bottom(), 'max(8px, env(safe-area-inset-bottom))');
+    }
+    a.window.innerWidth = 390;
+    a.panel.hidden = true;
+    a.layout();
+    assert.equal(bottom(), 'max(8px, env(safe-area-inset-bottom))');
+    assert.equal(a.calls(), 1);
 });

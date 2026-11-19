@@ -110,11 +110,9 @@
 
             <% if (usuarioAtual) { %>
 
-                <a
-                    href="/perfil/<%= usuarioAtual.slug %>"
-                    class="btn-acessar"
-                >
-                    <%= usuarioAtual.nome %>
+                <a href="/perfil/<%= usuarioAtual.slug %>" class="btn-acessar nav-account" aria-label="Abrir perfil de <%= usuarioAtual.nomeCompleto %>">
+                    <span class="nav-account-avatar" aria-hidden="true"><%= usuarioAtual.iniciais %></span>
+                    <span>Perfil</span>
                 </a>
 
             <% } else { %>
@@ -420,6 +418,8 @@
                                 type="button"
                                 class="mexp-text-button editar-comentario"
                                 data-id="<%= comentario.id %>"
+                                aria-haspopup="dialog"
+                                aria-controls="modalEditarComentario"
                             >
                                 Editar
                             </button>
@@ -429,6 +429,8 @@
                                 type="button"
                                 class="mexp-text-button excluir-comentario"
                                 data-id="<%= comentario.id %>"
+                                aria-haspopup="dialog"
+                                aria-controls="modalExcluirComentario"
                             >
                                 Excluir
                             </button>
@@ -452,6 +454,41 @@
     </section>
 
 
+<% if (usuarioAtual) { %>
+<dialog id="modalEditarComentario" class="tutorial-delete-dialog tutorial-comment-dialog" aria-modal="true" aria-labelledby="editarComentarioTitulo" tabindex="-1">
+    <form id="formEditarComentario" novalidate>
+        <div class="tutorial-comment-dialog-heading">
+            <h2 id="editarComentarioTitulo">Editar comentário</h2>
+            <button type="button" class="tutorial-comment-dialog-close" data-fechar-comentario aria-label="Fechar edição do comentário"><span aria-hidden="true">×</span></button>
+        </div>
+        <div class="tutorial-comment-field">
+            <label for="editarComentarioTexto">Seu comentário</label>
+            <textarea id="editarComentarioTexto" rows="5" minlength="2" maxlength="1000" required aria-describedby="editarComentarioAjuda editarComentarioMensagem"></textarea>
+            <p id="editarComentarioAjuda" class="tutorial-help">Use entre 2 e 1000 caracteres.</p>
+        </div>
+        <p id="editarComentarioMensagem" class="tutorial-feedback" role="alert" aria-atomic="true"></p>
+        <div class="tutorial-dialog-actions">
+            <button type="button" class="mexp-secondary-button" data-fechar-comentario>Cancelar</button>
+            <button type="submit" class="mexp-primary-button">Salvar alterações</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="modalExcluirComentario" class="tutorial-delete-dialog tutorial-comment-dialog" aria-modal="true" aria-labelledby="excluirComentarioTitulo" aria-describedby="excluirComentarioDescricao" tabindex="-1">
+    <form id="formExcluirComentario" novalidate>
+        <div class="tutorial-comment-dialog-heading">
+            <h2 id="excluirComentarioTitulo">Excluir comentário?</h2>
+            <button type="button" class="tutorial-comment-dialog-close" data-fechar-comentario aria-label="Fechar confirmação de exclusão"><span aria-hidden="true">×</span></button>
+        </div>
+        <p id="excluirComentarioDescricao">Tem certeza de que deseja excluir este comentário? Essa ação não poderá ser desfeita.</p>
+        <p id="excluirComentarioMensagem" class="tutorial-feedback" role="alert" aria-atomic="true"></p>
+        <div class="tutorial-dialog-actions">
+            <button type="button" class="mexp-secondary-button" data-fechar-comentario autofocus>Cancelar</button>
+            <button type="submit" class="mexp-danger-button">Excluir comentário</button>
+        </div>
+    </form>
+</dialog>
+<% } %>
 </main>
 
 

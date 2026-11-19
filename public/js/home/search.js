@@ -29,8 +29,23 @@
     const heroLogo =
         document.getElementById('heroLogo');
 
-    const accountButton =
-        document.querySelector('.btn-acessar');
+    const searchBox = document.getElementById('searchBox');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let animacaoBusca;
+
+    function animarModoBusca(alterarLayout) {
+        const antes = searchBox.getBoundingClientRect();
+        animacaoBusca?.cancel();
+        alterarLayout();
+        if (reducedMotion.matches) return;
+
+        const depois = searchBox.getBoundingClientRect();
+        // FLIP: mede os dois estados e anima só transform, inclusive na saída.
+        animacaoBusca = searchBox.animate([
+            { transform: `translate(${antes.left - depois.left}px, ${antes.top - depois.top}px) scale(${antes.width / depois.width}, ${antes.height / depois.height})` },
+            { transform: 'none' }
+        ], { duration: 280, easing: 'cubic-bezier(.2,.75,.25,1)' });
+    }
 
     const filterSearchBtn =
         document.getElementById('filterSearchBtn');
@@ -46,7 +61,6 @@
         return;
     }
 
-    let sessao = null;
     let timerBusca = null;
     let modoBuscaAtivo = false;
     let filtroCategoriaAtual = '';
@@ -110,91 +124,55 @@
         window.MExplicaApi;
 
 
-    async function carregarSessao() {
-        if (sessao) {
-            return sessao;
-        }
-
-        try {
-            sessao =
-                await requisicao(
-                    '/api/auth/sessao'
-                );
-        }
-        catch {
-            sessao = {
-                autenticado: false,
-                usuario: null
-            };
-        }
-
-        if (
-            accountButton
-            && sessao.autenticado
-            && sessao.usuario
-        ) {
-            accountButton.textContent =
-                sessao.usuario.nome;
-
-            accountButton.href =
-                `/perfil/${sessao.usuario.slug}`;
-
-            accountButton.setAttribute(
-                'aria-label',
-                `Abrir perfil de ${sessao.usuario.nome}`
-            );
-        }
-
-        return sessao;
-    }
-
     function ativarModoBusca() {
         if (modoBuscaAtivo) {
             return;
         }
 
-        modoBuscaAtivo = true;
+        animarModoBusca(() => {
+            modoBuscaAtivo = true;
 
-        heroSection
-            .classList
-            .add('search-mode');
+            heroSection
+                .classList
+                .add('search-mode');
 
-        if (
-            heroLogo
-            && searchInputWrap
-        ) {
-            searchInputWrap.insertBefore(
-                heroLogo,
-                searchInputWrap.firstChild
-            );
-        }
+            if (
+                heroLogo
+                && searchInputWrap
+            ) {
+                searchInputWrap.insertBefore(
+                    heroLogo,
+                    searchInputWrap.firstChild
+                );
+            }
 
-        if (
-            searchOptions
-            && searchToolsLeft
-        ) {
-            searchToolsLeft.appendChild(
+            if (
                 searchOptions
-            );
-        }
+                && searchToolsLeft
+            ) {
+                searchToolsLeft.appendChild(
+                    searchOptions
+                );
+            }
 
-        if (
-            contactCards
-            && searchToolsRight
-        ) {
-            searchToolsRight.appendChild(
+            if (
                 contactCards
-            );
-        }
+                && searchToolsRight
+            ) {
+                searchToolsRight.appendChild(
+                    contactCards
+                );
+            }
 
-        if (
-            accessibilityBar
-            && searchToolsRight
-        ) {
-            searchToolsRight.appendChild(
+            if (
                 accessibilityBar
-            );
-        }
+                && searchToolsRight
+            ) {
+                searchToolsRight.appendChild(
+                    accessibilityBar
+                );
+            }
+        });
     }
 
     function desativarModoBusca() {
@@ -202,38 +180,40 @@
             return;
         }
 
-        modoBuscaAtivo = false;
+        animarModoBusca(() => {
+            modoBuscaAtivo = false;
 
-        heroSection
-            .classList
-            .remove('search-mode');
+            heroSection
+                .classList
+                .remove('search-mode');
 
-        if (
-            heroLogo
-            && heroLogoAnchor.parentNode
-        ) {
-            heroLogoAnchor.after(
+            if (
                 heroLogo
-            );
-        }
+                && heroLogoAnchor.parentNode
+            ) {
+                heroLogoAnchor.after(
+                    heroLogo
+                );
+            }
 
-        if (
-            accessibilityBar
-            && accessibilityAnchor.parentNode
-        ) {
-            accessibilityAnchor.after(
+            if (
                 accessibilityBar
-            );
-        }
+                && accessibilityAnchor.parentNode
+            ) {
+                accessibilityAnchor.after(
+                    accessibilityBar
+                );
+            }
 
-        if (
-            contactCards
-            && contactAnchor.parentNode
-        ) {
-            contactAnchor.after(
+            if (
                 contactCards
-            );
-        }
+                && contactAnchor.parentNode
+            ) {
+                contactAnchor.after(
+                    contactCards
+                );
+            }
+        });
     }
 
     function obterFiltroAtual() {
@@ -566,5 +546,4 @@
         }
     );
 
-    carregarSessao();
 })();

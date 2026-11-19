@@ -33,12 +33,35 @@
                         // Usar as referências oficiais sem alterar o app interno.
                         const { access, initBtn } = window.VLibrasWidget || {};
                         if (access && initBtn) {
-                            access.style.setProperty('left', 'max(20px, env(safe-area-inset-left))', 'important');
+                            access.style.setProperty('left', 'max(8px, env(safe-area-inset-left))', 'important');
                             access.style.setProperty('right', 'auto', 'important');
-                            access.style.setProperty('top', 'var(--mexplica-vlibras-top, calc(50vh - 20px))', 'important');
+                            access.style.setProperty('top', 'auto', 'important');
+                            access.style.setProperty('bottom', 'max(8px, env(safe-area-inset-bottom))', 'important');
+                            // Mudanças de posição acompanham o campo sem atravessá-lo.
+                            access.style.setProperty('transition-property', 'opacity', 'important');
                             access.style.setProperty('flex-direction', 'row-reverse');
                             initBtn.style.setProperty('left', '0', 'important');
                             initBtn.style.setProperty('right', 'auto', 'important');
+
+                            const panel = document.getElementById('mexplicaiPanel');
+                            const composer = document.getElementById('mexplicaiComposerWrap');
+                            if (panel && composer) {
+                                // No celular o chat ocupa a tela inteira. Reserva apenas
+                                // a altura real do composer, inclusive com várias linhas.
+                                const ajustarPosicao = () => {
+                                    const bottom = window.innerWidth <= 640 && !panel.hidden
+                                        ? `${Math.max(8, window.innerHeight - composer.getBoundingClientRect().top + 8)}px`
+                                        : 'max(8px, env(safe-area-inset-bottom))';
+                                    access.style.setProperty('bottom', bottom, 'important');
+                                };
+                                const agendarPosicao = () => window.requestAnimationFrame(ajustarPosicao);
+                                new MutationObserver(agendarPosicao).observe(panel, { attributes: true, attributeFilter: ['hidden'] });
+                                new ResizeObserver(agendarPosicao).observe(composer);
+                                window.addEventListener('resize', agendarPosicao);
+                                window.visualViewport?.addEventListener('resize', agendarPosicao);
+                                window.visualViewport?.addEventListener('scroll', agendarPosicao);
+                                ajustarPosicao();
+                            }
                         }
                         root.dataset.vlibrasInitialized = 'true';
                     }
@@ -69,6 +92,25 @@
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Nas páginas estáticas, a sessão existente completa o mesmo header das views EJS.
+    const accountButton = document.querySelector('.nav-actions .btn-acessar');
+    if (accountButton && document.body.matches('.home-page, .auth-page') && window.MExplicaApi) {
+        window.MExplicaApi.requisicao('/api/auth/sessao').then(sessao => {
+            if (!sessao.autenticado || !sessao.usuario) return;
+            const usuario = sessao.usuario;
+            const avatar = document.createElement('span');
+            avatar.className = 'nav-account-avatar';
+            avatar.setAttribute('aria-hidden', 'true');
+            avatar.textContent = usuario.iniciais;
+            const label = document.createElement('span');
+            label.textContent = 'Perfil';
+            accountButton.replaceChildren(avatar, label);
+            accountButton.classList.add('nav-account');
+            accountButton.href = `/perfil/${usuario.slug}`;
+            accountButton.setAttribute('aria-label', `Abrir perfil de ${usuario.nomeCompleto}`);
+        }).catch(() => { /* O acesso à conta continua disponível se a sessão falhar. */ });
+    }
 
     // GREETING
     const greetingEl = document.getElementById('greeting');
@@ -164,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
 
         let nivelAtual = 1;
+        const tamanhoBase = parseFloat(getComputedStyle(document.documentElement).fontSize);
 
         const iconeAa = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><text x="1" y="18" font-size="16" fill="#ffffff" font-family="sans-serif" font-weight="900">Aa</text></svg>`;
         const setaAbaixo = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -230,6 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         slider.step = '1';
         slider.value = nivelAtual;
         slider.id = 'fonte-slider';
+        slider.setAttribute('aria-label', 'Tamanho do texto');
         slider.style.cssText = `
             -webkit-appearance: none;
             appearance: none;
@@ -294,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lbl.textContent = nivel.label;
             lbl.style.cssText = `
                 font-family: 'Inter', sans-serif;
-                font-size: 10px;
+                font-size: 0.625rem;
                 font-weight: 700;
                 letter-spacing: 0.05em;
                 color: ${i === nivelAtual ? '#7B6EF6' : '#bbbbbb'};
@@ -350,27 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 escalas[n]
             );
 
-            document.querySelectorAll('*').forEach(el => {
-
-                if (!el.dataset.originalFontSize) {
-                    const size = parseFloat(
-                        window.getComputedStyle(el).fontSize
-                    );
-
-                    if (!isNaN(size)) {
-                        el.dataset.originalFontSize = size;
-                    }
-                }
-
-                const original = parseFloat(
-                    el.dataset.originalFontSize
-                );
-
-                if (!isNaN(original)) {
-                    el.style.fontSize =
-                        (original * escalas[n]) + 'px';
-                }
-            });
+            // rem mantém a escala sem congelar as medidas dos breakpoints.
+            document.documentElement.style.fontSize = (tamanhoBase * escalas[n]) + 'px';
+            slider.setAttribute('aria-valuetext', niveis[n].label);
 
             atualizarGradienteSlider(n);
             atualizarCoresMenu();
@@ -523,7 +549,7 @@ menuFonte.style.width =
             lbl.textContent = tema.label;
             lbl.style.cssText = `
                 font-family: 'Inter', sans-serif;
-                font-size: 13px;
+                font-size: 0.8125rem;
                 font-weight: 600;
                 color: #111111;
             `;
@@ -532,7 +558,7 @@ menuFonte.style.width =
             sub.textContent = tema.sub;
             sub.style.cssText = `
                 font-family: 'Inter', sans-serif;
-                font-size: 11px;
+                font-size: 0.6875rem;
                 font-weight: 400;
                 color: #888888;
                 line-height: 1.4;
@@ -592,7 +618,7 @@ menuFonte.style.width =
         lblConforto.textContent = 'Modo Conforto Ocular';
         lblConforto.style.cssText = `
             font-family: 'Inter', sans-serif;
-            font-size: 13px;
+            font-size: 0.8125rem;
             font-weight: 600;
             color: #111111;
         `;
@@ -601,7 +627,7 @@ menuFonte.style.width =
         subConforto.textContent = 'Previne a fadiga visual, ressecamento ocular';
         subConforto.style.cssText = `
             font-family: 'Inter', sans-serif;
-            font-size: 11px;
+            font-size: 0.6875rem;
             font-weight: 400;
             color: #888888;
             line-height: 1.4;

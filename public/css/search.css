@@ -74,9 +74,10 @@
 }
 
 .mexp-search-results-title {
-    font-family: 'Nimbus Sans', sans-serif;
-    font-size: 28px;
-    font-weight: 500;
+    letter-spacing: -.025em;
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 400;
     line-height: 1.2;
     color: #111111;
     margin: 0;
@@ -88,7 +89,7 @@
 
 .mexp-search-results-subtitle {
     margin: 0;
-    font-size: 16px;
+    font-size: 1rem;
     color: #333333;
     line-height: 1.5;
 }
@@ -134,7 +135,7 @@
     border-radius: 999px;
     border: 1.5px solid currentColor;
     font-family: 'Inter', sans-serif;
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 800;
     letter-spacing: 0.02em;
     margin-bottom: 14px;
@@ -147,9 +148,9 @@
 }
 
 .mexp-search-card-title {
-    font-family: 'Nimbus Sans', sans-serif;
-    font-size: 22px;
-    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.375rem;
+    font-weight: 600;
     line-height: 1.2;
     color: inherit;
     margin: 0 0 8px;
@@ -157,7 +158,7 @@
 
 .mexp-search-card-summary {
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 0.9375rem;
     line-height: 1.45;
     color: inherit;
     opacity: 0.92;
@@ -190,7 +191,7 @@
     align-items: center;
     justify-content: center;
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 800;
     flex-shrink: 0;
 }
@@ -202,7 +203,7 @@
 .mexp-search-card-author-meta strong {
     display: block;
     font-family: 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: inherit;
     white-space: nowrap;
     overflow: hidden;
@@ -213,7 +214,7 @@
     display: flex;
     gap: 2px;
     margin-top: 2px;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 
 .mexp-search-card-stars span {
@@ -244,7 +245,7 @@
     border: 1.5px solid currentColor;
     background: rgba(255, 255, 255, 0.55);
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 700;
     color: inherit;
 }
@@ -265,7 +266,7 @@
 }
 
 .mexp-search-card-action-icon {
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1;
 }
 
@@ -284,20 +285,20 @@
 .mexp-search-empty strong {
     display: block;
     color: #111111;
-    font-size: 18px;
+    font-size: 1.125rem;
     margin-bottom: 8px;
 }
 
 .mexp-search-empty p {
     color: #666666;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.55;
 }
 
 .mexp-search-loading {
     text-align: center;
     font-family: 'Inter', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     color: #666666;
     padding: 22px 0;
 }
@@ -569,7 +570,7 @@ body.dark-blue .hero-section.search-mode .search-opt-btn {
     }
 
     .mexp-search-results-title {
-        font-size: 24px;
+        font-size: 1.5rem;
     }
 
     .mexp-search-card-footer {
@@ -584,11 +585,11 @@ body.dark-blue .hero-section.search-mode .search-opt-btn {
 
 @media (max-width: 480px) {
     .mexp-search-card-title {
-        font-size: 20px;
+        font-size: 1.25rem;
     }
 
     .mexp-search-results-subtitle {
-        font-size: 14px;
+        font-size: 0.875rem;
     }
 
     .hero-section.search-mode .search-input-wrap {
@@ -729,7 +730,7 @@ body.dark-blue .hero-section.search-mode .search-tools-row {
         'Inter',
         sans-serif;
 
-    font-size: 13px;
+    font-size: 0.8125rem;
 
     text-align: left;
 
@@ -782,7 +783,7 @@ body.dark-blue .hero-section.search-mode .search-tools-row {
 
     color: #ffffff;
 
-    font-size: 11px;
+    font-size: 0.6875rem;
 
     font-weight: 800;
 

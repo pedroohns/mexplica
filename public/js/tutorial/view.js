@@ -333,152 +333,99 @@
 
 
     // =============================
-    // ATUALIZAR COMENTARIO
-    // =============================
-    document
+    // MODAIS DE EDIÇÃO E EXCLUSÃO DE COMENTÁRIOS
+    // Mesmo padrão de <dialog> do tutorial, com foco e estado de envio compartilhados.
+    function prepararModalComentario(id, seletor, metodo) {
+        const dialog = document.getElementById(id);
+        if (!dialog) return;
 
-        .querySelectorAll(
-            '.editar-comentario'
-        )
+        const form = dialog.querySelector('form');
+        const campo = dialog.querySelector('textarea');
+        const mensagem = dialog.querySelector('.tutorial-feedback');
+        const confirmar = form.querySelector('[type="submit"]');
+        const cancelar = form.querySelector('.mexp-secondary-button');
+        const controles = [...form.elements];
+        const rotulo = confirmar.textContent;
+        let origem;
+        let enviando = false;
 
-        .forEach(
-            botao => {
+        document.querySelectorAll(seletor).forEach(botao => {
+            botao.addEventListener('click', () => {
+                origem = botao;
+                mensagem.textContent = '';
+                if (campo) {
+                    campo.value = botao.closest('.mexp-comment-card').querySelector('.mexp-comment-text').textContent.trim();
+                    campo.removeAttribute('aria-invalid');
+                }
+                dialog.showModal();
+                (campo || cancelar).focus({ preventScroll: true });
+                if (campo) campo.setSelectionRange(campo.value.length, campo.value.length);
+            });
+        });
 
-                botao.addEventListener(
-                    'click',
-                    async () => {
-
-                        const card =
-                            botao.closest(
-                                '.mexp-comment-card'
-                            );
-
-
-                        const textoAtual =
-                            card
-                                .querySelector(
-                                    '.mexp-comment-text'
-                                )
-                                .textContent
-                                .trim();
-
-
-                        const texto =
-                            prompt(
-
-                                'Edite seu comentário:',
-
-                                textoAtual
-
-                            );
-
-
-                        if (
-                            texto === null
-                        ) {
-
-                            return;
-
-                        }
-
-
-                        try {
-
-                            await requisicao(
-
-                                `/api/comentarios/${botao.dataset.id}`,
-
-                                {
-
-                                    method:
-                                        'PUT',
-
-                                    body:
-                                        JSON.stringify({
-                                            texto
-                                        })
-
-                                }
-
-                            );
-
-
-                            window.location.reload();
-
-                        }
-
-                        catch (erro) {
-
-                            alert(
-                                erro.message
-                            );
-
-                        }
-
-                    }
-                );
-
+        dialog.querySelectorAll('[data-fechar-comentario]').forEach(botao => {
+            botao.addEventListener('click', () => { if (!enviando) dialog.close(); });
+        });
+        dialog.addEventListener('close', () => { if (origem?.isConnected) origem.focus({ preventScroll: true }); });
+        dialog.addEventListener('cancel', event => { if (enviando) event.preventDefault(); });
+        dialog.addEventListener('keydown', event => {
+            if (enviando && event.key === 'Escape') { event.preventDefault(); return; }
+            if (event.key !== 'Tab') return;
+            const ativos = controles.filter(controle => !controle.disabled);
+            const primeiro = ativos[0];
+            const ultimo = ativos.at(-1);
+            if (!ativos.length) { event.preventDefault(); return; }
+            if ((!event.shiftKey && document.activeElement === ultimo)
+                || (event.shiftKey && (document.activeElement === primeiro || !ativos.includes(document.activeElement)))) {
+                event.preventDefault();
+                (event.shiftKey ? ultimo : primeiro).focus();
             }
-        );
-
-
-    // =============================
-    // DELETAR COMENTARIO
-    // =============================
-    document
-
-        .querySelectorAll(
-            '.excluir-comentario'
-        )
-
-        .forEach(
-            botao => {
-
-                botao.addEventListener(
-                    'click',
-                    async () => {
-
-                        if (
-                            !confirm(
-                                'Excluir este comentário?'
-                            )
-                        ) {
-
-                            return;
-
-                        }
-
-
-                        try {
-
-                            await requisicao(
-
-                                `/api/comentarios/${botao.dataset.id}`,
-
-                                {
-                                    method:
-                                        'DELETE'
-                                }
-
-                            );
-
-
-                            window.location.reload();
-
-                        }
-
-                        catch (erro) {
-
-                            alert(
-                                erro.message
-                            );
-
-                        }
-
-                    }
-                );
-
+        });
+        campo?.addEventListener('input', () => {
+            if (campo.hasAttribute('aria-invalid')) {
+                campo.removeAttribute('aria-invalid');
+                mensagem.textContent = '';
             }
-        );
+        });
 
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (enviando || !origem) return;
+            const texto = campo?.value.trim();
+            if (campo && (texto.length < campo.minLength || texto.length > campo.maxLength)) {
+                mensagem.textContent = 'O comentário deve ter entre 2 e 1000 caracteres.';
+                campo.setAttribute('aria-invalid', 'true');
+                campo.focus();
+                return;
+            }
+
+            enviando = true;
+            dialog.setAttribute('aria-busy', 'true');
+            controles.forEach(controle => { controle.disabled = true; });
+            confirmar.textContent = campo ? 'Salvando...' : 'Excluindo...';
+            mensagem.textContent = campo ? 'Salvando alterações...' : 'Excluindo comentário...';
+            dialog.focus({ preventScroll: true });
+            try {
+                await requisicao(`/api/comentarios/${origem.dataset.id}`, {
+                    method: metodo,
+                    ...(campo ? { body: JSON.stringify({ texto }) } : {})
+                });
+                dialog.close();
+                window.location.reload();
+            } catch (erro) {
+                mensagem.textContent = erro instanceof TypeError
+                    ? 'Não foi possível concluir a operação. Verifique sua conexão e tente novamente.'
+                    : erro.message;
+            } finally {
+                enviando = false;
+                dialog.removeAttribute('aria-busy');
+                controles.forEach(controle => { controle.disabled = false; });
+                confirmar.textContent = rotulo;
+                if (dialog.open) (campo || cancelar).focus({ preventScroll: true });
+            }
+        });
+    }
+
+    prepararModalComentario('modalEditarComentario', '.editar-comentario', 'PUT');
+    prepararModalComentario('modalExcluirComentario', '.excluir-comentario', 'DELETE');
 })();
