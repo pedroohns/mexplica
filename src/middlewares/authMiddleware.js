@@ -110,6 +110,47 @@ function exigirColaborador(
 }
 
 
+function exigirAdministrador(
+    req,
+    res,
+    next
+) {
+
+    if (!req.usuario) {
+
+        return res
+            .status(401)
+            .json({
+
+                erro:
+                    'Você precisa estar autenticado para realizar esta ação.'
+
+            });
+
+    }
+
+
+    if (
+        req.usuario.administrador !== true
+    ) {
+
+        return res
+            .status(403)
+            .json({
+
+                erro:
+                    'Esta ação é restrita à administração do MExplica.'
+
+            });
+
+    }
+
+
+    return next();
+
+}
+
+
 function exigirPlatina(
     req,
     res,
@@ -163,6 +204,8 @@ module.exports = {
     exigirAutenticacao,
 
     exigirColaborador,
+
+    exigirAdministrador,
 
     exigirPlatina
 

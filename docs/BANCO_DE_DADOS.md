@@ -68,6 +68,39 @@ quando o saldo cai abaixo de Platina. Limites de nível continuam centralizados 
 são passados como parâmetros ao Repository. Somente colaboradores Platina alteram sua
 disponibilidade. Ranking filtra colaboradores pelo threshold de Diamante e ordena por pontos.
 
+## Fundação administrativa de usuários
+
+`usuarios.administrador` é `BOOLEAN NOT NULL DEFAULT FALSE`, independente de `colaborador`,
+tipo, nível, pontos e ranking. Um administrador pode não ser colaborador. Não há tabela,
+Model ou Repository separado para administração.
+
+A migration `src/database/migrations/002_add_usuario_administrador.sql` adiciona somente a
+coluna. Quando aplicada, usuários existentes passam a ter `FALSE`; nenhuma conta é criada
+ou promovida. O schema inicial também inclui a coluna para bancos novos. `IF NOT EXISTS`
+permite executar a migration depois de criar um banco com esse schema.
+
+O runner existente continua responsável por ordenação, `schema_migrations`, trava e
+transação. Nesta etapa, o arquivo foi criado e validado offline com client falso;
+**a migration não foi aplicada no Neon Production e nenhum dado real foi alterado**.
+A aplicação real da migration depende de revisão e autorização posteriores.
+
+O Repository PostgreSQL mapeia a flag para `usuario.administrador`. O INSERT de cadastro
+omite a coluna para usar o default falso, ignorando qualquer flag recebida. O Model também
+fixa `administrador: false` em `create`, e as whitelists de edição do Controller, Model e
+Repository não incluem esse campo. Os demais métodos de usuário não concedem administração.
+
+O MemoryRepository normaliza a flag dos dados recebidos no construtor e também fixa falso
+em `create`. Administradores de testes são fixtures internas explicitamente marcadas com
+`administrador: true`; não são criados pelo fluxo de cadastro. Somente o booleano `true`
+representa administração no Repository, Model e middleware, sem converter strings em permissão.
+O seed continua omitindo a coluna e, portanto, usando o default do banco, sem promover contas.
+
+`toPrivate()` inclui a flag; `toPublic()` a omite. A sessão e o contexto autenticado recebem
+o estado atual carregado pelo Model. O JWT continua identificando o usuário pelo `sub`;
+`exigirAdministrador` autoriza usando somente `req.usuario.administrador` consultado novamente
+a cada requisição. Revogar a flag no registro atual bloqueia a próxima ação administrativa
+com HTTP 403, mesmo com o mesmo JWT ainda válido. Detalhes em [AUTENTICACAO.md](AUTENTICACAO.md).
+
 ## Persistência de tutoriais no runtime
 
 A mesma RepositoryFactory fornece `TutorialMemoryRepository` em `NODE_ENV=test` e

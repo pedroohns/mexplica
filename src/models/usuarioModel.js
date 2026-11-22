@@ -71,6 +71,8 @@ function sincronizarNivel(
         return null;
     }
 
+    usuario.administrador = usuario.administrador === true;
+
     usuario.nivel =
         calcularNivel(
             usuario.pontos,
@@ -206,6 +208,9 @@ function toPrivate(
             usuario
         ),
 
+        administrador:
+            usuario.administrador === true,
+
         email:
             usuario.email,
 
@@ -253,7 +258,7 @@ async function create(dados) {
         nome: dados.nome, sobrenome: dados.sobrenome,
         email: String(dados.email || '').trim().toLowerCase(),
         telefone: normalizarTelefone(dados.telefone),
-        idade: Number(dados.idade), genero: dados.genero, colaborador,
+        idade: Number(dados.idade), genero: dados.genero, colaborador, administrador: false,
         pontos: 0, bio: dados.bio || '', localizacao: dados.localizacao || 'Brasil',
         disponivelAtendimento: false, senhaHash: dados.senhaHash, criadoEm: new Date().toISOString()
     };

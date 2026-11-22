@@ -9,6 +9,8 @@ function conflito(codigo) {
 class UsuarioMemoryRepository {
     constructor(usuarios = require('../data/usuarioData'), tutoriais = [], { comentarios = [], avaliacoes = [] } = {}) {
         this.usuarios = usuarios;
+        // Fixtures internas podem declarar true; dados sem a flag seguem o default do banco.
+        for (const usuario of this.usuarios) usuario.administrador = usuario.administrador === true;
         this.tutoriais = tutoriais;
         this.comentarios = comentarios;
         this.avaliacoes = avaliacoes;
@@ -47,6 +49,7 @@ class UsuarioMemoryRepository {
             'pontos', 'bio', 'localizacao', 'disponivelAtendimento', 'senhaHash', 'criadoEm'];
         const usuario = {
             ...Object.fromEntries(campos.map(campo => [campo, dados[campo]])),
+            administrador: false,
             id: Math.max(0, ...this.usuarios.map(item => item.id)) + 1
         };
         this.usuarios.push(usuario);

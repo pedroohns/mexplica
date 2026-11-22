@@ -45,7 +45,7 @@ aud = mexplica-web
 ```
 
 JWT é assinado, e seu conteúdo pode ser lido por quem possuir a credencial. Não contém senha,
-hash, email, telefone, bio, pontos, nível ou colaborador. Permissões não são confiadas a claims.
+hash, email, telefone, bio, pontos, nível, colaborador ou administrador. Permissões não são confiadas a claims.
 
 Sem `JWT_SECRET`, emissão/verificação falham com erro seguro de configuração (HTTP 503).
 Não existe fallback. A aplicação pode iniciar e atender assets, health e rotas públicas sem
@@ -80,8 +80,15 @@ Falhas inesperadas do banco seguem para o tratamento global seguro, sem virar lo
 { "autenticado": false, "usuario": null }
 ```
 
-Quando autenticado, retorna `{ autenticado: true, usuario: ... }`, com a mesma projeção privada
-de antes e sem hash. Respostas de autenticação recebem `Cache-Control: no-store`.
+Quando autenticado, retorna `{ autenticado: true, usuario: ... }`, com `toPrivate()` e sem hash.
+Essa projeção inclui `administrador: true` ou `administrador: false`, conforme o registro atual
+do próprio usuário. Login, cadastro e respostas privadas de edição/disponibilidade usam a mesma
+projeção; `res.locals.usuarioAtual` também a recebe para o contexto autenticado de EJS.
+Respostas de autenticação recebem `Cache-Control: no-store`.
+
+A flag não aparece em `toPublic()`, perfis públicos, listagens, ranking ou projeções de autores.
+Sua presença na sessão permite decisões futuras de interface, mas não concede acesso a uma API:
+a autorização continua sendo conferida pelo backend em cada requisição.
 
 ## API: emissão e Bearer
 
@@ -103,10 +110,28 @@ Páginas EJS usam o cookie; o suporte Bearer é destinado às APIs.
 
 ## Autorização e logout
 
-`exigirAutenticacao`, `exigirColaborador` e `exigirPlatina` usam o usuário consultado no
-PostgreSQL a cada request. Rebaixamento, perda de colaboração ou exclusão de conta têm
+`exigirAutenticacao`, `exigirColaborador`, `exigirPlatina` e `exigirAdministrador` usam o usuário consultado no
+PostgreSQL a cada request. Rebaixamento, perda de colaboração, revogação administrativa ou exclusão de conta têm
 efeito na próxima requisição, mesmo que o JWT ainda não tenha expirado. JWT válido sem
 usuário existente não autentica e não gera 500.
+
+`exigirAdministrador`, exportado por `src/middlewares/authMiddleware.js`, deve executar depois
+de `carregarUsuario`. Sem usuário, retorna 401 com `Você precisa estar autenticado para realizar
+esta ação.`; com `req.usuario.administrador !== true`, retorna 403 com `Esta ação é restrita à
+administração do MExplica.`; com a flag verdadeira, chama `next()`. Não exige colaborador ou
+nível, nem verifica nome, slug, email, ID fixo, variável de ambiente ou claims de permissão.
+Nenhuma rota administrativa foi adicionada nesta etapa.
+
+Fluxo preservado: JWT válido → `sub` → `UsuarioModel.findById()` → registro atual do PostgreSQL
+→ `req.usuario.administrador` → autorização. A revogação não invalida a identidade: o mesmo
+token ainda autentica a sessão, que passa a informar `administrador: false`, mas a próxima
+requisição protegida recebe 403. Uma claim administrativa extra, mesmo assinada corretamente,
+não substitui o estado do registro. Alterar o payload sem assinatura válida não autentica.
+
+O cadastro ignora campos administrativos no body/query e o Model sempre cria usuários com
+`administrador: false`. A edição mantém as whitelists existentes em todas as camadas e não
+concede nem revoga a flag. Fixtures administrativas são internas aos testes; não foi criada
+conta administrativa nem modificada permissão de usuário real nesta etapa.
 
 `POST /api/auth/logout` limpa `mexplica_token` com Path, SameSite, HttpOnly e Secure
 compatíveis com a emissão. Exclusão da própria conta também limpa esse cookie.
@@ -131,6 +156,12 @@ Na etapa de migração JWT, `npm.cmd test` passou com 241 testes offline, inclui
 MemoryRepositories e bloqueia o driver real; testes SQL usam clientes falsos. A cobertura JWT
 inclui assinatura, validade sem sleeps, claims, algoritmo, ausência de chave, cookies de produção,
 login/cadastro/logout, exclusão, Bearer, prioridade, EJS, permissões atuais e assets/health.
+
+A fundação administrativa acrescenta cobertura offline para defaults, fixtures, mapeamento SQL,
+projeções, injeção no cadastro/edição, middleware 401/403/next, sessão por cookie/Bearer, claims
+ignoradas e JWT adulterado. O teste de revogação usa o mesmo token antes e depois de alterar
+o registro em memória e confirma nova leitura pelo Repository, bloqueio 403 e sessão com flag
+falsa. A rota restrita usada nessa integração existe somente no servidor de testes.
 
 Validação adicional no Chrome headless local, com MemoryRepositories e driver PostgreSQL
 bloqueado: login, recarga da página, cookie HttpOnly inacessível a JavaScript, avatar MExplicAI,

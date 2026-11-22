@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.usuarios (
     idade SMALLINT NOT NULL CHECK (idade BETWEEN 10 AND 120),
     genero TEXT NOT NULL CHECK (btrim(genero) <> ''),
     colaborador BOOLEAN NOT NULL DEFAULT FALSE,
+    administrador BOOLEAN NOT NULL DEFAULT FALSE,
     pontos INTEGER NOT NULL DEFAULT 0 CHECK (pontos >= 0),
     bio TEXT NOT NULL DEFAULT '',
     localizacao TEXT NOT NULL DEFAULT 'Brasil',

@@ -1,0 +1,2 @@
+ALTER TABLE public.usuarios
+    ADD COLUMN IF NOT EXISTS administrador BOOLEAN NOT NULL DEFAULT FALSE;

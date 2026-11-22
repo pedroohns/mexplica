@@ -8,7 +8,8 @@ function mapearUsuario(row) {
     return {
         id: row.id, slug: row.slug, nome: row.nome, sobrenome: row.sobrenome,
         email: row.email ?? '', telefone: row.telefone ?? '', idade: row.idade, genero: row.genero,
-        colaborador: row.colaborador, pontos: row.pontos, bio: row.bio, localizacao: row.localizacao,
+        colaborador: row.colaborador, administrador: row.administrador === true,
+        pontos: row.pontos, bio: row.bio, localizacao: row.localizacao,
         disponivelAtendimento: row.disponivel_atendimento, senhaHash: row.senha_hash,
         criadoEm: row.criado_em instanceof Date ? row.criado_em.toISOString() : row.criado_em
     };
@@ -74,6 +75,7 @@ class UsuarioPostgresRepository {
 
     async create(dados) {
         try {
+            // Cadastro nunca grava administrador: a coluna usa o DEFAULT FALSE do banco.
             const resultado = await this.getPool().query(`INSERT INTO public.usuarios
                 (slug, nome, sobrenome, email, telefone, idade, genero, colaborador, pontos, bio,
                  localizacao, disponivel_atendimento, senha_hash, criado_em)

@@ -4,7 +4,7 @@ const UsuarioPostgresRepository = require('../src/repositories/usuarioPostgresRe
 
 const linha = () => ({
     id: 41, slug: 'pessoa-teste', nome: 'Pessoa', sobrenome: 'Teste', email: null, telefone: '24999990000',
-    idade: 30, genero: 'outro', colaborador: true, pontos: 2600, bio: 'Biografia', localizacao: 'Brasil',
+    idade: 30, genero: 'outro', colaborador: true, administrador: false, pontos: 2600, bio: 'Biografia', localizacao: 'Brasil',
     disponivel_atendimento: true, senha_hash: 'hash-ficticio', criado_em: new Date('2026-09-01T12:00:00Z')
 });
 const dados = () => ({
@@ -42,6 +42,7 @@ test('Repository mapeia campos atuais e ignora dados legados sem consultar a tab
     assert.equal(usuario.id, 41);
     assert.equal(usuario.email, '');
     assert.equal(usuario.disponivelAtendimento, true);
+    assert.equal(usuario.administrador, false);
     assert.equal(usuario.criadoEm, '2026-09-01T12:00:00.000Z');
     assert.equal(usuario.senhaHash === linha().senha_hash, true);
     assert.equal(Object.hasOwn(usuario, 'especialidades'), false);
@@ -49,6 +50,16 @@ test('Repository mapeia campos atuais e ignora dados legados sem consultar a tab
     assert.equal(['senha_hash', 'criado_em', 'disponivel_atendimento'].some(campo => campo in usuario), false);
     assert.deepEqual(pool.consultas[0].valores, [41]);
     assert.match(pool.consultas[0].sql, /u\.id = \$1/);
+});
+
+test('Repository hidrata administrador como booleano estrito e independente de colaborador', async () => {
+    for (const [valor, esperado] of [[true, true], [false, false], [undefined, false], ['true', false], ['false', false], [1, false]]) {
+        const pool = poolFalso(sql => sql.startsWith('SELECT u.*')
+            ? { rows: [{ ...linha(), colaborador: false, administrador: valor }] } : undefined);
+        const usuario = await new UsuarioPostgresRepository(pool).findById(41);
+        assert.equal(usuario.administrador, esperado);
+        assert.equal(usuario.colaborador, false);
+    }
 });
 
 test('findAll e findBySlug retornam usuários hidratados e parametrizam slug não confiável', async () => {
@@ -107,25 +118,35 @@ test('create parametriza dados e usa identity em uma única escrita atômica', a
     assert.deepEqual(pool.liberacoes, []);
 });
 
+test('create ignora administrador recebido e usa o default falso do PostgreSQL', async () => {
+    const pool = poolFalso();
+    const entrada = { ...dados(), administrador: true };
+    const usuario = await new UsuarioPostgresRepository(pool).create(entrada);
+    assert.equal(usuario.administrador, false);
+    assert.equal(pool.consultas.length, 1);
+    assert.doesNotMatch(pool.consultas[0].sql, /\badministrador\b/);
+});
+
 test('update mantém whitelist e ignora campos abandonados em uma única instrução', async () => {
     const pool = poolFalso();
     const repo = new UsuarioPostgresRepository(pool);
     const usuario = await repo.update(41, {
         nome: "Nome ' atualizado", bio: 'Nova bio', especialidades: ['legado'],
-        id: 99, slug: 'outro', pontos: 99999, colaborador: false, senha_hash: 'indevida', senhaHash: 'indevida'
+        id: 99, slug: 'outro', pontos: 99999, colaborador: false, administrador: true, senha_hash: 'indevida', senhaHash: 'indevida'
     });
     const atualizacao = pool.consultas[0];
     assert.equal(pool.conexoes, 0);
     assert.equal(pool.consultas.length, 1);
     assert.equal(usuario.id, 41);
     assert.deepEqual(atualizacao.valores, [41, "Nome ' atualizado", 'Nova bio']);
-    assert.doesNotMatch(atualizacao.sql, /\b(?:slug|pontos|colaborador|senha_hash)\s*=/);
+    assert.doesNotMatch(atualizacao.sql, /\b(?:slug|pontos|colaborador|administrador|senha_hash)\s*=/);
     assert.equal(atualizacao.sql.includes("Nome ' atualizado"), false);
     assert.equal(/especialidade/i.test(atualizacao.sql), false);
     assert.match(atualizacao.sql, /RETURNING \*/);
 
     const ignorado = poolFalso();
-    const semAlteracoes = await new UsuarioPostgresRepository(ignorado).update(41, { especialidades: ['legado'] });
+    const semAlteracoes = await new UsuarioPostgresRepository(ignorado).update(41, { especialidades: ['legado'], administrador: true });
+    assert.equal(semAlteracoes.administrador, false);
     assert.equal(Object.hasOwn(semAlteracoes, 'especialidades'), false);
     assert.equal(ignorado.consultas.every(item => item.sql.startsWith('SELECT')), true);
 });
