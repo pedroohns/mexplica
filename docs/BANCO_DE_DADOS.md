@@ -18,7 +18,7 @@ reconsultados nem alterados na auditoria de 18/11/2026.
 
 Os relatos de migração e suas contagens abaixo são históricos; os roteiros manuais
 continuam como referência para futuras verificações autorizadas. A suíte atual tem
-262 testes offline. Os quatro Models respeitam o limite positivo de INTEGER dos IDs
+328 testes offline após a auditoria administrativa. Os quatro Models respeitam o limite positivo de INTEGER dos IDs
 do schema (até 2147483647), evitando consultas inválidas e preservando ausência/404.
 
 O warning conhecido de `pg`/`pg-connection-string` sobre o comportamento futuro do
@@ -126,11 +126,13 @@ Exclusões administrativas reutilizam `relacionamentoService.removerDadosDoUsuar
 sem regra artificial de pontuação. A remoção de avaliação não envia avaliadorId: a rota já
 conferiu a permissão administrativa, sem simular autoria.
 
-Na exclusão de usuário, a opção interna `{ administradorId }` exige que o Service recuse
-autoexclusão e alvo administrativo dentro de `antesDeRemover`, depois do bloqueio e releitura
-da conta pelo Repository, antes de ajustar pontos ou remover dependentes. Isso também
-protege uma conta promovida antes de a transação obter seu bloqueio. O fluxo comum de
-exclusão da própria conta não recebeu exceções de autorização.
+Na exclusão de usuário, o Service recusa qualquer alvo administrativo dentro de
+`antesDeRemover`, depois do bloqueio e releitura da conta pelo Repository, antes de ajustar
+pontos ou remover dependentes. A proteção vale inclusive sem `{ administradorId }`, impedindo
+contornar a regra pela API comum de autoexclusão. Quando o painel informa essa opção interna,
+também há mensagem específica para o próprio administrador. Isso protege inclusive uma conta
+promovida antes de a transação obter seu bloqueio. Usuários não administrativos mantêm o fluxo
+anterior de exclusão da própria conta. Recusas provocam ROLLBACK e HTTP 403.
 
 As transações, cascatas e ajustes agregados existentes continuam iguais. O Observer aguarda
 o ajuste de pontos da avaliação no mesmo client antes do COMMIT. Falhas em qualquer etapa

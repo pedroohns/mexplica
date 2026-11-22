@@ -6,6 +6,9 @@
 .admin-workspace [hidden] { display: none !important; }
 .admin-workspace :is(button, a, input):focus-visible, .admin-dialog :is(button, a):focus-visible { outline: 3px solid var(--admin-accent, #7061de); outline-offset: 4px; }
 .admin-workspace :is(.mexp-primary-button, .mexp-secondary-button, .mexp-danger-button, .mexp-primary-link), .admin-dialog button { min-height: 44px; font-size: .875rem; }
+body.admin-page :is(.mexp-primary-button, .mexp-primary-link, .btn-acessar) { background: #6c5bdb; color: #fff; }
+body.admin-page :is(.mexp-primary-button, .mexp-primary-link, .btn-acessar):hover { background: #5947c5; color: #fff; }
+.admin-page #menu-acc span + span { color: var(--admin-muted) !important; }
 .admin-page .mexp-secondary-button { background: var(--admin-card); color: var(--admin-accent); border-color: var(--admin-accent); }
 .admin-page .mexp-danger-button { background: var(--admin-card); color: #ad303e; border-color: #bc4652; }
 .admin-page.dark-blue .mexp-danger-button { color: #ffb6bf; border-color: #ff929f; }

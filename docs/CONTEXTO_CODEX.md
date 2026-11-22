@@ -53,17 +53,22 @@ A fase `implementacao-visual` foi encerrada e incorporada à `main`.
 A branch atual, criada diretamente da `main`, é:
 
 ```text
-banco-persistencia
+modo-administrador
 ```
 
-Fase atual: Preview real de `banco-persistencia` na Vercel validado pelo responsável e auditoria
-final pré-merge concluída, com uma correção de limites de IDs e documentação atualizada.
-As alterações desta auditoria permanecem locais para revisão e inclusão manual na branch;
-nenhum commit, merge ou alteração de Production foi executado. Singleton/Factory e Observer
-transacional de avaliações já foram concluídos após JWT e migração para Neon PostgreSQL. Conexão, schema e seed estão concluídos;
-usuários, tutoriais, comentários e avaliações usam PostgreSQL no runtime, com RepositoryFactory
-e MemoryRepositories somente nos testes. A persistência real do domínio está concluída.
-As seções sobre implementação visual abaixo registram funcionalidades já incorporadas à `main`.
+Fase atual: Modo Administrador implementado, com `/admin`, dashboard, busca/listagens e
+exclusões de usuários, tutoriais, comentários e avaliações. O responsável informou a aplicação
+manual da migration 002, a configuração da conta administrativa e testes reais bem-sucedidos
+de cascatas e reversão de pontos. A auditoria final automatizada permaneceu inteiramente offline.
+
+Foram corrigidos o contorno da proteção administrativa pela API comum de autoexclusão e
+contrastes insuficientes no painel. Alterações da auditoria permanecem locais para revisão,
+sem commit/merge e sem operações no Neon ou na Vercel. Administração depende da flag atual
+do usuário carregado pelo `sub`, independente de colaboração, nível e pontos. Não há edição
+administrativa de conteúdo alheio. Detalhes em `AUTENTICACAO.md` e `BANCO_DE_DADOS.md`.
+
+Singleton/Factory, JWT, PostgreSQL e Observer transacional continuam preservados.
+MemoryRepositories são exclusivos dos testes. Relatos de fases anteriores abaixo são históricos.
 
 Consulte o Git para a contagem atual de commits. Não fazer commit ou merge automaticamente.
 
@@ -76,10 +81,10 @@ Não fazer implementações desta fase diretamente na `main`.
 A suíte atual possui:
 
 ```text
-262 testes (261 anteriores + 1 da auditoria pré-merge, sem acesso ao Neon real)
+328 testes (324 anteriores + 4 regressões da auditoria administrativa, sem acesso ao Neon real)
 ```
 
-Distribuição atual:
+Distribuição histórica da fase de persistência, anterior ao Modo Administrador:
 
 ```text
 authJwt.test.js                21
@@ -787,9 +792,9 @@ A persistência real, a migração JWT e a auditoria dos três padrões estão c
 
 ---
 
-# 14. Regras para agentes durante a branch banco-persistencia
+# 14. Regras para agentes durante a branch modo-administrador
 
-1. Trabalhar sobre `banco-persistencia`, não sobre `main` ou a antiga `implementacao-visual`.
+1. Trabalhar sobre `modo-administrador`, não sobre `main` ou branches de fases anteriores.
 2. Ler `AGENTS.md`, `docs/ARQUITETURA.md` e este arquivo.
 3. Rodar testes antes de alterar.
 4. Entender a implementação existente antes de substituir código.
@@ -797,7 +802,7 @@ A persistência real, a migração JWT e a auditoria dos três padrões estão c
 6. Não migrar para React/Vue/etc.
 7. Não adicionar biblioteca visual se CSS/JS atual resolver.
 8. Não criar nova camada arquitetural sem necessidade real.
-9. Evoluir banco por etapas, migrando somente a entidade autorizada; preservar JWT e não misturar novas features arquiteturais.
+9. Preservar a flag administrativa, JWT mínimo e exclusões transacionais. Não operar no Neon/Vercel nem executar migrations, seed ou testes destrutivos reais sem autorização explícita.
 10. Não remover recursos funcionais simplesmente porque não aparecem no protótipo.
 11. Diferenciar claramente comportamento a preservar, comportamento a alterar e comportamento novo.
 12. Se uma alteração visual exigir mudança estrutural legítima, alterar todas as camadas afetadas de forma coerente.

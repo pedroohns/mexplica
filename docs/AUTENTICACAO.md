@@ -172,7 +172,10 @@ O carregamento global do usuário ocorre antes do router; sem autenticação, a 
 Listagens aceitam `q` e `pagina`, com até 20 itens por página. As projeções administrativas
 contêm apenas os campos necessários; hash, credenciais e configuração do servidor não são
 enviados a EJS/JavaScript. A flag administrativa continua fora de `toPublic()`.
-O painel não fornece edição de conteúdo alheio nem altera as regras dos endpoints comuns.
+O painel não fornece edição de conteúdo alheio. A proteção contra exclusão de uma conta
+administrativa também vale na API comum `DELETE /api/usuarios/:id`: o Service confere o
+registro bloqueado e retorna 403 sem remover dados ou limpar a credencial. Usuários comuns
+continuam podendo excluir a própria conta pelo fluxo existente.
 
 A interface usa `MExplicaApi.requisicao`, `style.css` e o tema existente `dark-blue`/`mexplica-tema`.
 `admin.css` é importado por último, mantendo a ordem dos módulos anteriores. Listas viram
@@ -188,6 +191,19 @@ modais, falha recuperável, prevenção de duplo envio, quatro exclusões e atua
 Visão geral, listagens e modais foram conferidos em 1440, 1024, 768, 390, 375 e 320 px, nos
 dois temas, sem rolagem horizontal. O navegador utilizou fixtures/MemoryRepositories, com
 driver real e serviços externos bloqueados. Nenhum dado ou secret de Production foi alterado.
+
+Na auditoria final, os 324 testes anteriores permaneceram verdes e quatro regressões foram
+acrescentadas: autoexclusão administrativa pela API comum com cookie/Bearer e contraste de
+botões/descrições do painel. Resultado: 328 aprovados. O Chrome local conferiu 60 combinações
+de área, largura e tema com emails, handles, títulos e comentários longos; não houve overflow
+horizontal ou exceções JavaScript. Dialog modal foi confirmado na árvore de acessibilidade,
+com Tab/Shift+Tab, Escape e retorno de foco. Paginação após excluir o último item da página,
+filtros, erro recuperável e respostas reais 401/403 também foram exercitados offline.
+
+Ações destrutivas administrativas usam DELETE, nunca links ou GET/query string. Cookie
+permanece SameSite=Lax e o servidor não habilita CORS para origens externas; o preflight de
+DELETE externo não recebe permissão de origem/credenciais. A auditoria não introduziu novo
+mecanismo CSRF, não mudou o JWT e não executou operações no Neon ou na Vercel.
 
 ## Assets, testes e Vercel
 

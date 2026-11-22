@@ -37,6 +37,43 @@ const arquivosCss = [
 
 ];
 
+function declaracoesAdmin(seletor) {
+    const css = fs.readFileSync(path.join(__dirname, '../public/css/admin.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const regra = [...css.matchAll(/([^{}]+)\{([^{}]+)\}/g)].find(item => item[1].trim() === seletor);
+    assert.ok(regra, `Regra administrativa ausente: ${seletor}`);
+    return Object.fromEntries(regra[2].split(';').filter(item => item.includes(':')).map(item => {
+        const indice = item.indexOf(':');
+        return [item.slice(0, indice).trim(), item.slice(indice + 1).trim()];
+    }));
+}
+
+function contraste(corA, corB) {
+    const luminancia = hexadecimal => {
+        const valor = hexadecimal.replace('#', '');
+        const completa = valor.length === 3 ? [...valor].map(parte => parte + parte).join('') : valor;
+        return completa.match(/../g).map(parte => parseInt(parte, 16) / 255)
+            .map(parte => parte <= .04045 ? parte / 12.92 : ((parte + .055) / 1.055) ** 2.4)
+            .reduce((total, parte, indice) => total + parte * [.2126, .7152, .0722][indice], 0);
+    };
+    const maior = Math.max(luminancia(corA), luminancia(corB)), menor = Math.min(luminancia(corA), luminancia(corB));
+    return (maior + .05) / (menor + .05);
+}
+
+test('botões primários administrativos mantêm contraste de texto AA no estado normal e hover', () => {
+    for (const estado of ['', ':hover']) {
+        const regra = declaracoesAdmin('body.admin-page :is(.mexp-primary-button, .mexp-primary-link, .btn-acessar)' + estado);
+        assert.ok(contraste(regra.color, regra.background) >= 4.5, 'Texto de botão administrativo deve atingir 4.5:1');
+    }
+});
+
+test('descrições do menu de acessibilidade administrativo usam texto legível nos dois temas', () => {
+    assert.equal(declaracoesAdmin('.admin-page #menu-acc span + span').color, 'var(--admin-muted) !important');
+    const claro = declaracoesAdmin('.admin-page'), escuro = declaracoesAdmin('.admin-page.dark-blue');
+    assert.ok(contraste(claro['--admin-muted'], '#ffffff') >= 4.5);
+    assert.ok(contraste(escuro['--admin-muted'], '#1a2535') >= 4.5);
+    assert.ok(contraste(escuro['--admin-muted'], '#223344') >= 4.5);
+});
+
 
 test(
     'arquivos CSS modulares existem e possuem conteúdo',

@@ -92,10 +92,9 @@ async function removerDadosDoUsuario(id, { administradorId } = {}) {
     return UsuarioModel.remove(id, {
         antesDeRemover: async (usuario, client) => {
             // O Repository já bloqueou e releu a conta neste client: evita corrida com uma promoção.
-            if (administradorId !== undefined) {
-                if (usuario.id === Number(administradorId)) falha('ADMIN_AUTOEXCLUSAO');
-                if (usuario.administrador === true) falha('ADMIN_USUARIO_PROTEGIDO');
-            }
+            if (administradorId !== undefined && usuario.id === Number(administradorId)) falha('ADMIN_AUTOEXCLUSAO');
+            // A proteção também vale para a API comum de exclusão da própria conta.
+            if (usuario.administrador === true) falha('ADMIN_USUARIO_PROTEGIDO');
             const avaliacoes = await AvaliacaoModel.findByAvaliadorId(usuario.id, { client, bloquear: true });
             if (!avaliacoes.length) return;
             const tutoriais = new Map((await TutorialModel.findAll({ client })).map(item => [item.id, item]));

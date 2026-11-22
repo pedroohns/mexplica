@@ -56,4 +56,8 @@ test('proteção de conta administrativa executa ROLLBACK no mesmo client Postgr
     assert.equal(consultas.at(-1), 'ROLLBACK');
     assert.equal(consultas.some(sql => /^(UPDATE|DELETE|COMMIT)/.test(sql)), false);
     assert.equal(liberacoes[0].code, 'ADMIN_USUARIO_PROTEGIDO');
+    consultas.length = 0;
+    await assert.rejects(RelacionamentoService.removerDadosDoUsuario(99), { code: 'ADMIN_USUARIO_PROTEGIDO' });
+    assert.equal(consultas.at(-1), 'ROLLBACK');
+    assert.equal(consultas.some(sql => /^(UPDATE|DELETE|COMMIT)/.test(sql)), false);
 });

@@ -306,6 +306,7 @@ app.use(
         }
 
         const errosRelacionamento = {
+            ADMIN_USUARIO_PROTEGIDO: [403, 'Contas administrativas são protegidas e não podem ser excluídas.'],
             AVALIACAO_DUPLICADA: [409, 'Você já avaliou este tutorial. Edite sua avaliação existente.'],
             AVALIACAO_NAO_ENCONTRADA: [404, 'Avaliação não encontrada.'],
             TUTORIAL_NAO_ENCONTRADO: [404, 'Tutorial não encontrado.'],

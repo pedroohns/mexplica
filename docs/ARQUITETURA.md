@@ -40,13 +40,16 @@ mexplica/
 │   │   ├── tutorial.css
 │   │   ├── search.css
 │   │   ├── profile.css
-│   │   └── mexplicai.css
+│   │   ├── mexplicai.css
+│   │   └── admin.css
 │   ├── js/
 │   │   ├── core/
 │   │   │   ├── api.js
 │   │   │   └── site.js
 │   │   ├── auth/
 │   │   │   └── cadastro.js
+│   │   ├── admin/
+│   │   │   └── painel.js
 │   │   ├── home/
 │   │   │   ├── search.js
 │   │   │   └── search-render.js
@@ -104,6 +107,13 @@ A pasta `src/services/` concentra operações com responsabilidade de negócio o
 - `comentarioService.js`: enriquecimento e listagem de comentários completos.
 - `relacionamentoService.js`: integridade, exclusões em cascata, coordenação transacional de avaliações e publicação dos eventos de pontuação.
 - `tokenService.js`: assinatura/verificação JWT, algoritmo, issuer, audience e validade centralizados.
+- `adminService.js`: composição das listagens e contagens administrativas, projeções seguras, busca e paginação; reutiliza os Models de domínio.
+
+`adminController` e `adminRoutes` atendem `/admin` e `/api/admin`. Não existe AdminRepository:
+as entidades continuam nos repositories atuais, com contagens e leitura leve de tutoriais.
+Exclusões reutilizam relacionamentoService ou ComentarioModel, com as transações existentes.
+Contas administrativas não podem ser excluídas por nenhum dos endpoints de conta; a validação
+fica no Service após bloqueio e releitura do alvo.
 
 ### Models
 
@@ -162,7 +172,9 @@ os Repositories PostgreSQL selecionados pela RepositoryFactory; testes usam Memo
 Middlewares cuidam de comportamentos transversais do ciclo HTTP. Após assets/health,
 `cookie-parser` lê cookies e `carregarUsuario` verifica o JWT de cookie HttpOnly ou Bearer
 (prioritário nas APIs), consulta o usuário por `sub` e preenche `req.usuario`/`res.locals.usuarioAtual`.
-`exigirAutenticacao`, `exigirColaborador` e `exigirPlatina` usam o usuário atual do PostgreSQL.
+`exigirAutenticacao`, `exigirColaborador`, `exigirPlatina` e `exigirAdministrador` usam o usuário atual do PostgreSQL.
+Administração depende somente de `req.usuario.administrador === true`, sem exigir colaboração,
+pontos ou nível. JWT mantém apenas identidade/claims de validação, sem congelar permissões.
 `src/utils/authCookie.js` centraliza criação/limpeza e atributos do cookie; não contém regra de domínio.
 Não há estado de sessão em memória. Consulte [AUTENTICACAO.md](AUTENTICACAO.md).
 
@@ -181,6 +193,12 @@ Não há estado de sessão em memória. Consulte [AUTENTICACAO.md](AUTENTICACAO.
 ### `public/js/auth/`
 
 `cadastro.js` concentra verificação de usuário, login, cadastro, passos do formulário e escolha de colaborador.
+
+### `public/js/admin/`
+
+`painel.js` usa a API compartilhada para listagens, busca, paginação e exclusão com dialog
+nativo, feedback e atualização de contagens. A entrada Moderação no header depende da sessão
+privada; a autorização efetiva permanece no servidor. `toPublic()` omite a flag administrativa.
 
 ### `public/js/home/`
 
@@ -227,6 +245,7 @@ tutorial.css
 search.css
 profile.css
 mexplicai.css
+admin.css
 ```
 
 A ordem deve ser preservada porque a cascata pode alterar o comportamento visual mesmo quando o conteúdo das regras não muda.

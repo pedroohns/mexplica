@@ -186,6 +186,22 @@ test('admin não pode excluir a própria conta ou outra conta administrativa', a
     }
 });
 
+for (const credencial of ['Bearer', 'cookie']) {
+    test(`API comum não permite contornar a proteção administrativa por autoexclusão com ${credencial}`, async () => {
+        const antes = await totais();
+        const token = TokenService.criarToken(admin.id);
+        const headers = credencial === 'cookie' ? { Cookie: 'mexplica_token=' + token } : { Authorization: 'Bearer ' + token };
+        const resposta = await request('/api/usuarios/' + admin.id, { method: 'DELETE', headers });
+        assert.equal(resposta.status, 403);
+        assert.match((await resposta.json()).erro, /Contas administrativas são protegidas/);
+        assert.equal(resposta.headers.getSetCookie().length, 0);
+        assert.ok(await UsuarioModel.findById(admin.id));
+        assert.deepEqual(await totais(), antes);
+        const sessao = await request('/api/auth/sessao', { headers });
+        assert.equal((await sessao.json()).usuario.administrador, true);
+    });
+}
+
 test('proteção administrativa confere o usuário relido dentro da transação antes de qualquer efeito', async t => {
     const original = UsuarioModel.remove;
     const copia = structuredClone(await totais());

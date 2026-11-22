@@ -116,11 +116,16 @@ Abra `http://localhost:3000`. Para rodar a suíte nativa `node:test`:
 npm.cmd test
 ```
 
-Baseline atual: **262 testes aprovados**, sem acesso ao Neon real, com chave JWT exclusiva
+Baseline atual: **328 testes aprovados**, sem acesso ao Neon real, com chave JWT exclusiva
 de testes e driver real bloqueado. Schema, migrations e seed são comandos manuais separados;
 não são executados por start, instalação ou deploy.
 Consulte [docs/BANCO_DE_DADOS.md](docs/BANCO_DE_DADOS.md) e
 [docs/AUTENTICACAO.md](docs/AUTENTICACAO.md) para preparação do banco e autenticação.
+
+O Modo Administrador está implementado na branch `modo-administrador`: `/admin` oferece
+dashboard, busca e remoção de usuários, tutoriais, comentários e avaliações. A permissão é
+a flag independente `administrador`, relida do banco em cada requisição; contas administrativas
+são protegidas contra exclusão, inclusive pela API comum. As APIs estão em `/api/admin`.
 
 ---
 
