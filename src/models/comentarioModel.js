@@ -3,6 +3,7 @@ const repository = require('../repositories/repositoryFactory').criarComentarioR
 function idValido(id) { return Number.isSafeInteger(Number(id)) && Number(id) > 0 && Number(id) <= 2147483647; }
 
 async function findAll(opcoes) { return repository.findAll(opcoes); }
+async function count() { return repository.count(); }
 async function findById(id, opcoes) { return idValido(id) ? repository.findById(Number(id), opcoes) : null; }
 async function findByTutorialId(id, opcoes) { return idValido(id) ? repository.findByTutorialId(Number(id), opcoes) : []; }
 async function findByUserId(id, opcoes) { return idValido(id) ? repository.findByUserId(Number(id), opcoes) : []; }
@@ -16,4 +17,4 @@ async function update(id, texto, opcoes) {
 }
 async function remove(id, opcoes) { return idValido(id) ? repository.remove(Number(id), opcoes) : null; }
 
-module.exports = { findAll, findById, findByTutorialId, findByUserId, create, update, remove };
+module.exports = { findAll, count, findById, findByTutorialId, findByUserId, create, update, remove };

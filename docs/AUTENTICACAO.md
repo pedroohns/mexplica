@@ -120,7 +120,7 @@ de `carregarUsuario`. Sem usuário, retorna 401 com `Você precisa estar autenti
 esta ação.`; com `req.usuario.administrador !== true`, retorna 403 com `Esta ação é restrita à
 administração do MExplica.`; com a flag verdadeira, chama `next()`. Não exige colaborador ou
 nível, nem verifica nome, slug, email, ID fixo, variável de ambiente ou claims de permissão.
-Nenhuma rota administrativa foi adicionada nesta etapa.
+O painel e as APIs abaixo utilizam essa autorização, mantendo o mesmo JWT mínimo.
 
 Fluxo preservado: JWT válido → `sub` → `UsuarioModel.findById()` → registro atual do PostgreSQL
 → `req.usuario.administrador` → autorização. A revogação não invalida a identidade: o mesmo
@@ -130,8 +130,8 @@ não substitui o estado do registro. Alterar o payload sem assinatura válida n�
 
 O cadastro ignora campos administrativos no body/query e o Model sempre cria usuários com
 `administrador: false`. A edição mantém as whitelists existentes em todas as camadas e não
-concede nem revoga a flag. Fixtures administrativas são internas aos testes; não foi criada
-conta administrativa nem modificada permissão de usuário real nesta etapa.
+concede nem revoga a flag. Fixtures administrativas são internas aos testes. A conta real
+foi configurada pelo responsável antes desta etapa e não foi alterada pela implementação.
 
 `POST /api/auth/logout` limpa `mexplica_token` com Path, SameSite, HttpOnly e Secure
 compatíveis com a emissão. Exclusão da própria conta também limpa esse cookie.
@@ -143,6 +143,51 @@ Trocar `JWT_SECRET` invalida globalmente tokens anteriores, sem revogação sele
 `cookie-session` foi removido de middleware, require, package.json e lockfile. Não existem
 consumidores de `req.session`. Cookies do mecanismo anterior não autenticam; é preciso
 fazer login novamente após a migração.
+
+## Painel de moderação
+
+`GET /admin` usa cookie de sessão. Visitante é redirecionado para
+`/cadastro.html?redirect=%2Fadmin`; usuário autenticado sem permissão recebe HTML 403 com
+mensagem amigável, sem dados do painel. A composição de acesso da página é seguida por
+`exigirAdministrador` antes de renderizar o dashboard. A navegação oferece a entrada
+Moderação somente quando a sessão privada informa `administrador === true`: EJS utiliza
+uma partial e páginas estáticas completam o header com a consulta de sessão existente.
+
+`adminRoutes` protege o router inteiro, incluindo listagens, com `exigirAdministrador`.
+O carregamento global do usuário ocorre antes do router; sem autenticação, a API responde
+401; usuário comum ou colaborador recebe 403. Todas as respostas recebem `Cache-Control: no-store`.
+
+| Método | Endpoint | Comportamento |
+| --- | --- | --- |
+| GET | `/api/admin/resumo` | Contagens atuais de usuários, tutoriais, comentários e avaliações |
+| GET | `/api/admin/usuarios` | Busca por nome, sobrenome, slug/handle ou email |
+| GET | `/api/admin/tutoriais` | Busca por título, slug ou autor, com totais de interações |
+| GET | `/api/admin/comentarios` | Texto, autor, tutorial e data |
+| GET | `/api/admin/avaliacoes` | Avaliador, nota, tutorial, autor do tutorial e data |
+| DELETE | `/api/admin/usuarios/:id` | Remoção transacional; recusa a própria conta e qualquer administrador |
+| DELETE | `/api/admin/tutoriais/:id` | Remoção completa pelo Service existente, com ajuste de pontos |
+| DELETE | `/api/admin/comentarios/:id` | Remoção explícita de comentário, sem simular autoria |
+| DELETE | `/api/admin/avaliacoes/:id` | Remoção pelo Service e Observer existentes, revertendo a pontuação |
+
+Listagens aceitam `q` e `pagina`, com até 20 itens por página. As projeções administrativas
+contêm apenas os campos necessários; hash, credenciais e configuração do servidor não são
+enviados a EJS/JavaScript. A flag administrativa continua fora de `toPublic()`.
+O painel não fornece edição de conteúdo alheio nem altera as regras dos endpoints comuns.
+
+A interface usa `MExplicaApi.requisicao`, `style.css` e o tema existente `dark-blue`/`mexplica-tema`.
+`admin.css` é importado por último, mantendo a ordem dos módulos anteriores. Listas viram
+cards empilhados no celular. O dialog nativo reutiliza o padrão visual de exclusão dos
+comentários: Cancelar recebe foco inicial, Tab permanece no modal, Escape fecha e o foco
+retorna à origem. Durante o envio os controles ficam desabilitados e Escape não interrompe
+a operação. Em erro, o item e a confirmação permanecem; em sucesso, o item é removido e
+lista/contadores são consultados novamente. Textos de usuários são inseridos com textContent.
+
+Validação desta etapa: testes offline de autorização, privacidade, busca, paginação, revogação,
+exclusões, cascatas, pontos e rollback. Chrome headless local conferiu login/entrada de conta,
+modais, falha recuperável, prevenção de duplo envio, quatro exclusões e atualização de totais.
+Visão geral, listagens e modais foram conferidos em 1440, 1024, 768, 390, 375 e 320 px, nos
+dois temas, sem rolagem horizontal. O navegador utilizou fixtures/MemoryRepositories, com
+driver real e serviços externos bloqueados. Nenhum dado ou secret de Production foi alterado.
 
 ## Assets, testes e Vercel
 

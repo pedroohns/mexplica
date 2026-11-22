@@ -16,6 +16,7 @@ class ComentarioPostgresRepository {
         return resultado.rows.map(mapear);
     }
     async findAll(opcoes) { return this.#buscar('ORDER BY c.id', [], opcoes); }
+    async count() { return Number((await this.getPool().query('SELECT COUNT(*) AS total FROM public.comentarios')).rows[0].total); }
     async findById(id, opcoes) { return (await this.#buscar('WHERE c.id = $1', [id], opcoes))[0] || null; }
     async findByTutorialId(id, opcoes) { return this.#buscar('WHERE c.tutorial_id = $1 ORDER BY c.criado_em, c.id', [id], opcoes); }
     async findByUserId(id, opcoes) { return this.#buscar('WHERE c.usuario_id = $1 ORDER BY c.id', [id], opcoes); }

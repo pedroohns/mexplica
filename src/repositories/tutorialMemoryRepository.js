@@ -12,6 +12,11 @@ class TutorialMemoryRepository {
         return ordem === 'id' ? lista : lista.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
     }
     async findById(id) { return this.tutoriais.find(tutorial => tutorial.id === Number(id)) || null; }
+    async count() { return this.tutoriais.length; }
+    async listarParaModeracao() {
+        return (await this.findAll()).map(({ id, slug, autorId, categoriaId, titulo, visualizacoes, criadoEm }) =>
+            ({ id, slug, autorId, categoriaId, titulo, visualizacoes, criadoEm }));
+    }
     async findBySlug(slug) { return this.tutoriais.find(tutorial => tutorial.slug === slug) || null; }
     async findByAutorId(id) {
         return this.tutoriais.filter(tutorial => tutorial.autorId === Number(id))

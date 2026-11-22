@@ -1,6 +1,7 @@
 class ComentarioMemoryRepository {
     constructor(comentarios = require('../data/comentarioData')) { this.comentarios = comentarios; }
     async findAll() { return this.comentarios; }
+    async count() { return this.comentarios.length; }
     async findById(id) { return this.comentarios.find(item => item.id === Number(id)) || null; }
     async findByTutorialId(id) {
         return this.comentarios.filter(item => item.tutorialId === Number(id))

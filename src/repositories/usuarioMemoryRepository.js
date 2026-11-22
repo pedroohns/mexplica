@@ -17,6 +17,7 @@ class UsuarioMemoryRepository {
     }
 
     async findAll() { return this.usuarios; }
+    async count() { return this.usuarios.length; }
     async findById(id) { return this.usuarios.find(usuario => usuario.id === Number(id)) || null; }
     async findBySlug(slug) { return this.usuarios.find(usuario => usuario.slug === slug) || null; }
 

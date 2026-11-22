@@ -39,6 +39,7 @@ class AvaliacaoPostgresRepository {
         return resultado.rows.map(mapear);
     }
     async findAll(opcoes) { return this.#buscar('ORDER BY a.id', [], opcoes); }
+    async count() { return Number((await this.getPool().query('SELECT COUNT(*) AS total FROM public.avaliacoes')).rows[0].total); }
     async findById(id, opcoes) { return (await this.#buscar('WHERE a.id = $1', [id], opcoes))[0] || null; }
     async findByTutorialId(id, opcoes) { return this.#buscar('WHERE a.tutorial_id = $1 ORDER BY a.id', [id], opcoes); }
     async findByAvaliadorId(id, opcoes) { return this.#buscar('WHERE a.avaliador_id = $1 ORDER BY a.id', [id], opcoes); }

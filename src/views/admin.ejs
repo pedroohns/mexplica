@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MExplica — Moderação</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon">
+</head>
+<body class="admin-page">
+<script>try { if (localStorage.getItem('mexplica-tema') === '1') document.body.classList.add('dark-blue'); } catch {}</script>
+<a href="#conteudoModeracao" class="admin-skip-link">Ir para o conteúdo</a>
+<header class="header">
+    <nav class="nav container" aria-label="Navegação principal">
+        <a href="/" class="nav-logo"><img src="/icons/logo-mexplica.png" alt="MExplica" class="logo-icon"></a>
+        <ul class="nav-links">
+            <li><a href="/">Início</a></li>
+            <li><a href="/comunidade">Comunidade</a></li>
+            <%- include('partials/admin-link') %>
+        </ul>
+        <div class="nav-actions">
+            <a href="/perfil/<%= usuarioAtual.slug %>" class="btn-acessar nav-account" aria-label="Abrir perfil de <%= usuarioAtual.nomeCompleto %>">
+                <span class="nav-account-avatar" aria-hidden="true"><%= usuarioAtual.iniciais %></span><span>Perfil</span>
+            </a>
+        </div>
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+    </nav>
+</header>
+<main id="conteudoModeracao" class="admin-workspace container" data-usuario-id="<%= usuarioAtual.id %>">
+    <% if (negado) { %>
+    <section class="admin-denied">
+        <span class="admin-eyebrow">MEXPLICA · MODERAÇÃO</span>
+        <h1>Este espaço é reservado à administração.</h1>
+        <p>Sua conta continua com acesso à comunidade. Para entrar neste painel, é necessária uma permissão administrativa.</p>
+        <a href="/comunidade" class="mexp-primary-link">Voltar à comunidade</a>
+    </section>
+    <% } else { %>
+    <section class="admin-hero" aria-labelledby="tituloModeracao">
+        <div>
+            <span class="admin-eyebrow"><span class="admin-shield" aria-hidden="true">◇</span> MEXPLICA · MODERAÇÃO</span>
+            <h1 id="tituloModeracao">Cuidar também é<br><span>incluir.</span></h1>
+            <p class="admin-hero-description">Painel de Moderação</p>
+            <p>Gerencie usuários, tutoriais e interações.<br class="admin-desktop-break"> Ajude a manter o MExplica acolhedor para todos.</p>
+        </div>
+        <div class="admin-identity">
+            <span class="admin-avatar admin-avatar-large" aria-hidden="true"><%= usuarioAtual.iniciais %></span>
+            <div><strong><%= usuarioAtual.nomeCompleto %></strong><span>Administrador</span><a href="/perfil/<%= usuarioAtual.slug %>">Ver meu perfil</a></div>
+        </div>
+    </section>
+    <div class="admin-toolbar">
+        <p><span class="admin-eyebrow">VISÃO DA PLATAFORMA</span> Um espaço de aprendizado, cuidado e troca.</p>
+        <div class="admin-accessibility"><button type="button" id="toggleFontSize">Aumentar texto</button><button type="button" id="toggleAccessibility" aria-label="Acessibilidade e tema">Acessibilidade</button></div>
+    </div>
+    <% const areas = [{ id: 'usuarios', nome: 'Usuários', singular: 'contas', descricao: 'Conheça quem faz parte desta comunidade.', cor: 'purple', icone: 'user-roxo.png' },
+        { id: 'tutoriais', nome: 'Tutoriais', singular: 'publicações', descricao: 'Cuide dos conteúdos que ajudam a aprender.', cor: 'green', icone: 'colaborador.png' },
+        { id: 'comentarios', nome: 'Comentários', singular: 'conversas', descricao: 'Mantenha as conversas respeitosas e úteis.', cor: 'blue', icone: 'chat-roxo.png' },
+        { id: 'avaliacoes', nome: 'Avaliações', singular: 'avaliações', descricao: 'Acompanhe as avaliações da comunidade.', cor: 'rose', icone: 'medalha-roxa.png' }]; %>
+    <section class="admin-stats" aria-label="Totais da plataforma">
+        <% for (const area of areas) { %>
+        <button type="button" class="admin-stat admin-tone-<%= area.cor %>" data-admin-area="<%= area.id %>" aria-label="Gerenciar <%= area.nome.toLowerCase() %>">
+            <span class="admin-stat-icon"><img src="/icons/<%= area.icone %>" alt="" aria-hidden="true"></span>
+            <span class="admin-stat-number" data-count="<%= area.id %>"><%= resumo[area.id].toLocaleString('pt-BR') %></span>
+            <span><%= area.nome %></span>
+        </button>
+        <% } %>
+    </section>
+    <nav class="admin-tabs" aria-label="Áreas de moderação">
+        <button type="button" data-admin-area="geral" aria-pressed="true">Visão geral</button>
+        <% for (const area of areas) { %><button type="button" data-admin-area="<%= area.id %>" aria-pressed="false"><%= area.nome %></button><% } %>
+    </nav>
+    <p id="adminFeedback" class="admin-feedback" role="status" aria-live="polite" aria-atomic="true"></p>
+    <section id="adminVisaoGeral" aria-labelledby="adminVisaoTitulo">
+        <div class="admin-section-heading"><div><span class="admin-eyebrow">BEM-VINDO AO SEU ESPAÇO</span><h2 id="adminVisaoTitulo">Uma comunidade bem cuidada.</h2></div><span class="admin-badge">Administração</span></div>
+        <div class="admin-overview-grid">
+            <% for (const area of areas) { %>
+            <article class="admin-overview-card admin-tone-<%= area.cor %>">
+                <span class="admin-overview-symbol" aria-hidden="true"><img src="/icons/<%= area.icone %>" alt=""></span>
+                <h3><%= area.nome %></h3><p><%= area.descricao %></p>
+                <button type="button" class="mexp-secondary-button" data-admin-area="<%= area.id %>">Gerenciar <%= area.nome.toLowerCase() %></button>
+            </article>
+            <% } %>
+        </div>
+        <aside class="admin-care-note"><strong>Moderar com responsabilidade.</strong><p>Você pode visualizar e remover conteúdos. A autoria e a edição de cada publicação continuam com quem a criou. Revise os detalhes antes de confirmar uma exclusão.</p></aside>
+    </section>
+    <section id="adminListagem" aria-labelledby="adminListaTitulo" hidden>
+        <div class="admin-section-heading"><div><span class="admin-eyebrow">GERENCIAR COM CUIDADO</span><h2 id="adminListaTitulo" tabindex="-1">Usuários</h2></div><span id="adminTotal" class="admin-badge"></span></div>
+        <form id="adminBusca" class="admin-search" role="search">
+            <label for="adminTermo" id="adminBuscaLabel">Buscar usuários</label>
+            <div><input type="search" id="adminTermo" name="q" maxlength="160" placeholder="Nome, @handle ou email" autocomplete="off"><button type="submit" class="mexp-primary-button">Buscar</button></div>
+        </form>
+        <p id="adminCarregamento" class="admin-muted" role="status" aria-live="polite"></p>
+        <div id="adminRegistros" class="admin-records"></div>
+        <nav class="admin-pagination" aria-label="Paginação dos registros"><button type="button" id="adminAnterior" class="mexp-secondary-button" disabled>Anterior</button><span id="adminPagina"></span><button type="button" id="adminProxima" class="mexp-secondary-button" disabled>Próxima</button></nav>
+    </section>
+    <noscript><p class="admin-care-note">Ative o JavaScript para buscar registros e usar as ações de moderação. Os totais acima refletem a plataforma.</p></noscript>
+    <dialog id="adminExcluirDialog" class="tutorial-delete-dialog tutorial-comment-dialog admin-dialog" aria-labelledby="adminExcluirTitulo" aria-describedby="adminExcluirDescricao adminExcluirPrevia" tabindex="-1">
+        <form id="adminExcluirForm">
+            <div class="tutorial-comment-dialog-heading"><h2 id="adminExcluirTitulo">Excluir registro?</h2><button type="button" class="tutorial-comment-dialog-close" data-admin-cancelar aria-label="Fechar confirmação">×</button></div>
+            <p id="adminExcluirPrevia" class="admin-delete-preview"></p>
+            <p id="adminExcluirDescricao"></p>
+            <p id="adminExcluirErro" class="admin-feedback" role="alert" aria-atomic="true"></p>
+            <div class="tutorial-dialog-actions"><button type="button" class="mexp-secondary-button" data-admin-cancelar autofocus>Cancelar</button><button type="submit" id="adminConfirmar" class="mexp-danger-button">Excluir</button></div>
+        </form>
+    </dialog>
+    <% } %>
+</main>
+<%- include('partials/footer') %>
+<script src="/js/core/api.js"></script>
+<script src="/js/core/site.js"></script>
+<% if (!negado) { %><script src="/js/admin/painel.js"></script><% } %>
+</body>
+</html>

@@ -229,6 +229,8 @@ async function findAll() {
     return (await repository.findAll()).map(sincronizarNivel);
 }
 
+async function count() { return repository.count(); }
+
 async function findById(id, opcoes) {
     const numero = Number(id);
     if (!Number.isSafeInteger(numero) || numero <= 0 || numero > 2147483647) return null;
@@ -309,6 +311,6 @@ async function remove(id, { ajustesPontos = [], antesDeRemover } = {}) {
 module.exports = {
     NIVEL_DIAMANTE, NIVEL_PLATINA, normalizarTelefone, criarSlugBase,
     calcularNivel, sincronizarNivel, toPublic, toPrivate,
-    findAll, findById, findBySlug, findByIdentifier, getRanking, getPlatinaDisponiveis,
+    findAll, count, findById, findBySlug, findByIdentifier, getRanking, getPlatinaDisponiveis,
     create, update, adicionarPontos, definirDisponibilidade, remove
 };

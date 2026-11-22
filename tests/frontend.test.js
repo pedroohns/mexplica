@@ -56,7 +56,8 @@ const arquivos = [
 
     'public/js/tutorial/editor.js',
 
-    'public/js/tutorial/contrato.js'
+    'public/js/tutorial/contrato.js',
+    'public/js/admin/painel.js'
 
 ];
 
@@ -66,6 +67,7 @@ test(
     () => {
 
         const paginas = [
+            { arquivo: 'src/views/admin.ejs', consumidor: '/js/admin/painel.js' },
 
             {
                 arquivo:

@@ -34,6 +34,8 @@ function criarSlugBase(
 
 
 async function findAll(opcoes) { return repository.findAll(opcoes); }
+async function count() { return repository.count(); }
+async function listarParaModeracao() { return repository.listarParaModeracao(); }
 
 async function findById(id, opcoes) {
     const numero = Number(id);
@@ -394,6 +396,6 @@ async function remove(id, opcoes = {}) {
 }
 
 module.exports = {
-    normalizarTexto, findAll, findById, findBySlug, findByAutorId, buscar,
+    normalizarTexto, findAll, count, listarParaModeracao, findById, findBySlug, findByAutorId, buscar,
     maisAcessadosDaSemana, incrementarVisualizacao, create, update, remove
 };

@@ -59,6 +59,14 @@ class TutorialPostgresRepository {
     async findAll({ ordem = 'data', client } = {}) {
         return this.#buscar(ordem === 'id' ? 'ORDER BY t.id' : 'ORDER BY t.criado_em DESC, t.id', [], client);
     }
+    async count() { return Number((await this.getPool().query('SELECT COUNT(*) AS total FROM public.tutoriais')).rows[0].total); }
+    async listarParaModeracao() {
+        const { rows } = await this.getPool().query(`SELECT id, slug, autor_id, categoria_id, titulo, visualizacoes, criado_em
+            FROM public.tutoriais ORDER BY criado_em DESC, id DESC`);
+        return rows.map(linha => ({ id: linha.id, slug: linha.slug, autorId: linha.autor_id,
+            categoriaId: linha.categoria_id, titulo: linha.titulo, visualizacoes: linha.visualizacoes,
+            criadoEm: linha.criado_em instanceof Date ? linha.criado_em.toISOString() : linha.criado_em }));
+    }
     async findById(id, { client, bloquear = false } = {}) {
         return (await this.#buscar(`WHERE t.id = $1${bloquear ? ' FOR UPDATE' : ''}`, [id], client))[0] || null;
     }

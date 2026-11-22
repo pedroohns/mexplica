@@ -44,7 +44,7 @@ O mapeamento central converte snake_case para camelCase, datas para ISO e contat
 para os campos vazios do contrato atual. `tipo` e `nivel` são calculados pelo Model,
 sem colunas extras.
 
-Os onze métodos de persistência do Model são async: `findAll`, `findById`, `findBySlug`,
+Os doze métodos de persistência do Model são async: `findAll`, `count`, `findById`, `findBySlug`,
 `findByIdentifier`, `getRanking`, `getPlatinaDisponiveis`, `create`, `update`,
 `adicionarPontos`, `definirDisponibilidade` e `remove`. Controllers, middleware de sessão e
 Services de perfil/tutorial/comentário/relacionamento aguardam seus resultados; coleções
@@ -80,9 +80,10 @@ ou promovida. O schema inicial também inclui a coluna para bancos novos. `IF NO
 permite executar a migration depois de criar um banco com esse schema.
 
 O runner existente continua responsável por ordenação, `schema_migrations`, trava e
-transação. Nesta etapa, o arquivo foi criado e validado offline com client falso;
-**a migration não foi aplicada no Neon Production e nenhum dado real foi alterado**.
-A aplicação real da migration depende de revisão e autorização posteriores.
+transação. Na primeira etapa, o arquivo foi criado e validado offline com client falso.
+O responsável informou que depois aplicou a migration manualmente no Neon Production e
+configurou uma conta administrativa. A implementação do painel não executa migrations,
+não altera essa conta e não consulta ou modifica dados de Production durante os testes.
 
 O Repository PostgreSQL mapeia a flag para `usuario.administrador`. O INSERT de cadastro
 omite a coluna para usar o default falso, ignorando qualquer flag recebida. O Model também
@@ -101,6 +102,41 @@ o estado atual carregado pelo Model. O JWT continua identificando o usuário pel
 a cada requisição. Revogar a flag no registro atual bloqueia a próxima ação administrativa
 com HTTP 403, mesmo com o mesmo JWT ainda válido. Detalhes em [AUTENTICACAO.md](AUTENTICACAO.md).
 
+## Leituras e exclusões do painel de moderação
+
+`adminService` compõe os Models existentes para o dashboard e as quatro listagens. Não há
+AdminRepository. Os quatro Models/Repositories oferecem `count()`; no PostgreSQL são
+consultas `COUNT(*)` sem hidratação das entidades e em memória refletem o tamanho atual
+das coleções. O resumo não é persistido nem mantido em cache entre requisições.
+
+`TutorialModel.listarParaModeracao()` busca somente metadados em um SELECT: ID, slug, autor,
+categoria, título, visualizações e data. Não carrega conteúdo, imagens, passos ou tags.
+Autores, comentários e avaliações são obtidos em lotes e relacionados por Maps, com no
+máximo quatro leituras por listagem, sem uma consulta individual por registro. Essas
+contagens não incluem a leitura de autenticação feita antes da rota.
+
+Para a base atual, busca e paginação ficam no Service, com 20 itens por resposta, ordenação
+por data/ID decrescentes e normalização de acentos. As coleções de metadados são lidas por
+inteiro no backend; uma futura paginação SQL pode substituir essas leituras mantendo o
+contrato `{ itens, total, pagina, paginas, tamanhoPagina }`. Dados de usuários têm projeção
+explícita: informações públicas, email e flag administrativa. Hashes nunca são serializados.
+
+Exclusões administrativas reutilizam `relacionamentoService.removerDadosDoUsuario`,
+`removerTutorialCompleto` e `removerAvaliacaoComAjuste`. Comentário usa `ComentarioModel.remove`,
+sem regra artificial de pontuação. A remoção de avaliação não envia avaliadorId: a rota já
+conferiu a permissão administrativa, sem simular autoria.
+
+Na exclusão de usuário, a opção interna `{ administradorId }` exige que o Service recuse
+autoexclusão e alvo administrativo dentro de `antesDeRemover`, depois do bloqueio e releitura
+da conta pelo Repository, antes de ajustar pontos ou remover dependentes. Isso também
+protege uma conta promovida antes de a transação obter seu bloqueio. O fluxo comum de
+exclusão da própria conta não recebeu exceções de autorização.
+
+As transações, cascatas e ajustes agregados existentes continuam iguais. O Observer aguarda
+o ajuste de pontos da avaliação no mesmo client antes do COMMIT. Falhas em qualquer etapa
+mantêm os dados anteriores; respostas administrativas de exclusão contêm apenas mensagem,
+sem devolver o objeto persistente removido.
+
 ## Persistência de tutoriais no runtime
 
 A mesma RepositoryFactory fornece `TutorialMemoryRepository` em `NODE_ENV=test` e
@@ -108,7 +144,7 @@ A mesma RepositoryFactory fornece `TutorialMemoryRepository` em `NODE_ENV=test` 
 `DatabaseConnection.getInstance()`, compartilhando o Pool com usuários. `tutorialData.js`
 permanece como fixture de testes/seed, sem alimentar a persistência normal de tutoriais.
 
-As dez operações do TutorialModel são async: `findAll`, `findById`, `findBySlug`,
+As doze operações do TutorialModel são async: `findAll`, `count`, `listarParaModeracao`, `findById`, `findBySlug`,
 `findByAutorId`, `buscar`, `maisAcessadosDaSemana`, `incrementarVisualizacao`, `create`,
 `update` e `remove`. Controllers de tutorial/página/comentário/avaliação e os Services de
 perfil/tutorial/relacionamento aguardam os resultados, inclusive antes de map/filter/forEach.
@@ -145,7 +181,7 @@ RepositoryFactory agora fornece as quatro entidades. `criarComentarioRepository(
 ambientes escolhem ComentarioPostgresRepository e AvaliacaoPostgresRepository, sem fallback.
 Ambos aceitam Pool falso injetável nos testes e reutilizam DatabaseConnection no runtime.
 
-As sete operações de ComentarioModel são async: findAll, findById, findByTutorialId,
+As oito operações de ComentarioModel são async: findAll, count, findById, findByTutorialId,
 findByUserId, create, update e remove. O Repository centraliza tutorialId/usuarioId e datas
 ISO; listagem por tutorial é crescente por criado_em e id. Criação usa identity e RETURNING;
 edição altera apenas texto/atualizado_em; exclusão usa DELETE RETURNING. As instruções são
@@ -153,7 +189,7 @@ parametrizadas. Controller mantém validação de texto, autoria da sessão e au
 ComentarioService aguarda a lista e consulta cada autor distinto uma única vez por listagem,
 preservando a projeção pública sem hash.
 
-As nove operações persistentes de AvaliacaoModel são async: findAll, findById,
+As dez operações persistentes de AvaliacaoModel são async: findAll, count, findById,
 findByTutorialId, findByAvaliadorId, findByTutorialEAvaliador, resumoDoTutorial, create,
 update e remove. O Repository centraliza tutorialId/avaliadorId e datas ISO. O Model mantém
 `pontosPorNota(nota) = nota * 10` síncrono e calcula resumo com média numérica de uma casa

@@ -4,6 +4,7 @@ function idValido(id) { return Number.isSafeInteger(Number(id)) && Number(id) > 
 
 function pontosPorNota(nota) { return Number(nota) * 10; }
 async function findAll(opcoes) { return repository.findAll(opcoes); }
+async function count() { return repository.count(); }
 async function findById(id, opcoes) { return idValido(id) ? repository.findById(Number(id), opcoes) : null; }
 async function findByTutorialId(id, opcoes) { return idValido(id) ? repository.findByTutorialId(Number(id), opcoes) : []; }
 async function findByAvaliadorId(id, opcoes) { return idValido(id) ? repository.findByAvaliadorId(Number(id), opcoes) : []; }
@@ -26,5 +27,5 @@ async function update(id, nota, opcoes) {
 async function remove(id, opcoes) { return idValido(id) ? repository.remove(Number(id), opcoes) : null; }
 async function emTransacao(tarefa) { return repository.emTransacao(tarefa); }
 
-module.exports = { pontosPorNota, findAll, findById, findByTutorialId, findByAvaliadorId,
+module.exports = { pontosPorNota, findAll, count, findById, findByTutorialId, findByAvaliadorId,
     findByTutorialEAvaliador, resumoDoTutorial, create, update, remove, emTransacao };

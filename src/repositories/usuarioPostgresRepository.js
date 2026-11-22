@@ -38,6 +38,7 @@ class UsuarioPostgresRepository {
     }
 
     async findAll() { return this.#buscar('ORDER BY u.id', []); }
+    async count() { return Number((await this.getPool().query('SELECT COUNT(*) AS total FROM public.usuarios')).rows[0].total); }
     async findById(id, { client } = {}) { return (await this.#buscar('WHERE u.id = $1', [id], client))[0] || null; }
     async findBySlug(slug) { return (await this.#buscar('WHERE u.slug = $1', [slug]))[0] || null; }
 

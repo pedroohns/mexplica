@@ -131,6 +131,18 @@ document.addEventListener('DOMContentLoaded', () => {
             accountButton.classList.add('nav-account');
             accountButton.href = `/perfil/${usuario.slug}`;
             accountButton.setAttribute('aria-label', `Abrir perfil de ${usuario.nomeCompleto}`);
+            if (usuario.administrador === true && !document.querySelector('.nav-moderacao')) {
+                const menu = document.querySelector('.nav-links');
+                if (menu) {
+                    const item = document.createElement('li');
+                    item.className = 'nav-moderacao';
+                    const link = document.createElement('a');
+                    link.href = '/admin';
+                    link.textContent = 'Moderação';
+                    item.appendChild(link);
+                    menu.appendChild(item);
+                }
+            }
         }).catch(() => { /* O acesso à conta continua disponível se a sessão falhar. */ });
     }
 

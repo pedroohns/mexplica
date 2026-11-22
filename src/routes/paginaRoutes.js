@@ -13,6 +13,10 @@ const paginaController =
 const router =
     express.Router();
 
+const adminController = require('../controllers/adminController');
+const { exigirAdministrador } = require('../middlewares/authMiddleware');
+router.get('/admin', adminController.acessoPagina, exigirAdministrador, adminController.pagina);
+
 
 router.get(
     '/comunidade',

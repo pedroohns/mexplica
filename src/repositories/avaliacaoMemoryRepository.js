@@ -4,6 +4,7 @@ class AvaliacaoMemoryRepository {
     constructor(avaliacoes = require('../data/avaliacaoData')) { this.avaliacoes = avaliacoes; }
     emTransacao(tarefa) { return emTransacao(tarefa, { colecoes: [this.avaliacoes] }); }
     async findAll() { return this.avaliacoes; }
+    async count() { return this.avaliacoes.length; }
     async findById(id) { return this.avaliacoes.find(item => item.id === Number(id)) || null; }
     async findByTutorialId(id) { return this.avaliacoes.filter(item => item.tutorialId === Number(id)); }
     async findByAvaliadorId(id) { return this.avaliacoes.filter(item => item.avaliadorId === Number(id)); }

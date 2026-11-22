@@ -189,6 +189,7 @@ app.get(
 // Arquivos estáticos e health checks não precisam ler cookies, verificar JWT ou consultar usuário.
 app.use(cookieParser());
 app.use(carregarUsuario);
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 app.use(
     '/api/auth',
