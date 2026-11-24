@@ -1,232 +1,385 @@
+
 # MExplica
 
-O **MExplica** é uma plataforma acadêmica voltada à **inclusão e acessibilidade digital**, desenvolvida para auxiliar principalmente idosos e pessoas com dificuldades na utilização de dispositivos, aplicativos e serviços tecnológicos.
+Plataforma acadêmica de inclusão e acessibilidade digital.
 
-A proposta é oferecer um ambiente simples e colaborativo no qual usuários possam pesquisar dúvidas sobre tecnologia, acessar tutoriais passo a passo e encontrar conteúdos produzidos por colaboradores da comunidade.
+O **MExplica** é uma aplicação web desenvolvida para auxiliar principalmente idosos e pessoas com dificuldades na utilização de dispositivos, aplicativos e serviços tecnológicos.
 
-O projeto evoluiu de um protótipo visual para uma **aplicação web funcional com frontend e backend integrados**, autenticação, gerenciamento de usuários, diferentes níveis de permissão, operações CRUD e arquitetura organizada com base no padrão **MVC (Model-View-Controller)**.
+A plataforma oferece conteúdos educativos, tutoriais passo a passo e um ambiente colaborativo no qual usuários podem compartilhar conhecimentos e auxiliar outras pessoas.
 
-> 🟡 **Status:** Protótipo funcional em desenvolvimento
+**Status:** Aplicação funcional publicada.
 
-### 🌐 Demonstração
-A aplicação está disponível através da Vercel:
-
-[MExplica — visualizar aplicação](https://mexplica-atualizado.vercel.app/)
+[🌐 Acessar o MExplica](https://mexplica-atualizado.vercel.app/)
 
 ---
 
 ## Objetivo
-O principal objetivo do MExplica é contribuir para a **inclusão digital**, aproximando tecnologia e usuário através de conteúdos simples, acessíveis e organizados.
-A plataforma busca reduzir algumas das barreiras enfrentadas por pessoas com menor familiaridade com tecnologia, oferecendo diferentes formas de acesso às informações e recursos de acessibilidade.
-Além do consumo de conteúdos, o projeto também propõe uma comunidade de colaboradores, permitindo que usuários contribuam com tutoriais e auxiliem outras pessoas.
+
+O projeto busca contribuir para a inclusão digital por meio de uma plataforma simples, acessível e colaborativa.
+
+Além de facilitar o acesso a orientações sobre tecnologia, o MExplica permite que colaboradores produzam conteúdos, compartilhem experiências e contribuam com a comunidade.
 
 ---
 
 ## Principais funcionalidades
-Atualmente, o MExplica possui funcionalidades relacionadas a usuários, conteúdos, colaboração e acessibilidade.
 
 ### Usuários e autenticação
-- Cadastro de usuários;
-- Login utilizando e-mail ou telefone;
-- Autenticação JWT, com cookie HttpOnly na web e Bearer nas APIs;
-- Senhas armazenadas através de hash;
-- Sessão de usuário;
+
+- Cadastro e gerenciamento de usuários;
+- Login por e-mail ou telefone;
+- Autenticação JWT;
+- Controle de acesso e permissões;
 - Perfis de usuários;
-- Diferentes níveis de permissão;
-- Sistema de colaboradores;
-- Controle de acesso conforme o tipo de usuário.
+- Sistema de colaboradores.
 
-### Tutoriais
-- Pesquisa de dúvidas e conteúdos;
-- Organização e filtragem dos resultados;
-- Tutoriais estruturados em etapas;
-- Utilização de tags e categorias;
-- Suporte a imagens;
-- Suporte a vídeos;
-- Criação de tutoriais;
-- Visualização de tutoriais;
-- Edição de conteúdos;
-- Exclusão de conteúdos.
+### Tutoriais e conteúdos
 
-### Interação e comunidade
+- Pesquisa e filtragem de conteúdos;
+- Tutoriais organizados em etapas;
+- Categorias e tags;
+- Suporte a imagens e vídeos;
+- Criação, visualização, edição e exclusão de tutoriais.
+
+### Comunidade
+
 - Comentários em tutoriais;
-- Avaliação de conteúdos;
-- Sistema de colaboradores;
-- Pontuação de colaboradores;
+- Avaliações de conteúdos;
+- Sistema de pontuação;
+- Níveis de colaboradores;
 - Ranking de colaboradores.
 
-### Acessibilidade
+### Acessibilidade digital
+
 - Ajuste do tamanho dos textos;
 - Modo escuro;
 - Modo de conforto ocular;
 - Integração com VLibras;
 - Interface responsiva;
-- Organização gradual dos conteúdos;
-- Apoio através de imagens e vídeos;
-- Interface desenvolvida com foco em simplicidade e compreensão.
----
-
-## Arquitetura
-A aplicação utiliza uma organização baseada no padrão **MVC (Model-View-Controller)**, buscando separar responsabilidades e facilitar a manutenção e evolução do projeto.
-A estrutura principal está dividida em:
-
-- **Models:** representação e manipulação dos dados da aplicação;
-- **Views:** páginas e interfaces renderizadas através do EJS;
-- **Controllers:** tratamento HTTP, renderização e chamadas aos Models/Services;
-- **Services:** validação, composição de entidades, integridade e operações transacionais;
-- **Repositories:** persistência PostgreSQL no runtime e memória somente nos testes;
-- **Routes:** definição e organização das rotas da aplicação;
-- **Middlewares:** funções intermediárias utilizadas em autenticação, sessões e controle de acesso;
-- **Utils:** funções auxiliares utilizadas pelo sistema;
-- **Public:** arquivos estáticos da interface, como CSS, JavaScript e recursos visuais.
-
-O fluxo principal é Route → Controller → Service quando necessário → Model → Repository.
-`src/data/` contém dados demonstrativos usados pelo seed e pelos testes offline.
-Os padrões implementados são Singleton (`DatabaseConnection`, Pool lazy por processo),
-Factory (seleção dos quatro Repositories) e Observer (avaliações e pontuação na mesma transação).
-Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e
-[docs/PADROES_DE_PROJETO.md](docs/PADROES_DE_PROJETO.md).
+- Conteúdos organizados para facilitar a compreensão.
 
 ---
 
-## Stack e execução
+## Moderação MExplica
 
-Node.js 24, Express 5, EJS, HTML/CSS/JavaScript, PostgreSQL/Neon, `pg`, `bcryptjs`,
-`jsonwebtoken`, `cookie-parser` e `dotenv`. Hospedagem na Vercel.
+A plataforma possui um módulo administrativo destinado ao gerenciamento e à moderação de conteúdos e usuários.
 
-Instale as dependências do lockfile com `npm.cmd ci`. Configure privadamente o `.env`
-local, ignorado pelo Git, usando os nomes de [.env.example](.env.example):
+O painel permite:
 
-| Variável | Uso |
-| --- | --- |
-| `DATABASE_URL` | Conexão pooled do Neon, preservando as opções SSL fornecidas pelo provedor |
-| `JWT_SECRET` | Chave aleatória forte e estável para assinar/verificar JWT |
-| `NODE_ENV` | `production` na hospedagem HTTPS; `test` é reservado à suíte offline |
-| `PORT` | Opcional no desenvolvimento local; padrão 3000 |
+- Visualização de indicadores da plataforma;
+- Gerenciamento de usuários;
+- Moderação de tutoriais;
+- Moderação de comentários;
+- Moderação de avaliações;
+- Pesquisa e paginação de registros;
+- Remoção de conteúdos conforme permissões administrativas.
 
-Com o banco existente preparado, execute:
+O acesso é restrito a usuários autorizados pelo backend. As permissões administrativas são verificadas a partir do estado atual do usuário no banco de dados.
 
-```powershell
-npm.cmd run dev
+Contas administrativas possuem proteção contra exclusão pelos fluxos disponibilizados pela aplicação.
+
+---
+
+## Tecnologias utilizadas
+
+| Categoria | Tecnologias |
+|---|---|
+| Frontend | HTML, CSS, JavaScript e EJS |
+| Backend | Node.js e Express |
+| Banco de dados | PostgreSQL e Neon |
+| Autenticação | JWT e bcrypt |
+| Arquitetura | MVC, Services e Repositories |
+| Testes | Node.js Test Runner |
+| Controle de versão | Git e GitHub |
+| Hospedagem | Vercel |
+
+---
+
+## Arquitetura de software
+
+O MExplica utiliza uma arquitetura baseada em MVC (Model-View-Controller), complementada por camadas responsáveis pelas regras de negócio e persistência dos dados.
+
+O objetivo é promover a separação de responsabilidades, facilitar a manutenção e reduzir o acoplamento entre os componentes.
+
+### Fluxo da aplicação
+
+```mermaid
+flowchart TD
+    A[Interface / Cliente] --> B[Routes]
+    B --> C[Controllers]
+    C --> D[Services]
+    C --> E[Models]
+    D --> E
+    E --> F[Repositories]
+    F --> G[(PostgreSQL / Neon)]
 ```
 
-Abra `http://localhost:3000`. Para rodar a suíte nativa `node:test`:
+A camada Service é utilizada quando existem regras de negócio, composição de informações ou operações que envolvem múltiplas entidades.
 
-```powershell
-npm.cmd test
-```
+### Responsabilidades
 
-Baseline atual: **328 testes aprovados**, sem acesso ao Neon real, com chave JWT exclusiva
-de testes e driver real bloqueado. Schema, migrations e seed são comandos manuais separados;
-não são executados por start, instalação ou deploy.
-Consulte [docs/BANCO_DE_DADOS.md](docs/BANCO_DE_DADOS.md) e
-[docs/AUTENTICACAO.md](docs/AUTENTICACAO.md) para preparação do banco e autenticação.
-
-O Modo Administrador está implementado na branch `modo-administrador`: `/admin` oferece
-dashboard, busca e remoção de usuários, tutoriais, comentários e avaliações. A permissão é
-a flag independente `administrador`, relida do banco em cada requisição; contas administrativas
-são protegidas contra exclusão, inclusive pela API comum. As APIs estão em `/api/admin`.
+| Camada | Responsabilidade |
+|---|---|
+| Routes | Definição dos endpoints |
+| Controllers | Tratamento das requisições HTTP |
+| Services | Regras de negócio e operações compostas |
+| Models | Operações relacionadas às entidades |
+| Repositories | Acesso e persistência dos dados |
+| Middlewares | Autenticação, autorização e funções intermediárias |
+| Views | Renderização das interfaces |
 
 ---
 
-## API e backend
-- levantamento e discussão de funcionalidades;
-- organização arquitetural;
-- desenvolvimento frontend;
-- desenvolvimento backend;
-- UX/UI;
-- acessibilidade;
-- controle de versão;
-- documentação;
-- testes;
-- evolução contínua da aplicação.
+## Estrutura do projeto
+
+```text
+mexplica/
+├── api/
+├── public/
+│   ├── css/
+│   └── js/
+├── src/
+│   ├── controllers/
+│   ├── data/
+│   ├── database/
+│   ├── events/
+│   ├── middlewares/
+│   ├── models/
+│   ├── observers/
+│   ├── repositories/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   ├── views/
+│   └── index.js
+├── scripts/
+├── tests/
+├── docs/
+├── .env.example
+├── package.json
+├── package-lock.json
+├── vercel.json
+└── README.md
+```
+
+---
+
+## Padrões de projeto
+
+O projeto utiliza padrões de projeto para resolver necessidades específicas da arquitetura.
+
+### Factory
+
+A RepositoryFactory seleciona a implementação de persistência de acordo com o ambiente da aplicação.
+
+- Ambiente de testes: repositories em memória.
+- Ambiente de execução: repositories PostgreSQL.
+
+Essa separação permite executar testes offline sem acessar o banco de dados real.
+
+### Singleton
+
+A classe DatabaseConnection centraliza a criação e reutilização do pool de conexões PostgreSQL dentro de cada processo ou instância da aplicação.
+
+### Observer
+
+O padrão Observer é utilizado no ciclo de avaliações e pontuação dos colaboradores.
+
+Eventos relacionados à criação, atualização ou remoção de avaliações notificam o observador responsável pelo ajuste da pontuação, preservando a integridade da operação por meio de transações.
+
+---
+
+## Banco de dados
+
+A persistência da aplicação é realizada através do PostgreSQL, hospedado no Neon.
+
+O banco de dados contempla informações relacionadas a:
+
+- Usuários;
+- Tutoriais;
+- Etapas dos tutoriais;
+- Tags;
+- Comentários;
+- Avaliações.
+
+O sistema utiliza relacionamentos entre entidades, consultas parametrizadas, transações e mecanismos de integridade.
+
+Os dados em memória são utilizados exclusivamente para testes e dados demonstrativos destinados ao seed.
+
+---
+
+## API REST
+
+A comunicação entre os componentes da aplicação utiliza uma API HTTP organizada por recursos.
+
+### Principais grupos de endpoints
+
+| Recurso | Rota base |
+|---|---|
+| Autenticação | /api/auth |
+| Usuários | /api/usuarios |
+| Tutoriais | /api/tutoriais |
+| Comentários | /api/comentarios |
+| Avaliações | /api/avaliacoes |
+| Administração | /api/admin |
+| Saúde da aplicação | /api/health |
+
+Os endpoints implementam operações CRUD conforme as necessidades de cada recurso e suas respectivas regras de autorização.
+
+---
+
+## Autenticação e segurança
+
+A aplicação utiliza mecanismos de autenticação e autorização baseados em:
+
+- JSON Web Token (JWT);
+- Hash de senhas com bcrypt;
+- Cookies HttpOnly;
+- Cookies Secure em produção;
+- Autenticação Bearer nas APIs;
+- Validação de permissões no backend;
+- Consultas parametrizadas;
+- Proteção de contas administrativas;
+- Tratamento controlado de erros.
+
+Credenciais e variáveis de ambiente não devem ser armazenadas no repositório.
+
+---
+
+## Executando o projeto localmente
+
+### Pré-requisitos
+
+- Node.js 24;
+- npm;
+- Git;
+- Banco PostgreSQL previamente configurado.
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/pedroohns/mexplica.git
+cd mexplica
+```
+
+### 2. Instalar as dependências
+
+```bash
+npm ci
+```
+
+### 3. Configurar as variáveis de ambiente
+
+Crie um arquivo `.env` com base no arquivo `.env.example`.
+
+```env
+DATABASE_URL=
+JWT_SECRET=
+```
+
+Configure a URL de conexão com um banco PostgreSQL de desenvolvimento e uma chave JWT forte.
+
+Nunca compartilhe ou versione os valores reais dessas variáveis.
+
+A preparação do schema e a execução de migrations são procedimentos separados. Consulte a documentação de banco de dados antes de executar comandos que alterem a estrutura ou o conteúdo do banco.
+
+### 4. Iniciar a aplicação
+
+```bash
+npm run dev
+```
+
+Acesse:
+
+http://localhost:3000
+
+---
+
+## Testes
+
+O projeto possui uma suíte automatizada utilizando o test runner nativo do Node.js.
+
+```bash
+npm test
+```
+
+A suíte contempla testes relacionados a:
+
+- Endpoints da API;
+- Autenticação e autorização;
+- Regras de negócio;
+- Persistência e repositories;
+- Integridade de relacionamentos;
+- Operações administrativas;
+- Padrões de projeto;
+- Estrutura da aplicação.
+
+Os testes utilizam dados em memória e implementações simuladas, sem necessidade de conexão com o banco de produção.
+
+---
+
+## Documentação técnica
+
+Documentações complementares estão disponíveis no diretório `docs/`.
+
+| Documento | Conteúdo |
+|---|---|
+| [Arquitetura](docs/ARQUITETURA.md) | Organização e responsabilidades da aplicação |
+| [Padrões de projeto](docs/PADROES_DE_PROJETO.md) | Factory, Singleton e Observer |
+| [Banco de dados](docs/BANCO_DE_DADOS.md) | Persistência, schema e migrations |
+| [Autenticação](docs/AUTENTICACAO.md) | JWT, permissões e segurança |
+| [Deploy](docs/DEPLOY.md) | Configuração e procedimentos de hospedagem |
+| [Auditoria](docs/AUDITORIA_PRODUCAO.md) | Histórico das validações técnicas |
+
+---
+
+## Evolução do projeto
+
+O MExplica iniciou como um protótipo voltado à experiência visual e à acessibilidade digital.
+
+Ao longo do desenvolvimento, foram incorporadas funcionalidades de backend, autenticação, operações CRUD, organização arquitetural, persistência relacional, padrões de projeto, testes automatizados e moderação administrativa.
+
+Essa evolução permitiu transformar o protótipo em uma aplicação web funcional e publicada.
+
 ---
 
 ## Equipe
+
+Projeto acadêmico desenvolvido durante a graduação em Sistemas de Informação.
+
 - Pedro Henrique de Souza Silva
 - Arthur Drumond Teles
 - Miguel Lacerda
 - Bernardo Gonzaga
 - Wladnei Jr
-- Pedro de Paula
+- Pedro de Paula Barboza
+
 ---
 
 ## Minha participação
-Minha atuação no MExplica começou principalmente na implementação da interface e evoluiu junto com o crescimento técnico do projeto.
-Atualmente, minha participação inclui:
-- desenvolvimento e evolução da interface;
-- integração entre frontend e backend;
-- implementação de funcionalidades;
-- participação na organização da arquitetura baseada em MVC;
-- estruturação de rotas;
-- estruturação de controllers;
-- estruturação de models;
-- utilização e desenvolvimento de middlewares;
-- implementação e evolução do sistema de autenticação;
-- participação na implementação de operações CRUD;
-- testes e identificação de problemas;
-- organização da estrutura do projeto;
-- configuração e manutenção do deploy;
-- utilização de Git/GitHub no desenvolvimento colaborativo;
-- participação nas discussões e decisões relacionadas à evolução da aplicação.
-O projeto permanece em desenvolvimento e minha atuação acompanha a evolução das necessidades funcionais e arquiteturais da plataforma.
+
+Minha atuação no MExplica começou com a implementação e evolução das interfaces e se expandiu conforme o crescimento técnico da aplicação.
+
+Minha participação envolve:
+
+- Análise de funcionalidades;
+- Desenvolvimento e evolução das interfaces;
+- Integração entre frontend e backend;
+- Organização e refatoração arquitetural;
+- Implementação de funcionalidades e regras de negócio;
+- Participação na integração com banco de dados;
+- Testes e identificação de falhas;
+- Documentação técnica;
+- Controle de versão;
+- Configuração e acompanhamento da publicação da aplicação.
+
 ---
 
-## Evolução do projeto
-O MExplica começou como um projeto focado principalmente na construção da experiência visual da plataforma.
-Com sua evolução, passou a incorporar conceitos e funcionalidades relacionados a:
-1. construção e refinamento da interface;
-2. recursos de acessibilidade;
-3. organização das funcionalidades;
-4. backend com Node.js e Express;
-5. renderização através de EJS;
-6. arquitetura baseada em MVC;
-7. autenticação e sessões;
-8. diferentes níveis de permissão;
-9. operações CRUD;
-10. comentários e avaliações;
-11. organização dos dados através de Models;
-12. persistência relacional em PostgreSQL/Neon através de Repositories.
-Essa evolução transformou o projeto de um protótipo visual em uma aplicação funcional utilizada também como ambiente de aprendizado e aplicação prática de conceitos de desenvolvimento, arquitetura de software e análise de sistemas.
+## Status do projeto
+
+O MExplica possui uma versão funcional publicada, com frontend, backend, banco de dados, autenticação, recursos de acessibilidade e módulo administrativo integrados.
+
+O projeto permanece disponível para futuras melhorias e evolução acadêmica.
+
 ---
 
-## Próximas etapas
-O projeto continua em desenvolvimento.
-Entre as principais possibilidades de evolução estão:
-- revisão das correções finais e integração manual de `banco-persistencia` à `main` após aprovação;
-- configuração e liberação de Production em uma etapa posterior autorizada;
-- continuidade da evolução da arquitetura;
-- aprimoramento das funcionalidades existentes;
-- refinamento das interfaces;
-- expansão dos recursos de acessibilidade;
-- evolução da documentação técnica.
----
-
-## Status atual
-🟡 Protótipo funcional - em desenvolvimento
-Atualmente, o MExplica possui:
-- frontend e backend integrados;
-- arquitetura baseada em MVC;
-- autenticação;
-- persistência do domínio em PostgreSQL/Neon;
-- gerenciamento de usuários;
-- tutoriais;
-- comentários;
-- avaliações;
-- diferentes níveis de permissão;
-- operações CRUD;
-- recursos de acessibilidade;
-- aplicação publicada na Vercel.
-Algumas funcionalidades e interfaces continuam sendo refinadas conforme o projeto evolui.
----
-
-## Observação
-O MExplica é um projeto acadêmico em desenvolvimento.
-Na branch `banco-persistencia`, o runtime usa PostgreSQL/Neon e autenticação JWT. Arrays de
-demonstração ficam restritos aos testes offline e seed. O Preview real dessa branch na Vercel
-já foi validado pelo responsável. A auditoria pré-merge está registrada abaixo; as correções
-locais precisam ser revisadas e incluídas na branch antes do merge manual. Production
-permanece para uma etapa posterior autorizada.
-
-Configuração e checklist de validação: [docs/DEPLOY.md](docs/DEPLOY.md).
-Resultados da auditoria final: [docs/AUDITORIA_PRODUCAO.md](docs/AUDITORIA_PRODUCAO.md).
+Desenvolvido como projeto acadêmico de Sistemas de Informação no Centro Universitário de Volta Redonda — UniFOA.
